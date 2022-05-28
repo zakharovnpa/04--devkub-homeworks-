@@ -15,6 +15,26 @@
 
 Обоснуйте свой выбор.
 
+**Ответ:**
+1. Находим таблицу с ТОП-10 программных решений API GAteway
+[10 Top Open Source API Gateways and Management Tools](https://www.tecmint.com/open-source-api-gateways-and-management-tools/)
+
+| Название продукта|Рейтинг | Сайт|Особенности|Маршрутизация запросов|Проверка аутентификационной информации|Терминация HTTPS
+|-|-|-|-|-|-|-|
+Kong Gateway (OSS)|1|https://konghq.com/kong/|Облачный|
+Tyk|2|https://tyk.io/|Облачный
+KrakenD|3|https://www.krakend.io/|Go
+Gravitee.io API Platform|4|https://www.gravitee.io/|Java
+Gloo Edge|5|https://www.solo.io/products/gloo-edge/|Go
+Goku API Gateway|6|https://github.com/eolinker/goku-api-gateway|Go
+WSO2 API Microgateway|7|https://wso2.com/api-management/api-microgateway/|Java
+Fusio|8|https://www.fusio-project.org/|PHP
+Apiman|9|https://www.apiman.io/latest/|Java
+API Umbrella|10|https://apiumbrella.io/|Ruby
+
+
+2. 
+
 ## Задача 2: Брокер сообщений
 
 Составьте таблицу возможностей различных брокеров сообщений. На основе таблицы сделайте обоснованный выбор решения.
