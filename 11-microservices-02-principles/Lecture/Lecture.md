@@ -32,14 +32,14 @@ Technical Lead
 Технологическая
 стратегия
 
-![mikroservise-6](/11-microservices-01-intro/Files/mikroservice-6.png)
+![mikroservise-6](/11-microservices-02-principles/Files/mikroservice-6.png)
 
 ### 6Принципы     - 00:08:50
 Цели
 Практики
 Принципы
 
-![mikroservise-7](/11-microservices-01-intro/Files/mikroservice-7.png)
+![mikroservise-7](/11-microservices-02-principles/Files/mikroservice-7.png)
 
 ### 7Практики      - 00:12:15
 Цели
@@ -83,7 +83,7 @@ Technical Lead
 всех публикуемых
 интерфейсов
 
-![mikroservise-8](/11-microservices-01-intro/Files/mikroservice-8.png)
+![mikroservise-8](/11-microservices-02-principles/Files/mikroservice-8.png)
 
 ### 8Практики: необходимый минимум       - 00:15:00
 - Централизованный мониторинг
@@ -97,17 +97,17 @@ Technical Lead
 * Loose Coupling - Слабая связность. Минимизировать влияние изменений в одном сервисе на всю систему
 * High Cohesion - Сильное зацепление. Минимизировать необходимость менять несколько сервисов при изменении поведения системы
 
-![mikroservise-9](/11-microservices-01-intro/Files/mikroservice-9.png)
+![mikroservise-9](/11-microservices-02-principles/Files/mikroservice-9.png)
 
 
 ### 11Bounded Context        - 00:26:20
 
-![mikroservise-10](/11-microservices-01-intro/Files/mikroservice-10.png)
+![mikroservise-10](/11-microservices-02-principles/Files/mikroservice-10.png)
 
 Ограниченные области, каждая которая описывает свой ограниченный контекст.
 Ограниченный контекст - это четкие границы ответственности модели, которая оона описывает.
 
-![mikroservise-11](/11-microservices-01-intro/Files/mikroservice-11.png)
+![mikroservise-11](/11-microservices-02-principles/Files/mikroservice-11.png)
 
 Имея такое измерение можно использовать границы контекста как границы сервисов
 - 00:28:00 - пояснение про гораниченный контекст. Это использование каждым сервисом из всей полноты характеристик товара (сущности) только тех,
@@ -116,7 +116,7 @@ Technical Lead
 ### 12Bounded Context
 Интернет-магазин
 
-![mikroservise-12](/11-microservices-01-intro/Files/mikroservice-12.png)
+![mikroservise-12](/11-microservices-02-principles/Files/mikroservice-12.png)
 
 ### 13Один контекст. Один сервис. Одна команда.     - 00:32:00
 Ограниченный контекст - это:
@@ -211,11 +211,11 @@ Technical Lead
 Пример того как не надо делать: нельзя объединять сервисы через одну и туже БД.
 * Избегайте использование общей БД для межсервисной интеграции
 
-![mikroservise-13](/11-microservices-01-intro/Files/mikroservice-13.png)
+![mikroservise-13](/11-microservices-02-principles/Files/mikroservice-13.png)
 
 ### 25Синхронное или асинхронное взаимодействие        - 00:56:30
 
-![mikroservise-14](/11-microservices-01-intro/Files/mikroservice-14.png)
+![mikroservise-14](/11-microservices-02-principles/Files/mikroservice-14.png)
 
 ### 26Запрос / Ответ или События       - 00:57:55
 - Запрос / Ответ - RPC
@@ -234,7 +234,7 @@ Technical Lead
  
 
 
-![mikroservise-15](/11-microservices-01-intro/Files/mikroservice-15.png)
+![mikroservise-15](/11-microservices-02-principles/Files/mikroservice-15.png)
 
 ### 27Оркестрация или Хореография     - 00:59:52
 Корзина
@@ -252,7 +252,7 @@ Technical Lead
 
 Поэтому лучше пользоваться оркестрацией, чем нырять в историю с хареографией. Оркестратор можно при разрастании системы поделить на несколько процессов, живущих в разных сервисах.
 
-![mikroservise-16](/11-microservices-01-intro/Files/mikroservice-16.png)
+![mikroservise-16](/11-microservices-02-principles/Files/mikroservice-16.png)
 
 ### 28Remote Procedure Calls       - 01:02:40
 
@@ -304,24 +304,24 @@ Technical Lead
 
 ### 32Версионирование: SemVer
 
-![mikroservise-17](/11-microservices-01-intro/Files/mikroservice-17.png)
+![mikroservise-17](/11-microservices-02-principles/Files/mikroservice-17.png)
 
 ### 33Версионирование: версии эндпоинтов        - 01:11:50
 
-![mikroservise-18](/11-microservices-01-intro/Files/mikroservice-18.png)
+![mikroservise-18](/11-microservices-02-principles/Files/mikroservice-18.png)
 
 ### 34Версионирование: версии сервисов       - 01:12:43
 
 Разные версии сервисов могут работать с одной и той же БД
-![mikroservise-19](/11-microservices-01-intro/Files/mikroservice-19.png)
+![mikroservise-19](/11-microservices-02-principles/Files/mikroservice-19.png)
 
 ### 35API Gateway     - 01:13:30
 Подход, позволяющий предоставить единую точку входа для всех клиентов системы, построенной на принципах микросервисной архитектуры
-![mikroservise-20](/11-microservices-01-intro/Files/mikroservice-20.png)
+![mikroservise-20](/11-microservices-02-principlesFiles/mikroservice-20.png)
 
 ### 36Backend for frontend       - 01:15:10
 Это три разных APIGateway
-![mikroservise-21](/11-microservices-01-intro/Files/mikroservice-21.png)
+![mikroservise-21](/11-microservices-02-principles/Files/mikroservice-21.png)
 
 ### 37Выводы
 - Не используйте интеграцию через общую базу данных
