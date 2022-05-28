@@ -19,8 +19,8 @@
 1. Находим таблицу с ТОП-10 программных решений API GAteway
 [10 Top Open Source API Gateways and Management Tools](https://www.tecmint.com/open-source-api-gateways-and-management-tools/)
 
-| Название продукта|Рейтинг | Сайт|Особенности|Маршрутизация запросов|Проверка аутентификационной информации|Терминация HTTPS
-|-|-|-|-|-|-|-|
+| Название продукта|Рейтинг | Сайт|Особенности|Маршрутизация запросов|Проверка аутентификационной информации|Терминация HTTPS|OpenSource
+|-|-|-|-|-|-|-|-|
 Kong Gateway (OSS)|1|https://konghq.com/kong/|Облачный|
 Tyk|2|https://tyk.io/|Облачный
 KrakenD|3|https://www.krakend.io/|Go
@@ -31,6 +31,14 @@ WSO2 API Microgateway|7|https://wso2.com/api-management/api-microgateway/|Java
 Fusio|8|https://www.fusio-project.org/|PHP
 Apiman|9|https://www.apiman.io/latest/|Java
 API Umbrella|10|https://apiumbrella.io/|Ruby
+Apache APISIX|2|https://apisix.apache.org/
+Nginx||https://www.nginx.com/solutions/api-management-gateway/|||Защита API gRPC с помощью NGINX App Protect||NO
+Ocelot|4|https://github.com/ThreeMammals/Ocelot|.NET
+Express Gateway|6|https://www.express-gateway.io/|
+WSO2|10|https://wso2.com/api-management/|
+
+
+
 
 
 2. 
