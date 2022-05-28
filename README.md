@@ -1,2 +1,2 @@
 # 04--devkub-homeworks-
-For homeworks "mikrisercice" in Netology
+For homeworks "mikriservice" in Netology
