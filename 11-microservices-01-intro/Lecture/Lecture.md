@@ -109,7 +109,9 @@ Relational DB
 NodeJS
 .Net
 Blob storage
-![mikroservise-1](./Files/mikroservise-1.png)
+![mikroservise-1](/11-microservices-01-intro/Files/mikroservice-1.png)
+
+В случае монолитного приложение оно будет рещать все бизнес-задачи. В случае микросервисов - каждый из них будет решать конкретную бизнес-задачу
 
 ### 13Устойчивость к ошибкам
 Техники работы с ошибками:
