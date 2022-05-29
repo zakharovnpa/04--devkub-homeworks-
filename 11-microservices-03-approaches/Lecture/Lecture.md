@@ -40,7 +40,7 @@ Commit
 Результат
 Команда разработки
 
-![approaches-01](/11-mikroservices-03-approaches/Files/approaches-01.png)
+![approaches-01](/11-microservices-03-approaches/Files/approaches-01.png)
 
 #### 5Непрерывная интеграция и микросервисы      - 00:05:10
 
@@ -82,7 +82,7 @@ Version 1.0.1
 Для каждого сервиса собирается
 отдельный артефакт
 
-![approaches-02](/11-mikroservices-03-approaches/Files/approaches-02.png)
+![approaches-02](/11-microservices-03-approaches/Files/approaches-02.png)
 
 ### 6Непрерывная поставка       - 00:09:30
 > Continues Delivery - это подход к разработке ПО, при котором оно производится кототкими итерациями и гарантирует, что ПО является стабильным и может быть передано в эксплуатацию в любое время. Но при этом сама передача обычно происходит вручную.
@@ -109,7 +109,7 @@ Version 1.0.1
 Нагрузочные тесты
 Ручные тесты
 
-![approaches-03](/11-mikroservices-03-approaches/Files/approaches-03.png)
+![approaches-03](/11-microservices-03-approaches/Files/approaches-03.png)
 
 ### 7Непрерывная установка      -00:11:10
 > Continues Deployment - этот подход использует автоматическое тестирование для проверки иззменений в коде на отсутствие регресса, на оостутствие повторений существующих ошибок и возникновение новых ошибок в существующем коде.
@@ -131,7 +131,7 @@ Version 1.0.1
 Автоматические интеграционные тесты
 Автоматические нагрузочные тесты
 
-![approaches-04](/11-mikroservices-03-approaches/Files/approaches-04.png)
+![approaches-04](/11-microservices-03-approaches/Files/approaches-04.png)
 
 
 ### 8Стенды / Контура       - 00:13:10
@@ -160,7 +160,7 @@ UAT
 Production
 
 
-![approaches-05](/11-mikroservices-03-approaches/Files/approaches-05.png)
+![approaches-05](/11-microservices-03-approaches/Files/approaches-05.png)
 
 #### 9Непрерывное развертывание      -00:16:55
 Варианты обновления сервисов на проде:
@@ -184,7 +184,7 @@ Production
 
 До После
 v1.0 v2.0
-![approaches-06](/11-mikroservices-03-approaches/Files/approaches-06.png)
+![approaches-06](/11-microservices-03-approaches/Files/approaches-06.png)
 
 #### 11Мультисервис Recreate      - 00:20:00
 При этом варианте происходит одновременное обновление нескольких сервисов. Это более рискованный вариант в случае ошибок в нескольких сервисах.
@@ -203,7 +203,7 @@ v2.8
 v1.5
 v4.0
 
-![approaches-07](/11-mikroservices-03-approaches/Files/approaches-07.png)
+![approaches-07](/11-microservices-03-approaches/Files/approaches-07.png)
 
 #### 12Rolling deployment      -00:21:12
 Это дефотный вариант для обновления версий подов в Kubernetes.
@@ -232,7 +232,7 @@ OK?
 OK?
 v2.0
 
-![approaches-08](/11-mikroservices-03-approaches/Files/approaches-08.png)
+![approaches-08](/11-microservices-03-approaches/Files/approaches-08.png)
 
 #### 13Blue Green deployment     - 00:23:00
 
@@ -251,7 +251,7 @@ Blue Green deployment  достаточно популярный вариант.
 Stand by Live Live Stand by
 v1.2 v1.1 v1.2 v1.1
 
-![approaches-09](/11-mikroservices-03-approaches/Files/approaches-09.png)
+![approaches-09](/11-microservices-03-approaches/Files/approaches-09.png)
 
 #### 14Canary deployment     - 00:24:50
 Это больше подходы к выкладке, а не про обновление целиком. Скорее это техники для того, чтобы разворачивать сервис и выполнять дополнительные функции.
@@ -285,7 +285,7 @@ OK?
 v1.1
 v1.0
 v1.1
-![approaches-10](/11-mikroservices-03-approaches/Files/approaches-10.png)
+![approaches-10](/11-microservices-03-approaches/Files/approaches-10.png)
 
 #### 15A/B Testing   -0:28:45
 Разные версии одного и того же сервиса могут одновременно работать кна одном и том же контуре в пределах фиксированного промежутка времени.
@@ -310,7 +310,7 @@ v1.0
 v1.0 (A) = 71%
 v1.3
 
-![approaches-11](/11-mikroservices-03-approaches/Files/approaches-11.png)
+![approaches-11](/11-microservices-03-approaches/Files/approaches-11.png)
 
 #### 16Shadow     -00:32:43
 
@@ -331,7 +331,7 @@ v1.0
 После
 v1.0
 v2.0
-![approaches-12](/11-mikroservices-03-approaches/Files/approaches-12.png)
+![approaches-12](/11-microservices-03-approaches/Files/approaches-12.png)
 
 #### 17Непрерывное развертывание      - 00:34:40
 
@@ -349,7 +349,7 @@ Canary| ✔ |✔| ❌| 💲 |🕔 |󰣻 |🔬
 A/B Testing| ✔ |✔| ✔| 💲 |🕔| 󰣻 |🔬🔬🔬
 Shadow| ✔| ✔| ❌| 💲💲💲|||🔬🔬🔬
 
-![approaches-13](/11-mikroservices-03-approaches/Files/approaches-13.png)
+![approaches-13](/11-microservices-03-approaches/Files/approaches-13.png)
 
 ### 18Тестирование      - 00:36:05
 
@@ -366,7 +366,7 @@ Shadow| ✔| ✔| ❌| 💲💲💲|||🔬🔬🔬
 
 В микросервисной системе, если от нее зависит жизнь и здоровье человека необходимо использовать автотестирование
 
-![approaches-14](/11-mikroservices-03-approaches/Files/approaches-14.png)
+![approaches-14](/11-microservices-03-approaches/Files/approaches-14.png)
 
 ### 20Пирамида тестирования    - 00:39:05
 * Пирамида показывает пропорции в которых нужно использоват тесты
@@ -375,7 +375,7 @@ Shadow| ✔| ✔| ❌| 💲💲💲|||🔬🔬🔬
   * Service
 
 
-![approaches-15](/11-mikroservices-03-approaches/Files/approaches-15.png)
+![approaches-15](/11-microservices-03-approaches/Files/approaches-15.png)
 
 ### 21Тесты - часть процесса развертывания   -00:41:25
 
@@ -392,7 +392,7 @@ End to End Tests
 сократить время
 обратной связи.
 
-![approaches-16](/11-mikroservices-03-approaches/Files/approaches-16.png)
+![approaches-16](/11-microservices-03-approaches/Files/approaches-16.png)
 
 ### 22Безопасность    - 00:42:50
 
