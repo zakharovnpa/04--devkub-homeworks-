@@ -8,27 +8,37 @@
 
 ### Как поставить на AWS:
 - создать EC2 виртуальную машину (Ubuntu Server 20.04 LTS (HVM), SSD Volume Type) с типом **t3.small**. Для работы потребуется настроить Security Group для доступа по ssh. Не забудьте указать keypair, он потребуется для подключения.
-- подключитесь к серверу по ssh (ssh ubuntu@<ipv4_public_ip> -i <keypair>.pem)
+- подключитесь к серверу по ssh `(ssh ubuntu@<ipv4_public_ip> -i <keypair>.pem)`
 - установите миникуб и докер следующими командами:
+  
+```
   - curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+  
   - chmod +x ./kubectl
   - sudo mv ./kubectl /usr/local/bin/kubectl
   - sudo apt-get update && sudo apt-get install docker.io conntrack -y
   - curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-- проверить версию можно командой minikube version
-- переключаемся на root и запускаем миникуб: minikube start --vm-driver=none
-- после запуска стоит проверить статус: minikube status
-- запущенные служебные компоненты можно увидеть командой: kubectl get pods --namespace=kube-system
+```
+  
+- проверить версию можно командой `minikube version`
+- переключаемся на root и запускаем миникуб:` minikube start --vm-driver=none`
+- после запуска стоит проверить статус: `minikube status`
+- запущенные служебные компоненты можно увидеть командой: `kubectl get pods --namespace=kube-system`
 
 ### Для сброса кластера стоит удалить кластер и создать заново:
-- minikube delete
-- minikube start --vm-driver=none
+- `minikube delete`
+- `minikube start --vm-driver=none`
 
-Возможно, для повторного запуска потребуется выполнить команду: sudo sysctl fs.protected_regular=0
+Возможно, для повторного запуска потребуется выполнить команду: `sudo sysctl fs.protected_regular=0`
 
 Инструкция по установке Minikube - [ссылка](https://kubernetes.io/ru/docs/tasks/tools/install-minikube/)
 
 **Важно**: t3.small не входит во free tier, следите за бюджетом аккаунта и удаляйте виртуалку.
+
+**Ответ:**
+1. Устанавливаем локально на ВМ kubectl [Установка и настройка kubectl](https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/)
+2. Устанавливаем локально на ВМ minikube [Установка Minikube](https://kubernetes.io/ru/docs/tasks/tools/install-minikube/)
+
 
 ## Задача 2: Запуск Hello World
 После установки Minikube требуется его проверить. Для этого подойдет стандартное приложение hello world. А для доступа к нему потребуется ingress.
