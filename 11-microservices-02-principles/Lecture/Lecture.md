@@ -317,7 +317,7 @@ Technical Lead
 
 ### 35API Gateway     - 01:13:30
 Подход, позволяющий предоставить единую точку входа для всех клиентов системы, построенной на принципах микросервисной архитектуры
-![mikroservise-20](/11-microservices-02-principlesFiles/mikroservice-20.png)
+![mikroservise-20](/11-microservices-02-principles/Files/mikroservice-20.png)
 
 ### 36Backend for frontend       - 01:15:10
 Это три разных APIGateway
