@@ -65,8 +65,83 @@ flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
 root@PC-Ubuntu:~# 
 
 ```
-2. 
+2. Скачиваем по ссылке minikube
+```
+root@PC-Ubuntu:~# mc
 
+root@PC-Ubuntu:~# curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 69.2M  100 69.2M    0     0  9390k      0  0:00:07  0:00:07 --:--:-- 9895k
+```
+3. Делаем файл исполняемым
+```
+root@PC-Ubuntu:~# chmod +x minikube
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# ls -lha | grep minikube
+-rwxr-xr-x  1 root    root     70M мая 31 22:45 minikube
+```
+4. Запускаем установку в директорию `/usr/local/bin/`
+```
+sudo install minikube /usr/local/bin/
+```
+5. 
+```
+minikube start --vm-driver=virtualbox
+```
+
+6. Результат выполнения командв установки
+```
+root@PC-Ubuntu:~# minikube start --vm-driver=virtualbox
+😄  minikube v1.25.2 на Ubuntu 20.04
+✨  Используется драйвер virtualbox на основе конфига пользователя
+🛑  The "virtualbox" driver should not be used with root privileges.
+💡  If you are running minikube within a VM, consider using --driver=none:
+📘    https://minikube.sigs.k8s.io/docs/reference/drivers/none/
+
+❌  Exiting due to DRV_AS_ROOT: The "virtualbox" driver should not be used with root privileges.
+
+```
+7. Проверяем статус minikube
+```
+root@PC-Ubuntu:~# minikube status
+🤷  Profile "minikube" not found. Run "minikube profile list" to view all profiles.
+👉  To start a cluster, run: "minikube start"
+
+```
+8. Для создания ВМ в Virtualbox переходим в пользовательскую УЗ и запускаем `minikube start --vm-driver=none`. Получаем ошибку.
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube start --vm-driver=none
+😄  minikube v1.25.2 на Ubuntu 20.04
+✨  Используется драйвер none на основе конфига пользователя
+
+🤷  Exiting due to PROVIDER_NONE_NOT_FOUND: The 'none' provider was not found: running the 'none' driver as a regular user requires sudo permissions
+
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+```
+9. Для создания ВМ в Virtualbox переходим в пользовательскую УЗ на локальной ОС и запускаем `minikube start --vm-driver=virtualbox`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube start --vm-driver=virtualbox
+😄  minikube v1.25.2 на Ubuntu 20.04
+✨  Используется драйвер virtualbox на основе конфига пользователя
+💿  Downloading VM boot image ...
+    > minikube-v1.25.2.iso.sha256: 65 B / 65 B [-------------] 100.00% ? p/s 0s
+    > minikube-v1.25.2.iso: 237.06 MiB / 237.06 MiB [] 100.00% 9.77 MiB p/s 24s
+👍  Запускается control plane узел minikube в кластере minikube
+💾  Скачивается Kubernetes v1.23.3 ...
+    > preloaded-images-k8s-v17-v1...: 505.68 MiB / 505.68 MiB  100.00% 9.69 MiB
+🔥  Creating virtualbox VM (CPUs=2, Memory=3900MB, Disk=20000MB) ...
+🐳  Подготавливается Kubernetes v1.23.3 на Docker 20.10.12 ...
+    ▪ kubelet.housekeeping-interval=5m
+    ▪ Generating certificates and keys ...
+    ▪ Booting up control plane ...
+    ▪ Configuring RBAC rules ...
+    ▪ Используется образ gcr.io/k8s-minikube/storage-provisioner:v5
+🔎  Компоненты Kubernetes проверяются ...
+🌟  Включенные дополнения: storage-provisioner, default-storageclass
+🏄  Готово! kubectl настроен для использования кластера "minikube" и "default" пространства имён по умолчанию
+
+```
 
 ## Задача 2: Запуск Hello World
 После установки Minikube требуется его проверить. Для этого подойдет стандартное приложение hello world. А для доступа к нему потребуется ingress.
