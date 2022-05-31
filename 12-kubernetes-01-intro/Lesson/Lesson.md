@@ -36,8 +36,20 @@
 **Важно**: t3.small не входит во free tier, следите за бюджетом аккаунта и удаляйте виртуалку.
 
 **Ответ:**
-1. Устанавливаем локально на ВМ kubectl [Установка и настройка kubectl](https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/)
-2. Устанавливаем локально на ВМ minikube [Установка Minikube](https://kubernetes.io/ru/docs/tasks/tools/install-minikube/)
+1. Все ответы на ДЗ долдны располагаться каждый в своем рпозитории
+2. ДЗ выполнять, используя PyCharm, запуская его от пользователя root
+```
+root@PC-Ubuntu:~# whereis pycharm
+pycharm: /opt/pycharm-community-2022.1/bin/pycharm64.vmoptions /opt/pycharm-community-2022.1/bin/pycharm.svg /opt/pycharm-community-2022.1/bin/pycharm.png /opt/pycharm-community-2022.1/bin/pycharm.sh
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# cd /opt/pycharm-community-2022.1/bin
+root@PC-Ubuntu:/opt/pycharm-community-2022.1/bin# 
+root@PC-Ubuntu:/opt/pycharm-community-2022.1/bin# ./pycharm.sh
+```
+![screen-pycharm-root](/12-kubernetes-01-intro/Files/screen-pycharm-root.png)
+
+3. Устанавливаем локально на ВМ kubectl [Установка и настройка kubectl](https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/)
+4. Устанавливаем локально на ВМ minikube [Установка Minikube](https://kubernetes.io/ru/docs/tasks/tools/install-minikube/)
 
 
 ## Задача 2: Запуск Hello World
