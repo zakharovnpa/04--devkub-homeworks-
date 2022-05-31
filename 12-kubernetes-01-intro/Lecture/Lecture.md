@@ -1,5 +1,8 @@
 ## Лекция по теме "Компоненты Kubernetes"
 
+https://github.com/aak74/kubernetes-for-beginners
+
+https://github.com/aak74/kubernetes-for-beginners
 
 Андрей
 Копылов
@@ -55,12 +58,14 @@ PremiumBonus
 - Взаимодействует с etcd.
 
 ### 9Kube-apiserver
+Все компоненты общаются только через kube-apiserver
 
 ![intro_03](/12-kubernetes-01-intro/Files/intro_03.png)
 
 ### 10etcd
 
 ### 11etcd
+Распределенная БД
 
 ![intro_04](/12-kubernetes-01-intro/Files/intro_04.png)
 
