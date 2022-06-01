@@ -102,6 +102,31 @@ root@PC-Ubuntu:~# minikube start --vm-driver=virtualbox
 ❌  Exiting due to DRV_AS_ROOT: The "virtualbox" driver should not be used with root privileges.
 
 ```
+* Установка Cubectl
+```
+root@PC-Ubuntu:~# curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 43.5M  100 43.5M    0     0  9296k      0  0:00:04  0:00:04 --:--:-- 9489k
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# ls -lha | grep kubectl
+-rw-r--r--  1 root    root     44M мая 31 23:10 kubectl
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# chmod +x kubectl
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# ls -lha | grep kubectl
+-rwxr-xr-x  1 root    root     44M мая 31 23:10 kubectl
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# mv kubectl /usr/local/bin/
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# ls -lha | grep kubectl
+root@PC-Ubuntu:~# 
+root@PC-Ubuntu:~# ls -lha /usr/local/bin/ | grep kubectl
+-rwxr-xr-x  1 root root  44M мая 31 23:10 kubectl
+
+```
+
+
 7. Проверяем статус minikube
 ```
 root@PC-Ubuntu:~# minikube status
