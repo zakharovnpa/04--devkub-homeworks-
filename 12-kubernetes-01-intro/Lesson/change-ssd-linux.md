@@ -120,3 +120,14 @@ root@ubuntu:/# df -h | grep sdb5
 sent 82,851,624,644 bytes  received 8,260,168 bytes  96,968,852.91 bytes/sec
 total size is 82,798,818,473  speedup is 1.00
 ```
+### 5. Настройка нового SSD для загрузки с него ОС
+* Смотрим какие UUID нового и старого дисков:
+```
+root@ubuntu:~# blkid /dev/sdb5
+/dev/sdb5: UUID="ee07073f-3ecb-4f85-acf5-2733cce20dc1" TYPE="ext4" PARTUUID="ee64844d-05"
+```
+```
+root@ubuntu:~# blkid /dev/sda5
+/dev/sda5: UUID="3d5f16ee-5b2f-49c5-8202-212677165736" TYPE="ext4" PARTUUID="25bf4779-05"
+```
+* Переносим в файл `/etc/fstab` параметры UUID нового диска
