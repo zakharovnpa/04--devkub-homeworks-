@@ -131,3 +131,32 @@ root@ubuntu:~# blkid /dev/sda5
 /dev/sda5: UUID="3d5f16ee-5b2f-49c5-8202-212677165736" TYPE="ext4" PARTUUID="25bf4779-05"
 ```
 * Переносим в файл `/etc/fstab` параметры UUID нового диска
+```
+root@ubuntu:/mnt-new/etc# cat fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/sda5 during installation
+UUID=3d5f16ee-5b2f-49c5-8202-212677165736 /               ext4    errors=remount-ro 0       1
+/swapfile                                 none            swap    sw              0       0
+
+```
+* После редактирования:
+```
+root@ubuntu:/mnt-new/etc# cat fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/sda5 during installation
+UUID=ee07073f-3ecb-4f85-acf5-2733cce20dc1 /               ext4    errors=remount-ro 0       1
+/swapfile                                 none            swap    sw              0       0
+
+```
