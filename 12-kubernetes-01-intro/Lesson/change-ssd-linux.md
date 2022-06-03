@@ -160,3 +160,69 @@ UUID=ee07073f-3ecb-4f85-acf5-2733cce20dc1 /               ext4    errors=remount
 /swapfile                                 none            swap    sw              0       0
 
 ```
+### 6. Установка загрузчика в новом Linux
+* Примонтируем папки 
+```
+mount --bind /sys /mnt-new/sys
+```
+```
+mount --bind /proc /mnt-new/proc
+```
+```
+mount --bind /dev /mnt-new/dev
+```
+* Заходим в chroot окружение
+```
+chroot /mnt-new
+```
+* Устанавливаем загрузчик на диск `dev/dsb`
+```
+grub-install /dev/sdb
+```
+```
+root@ubuntu:/# grub-install /dev/sdb
+Выполняется установка для платформы i386-pc.
+Установка завершена. Ошибок нет.
+```
+* Создаем конфигурационный файл для загрузчика. Перед этим шагом надо физически извлечь старый SSD из ПК
+```
+update-grub2
+```
+* Найден Windows10 на старом /dev/sda1
+```
+root@ubuntu:/# update-grub2
+Sourcing file `/etc/default/grub'
+Sourcing file `/etc/default/grub.d/init-select.cfg'
+Генерируется файл настройки grub …
+Найден образ linux: /boot/vmlinuz-5.13.0-44-generic
+Найден образ initrd: /boot/initrd.img-5.13.0-44-generic
+Найден образ linux: /boot/vmlinuz-5.13.0-41-generic
+Найден образ initrd: /boot/initrd.img-5.13.0-41-generic
+Найден образ linux: /boot/vmlinuz-5.11.0-46-generic
+Найден образ initrd: /boot/initrd.img-5.11.0-46-generic
+Found memtest86+ image: /boot/memtest86+.elf
+Found memtest86+ image: /boot/memtest86+.bin
+Найден Windows 10 на /dev/sda1
+Найден Ubuntu 20.04.4 LTS (20.04) на /dev/sda5
+```
+### 7. Перезагрузка
+* Выходим из chroot окружения
+```
+root@ubuntu:/# exit
+exit
+root@ubuntu:~#
+```
+* Размонитрование системных каталогов и нашего раздела /dev/sdb5
+```
+umount /mnt-new/sys
+```
+```
+umount /mnt-new/proc
+```
+```
+umount /mnt-new/dev
+```
+```
+umount /mnt-new
+```
+### 8. Перезагружаем ПК.
