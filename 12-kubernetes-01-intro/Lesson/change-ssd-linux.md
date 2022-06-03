@@ -44,10 +44,7 @@ sr0    11:0    1  1024M  0 rom
 ```
 
 ### 4. Выполняем копирование всех каталогов со старого диска /dev/sda5 (подключенный каталог /mnt) на новый /dev/sdb5 (подключенный каталог /mnt-new)
-* Команда для копирования:
-```
-rsync -aAXv --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*"} /mnt/ /mnt-new/
-```
+
 * Проверяем перед копированием наличие свободного места и правильность монтирования каталогов к дискам
 ```
 root@ubuntu:/# df -h
@@ -55,4 +52,71 @@ root@ubuntu:/# df -h
 /dev/sda5         87G          77G  5,5G           94% /mnt
 /dev/sdb5        110G          61M  104G            1% /mnt-new
 
+```
+* Команда для копирования:
+```
+rsync -aAXv --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*"} /mnt/ /mnt-new/
+```
+* Результаты копирования:
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          19G   86G           18% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          24G   81G           23% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          24G   80G           24% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          28G   77G           27% /mnt-new
+```
+``` 
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          33G   72G           31% /mnt-new
+```
+``` 
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          37G   68G           36% /mnt-new
+```
+``` 
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          42G   63G           41% /mnt-new
+```
+``` 
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          47G   58G           45% /mnt-new
+```
+``` 
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          52G   52G           50% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          57G   48G           55% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          63G   42G           61% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          70G   35G           67% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          73G   32G           71% /mnt-new
+```
+```
+root@ubuntu:/# df -h | grep sdb5
+/dev/sdb5        110G          79G   26G           76% /mnt-new
+
+```
+* Отчет команды копирования 
+```
+sent 82,851,624,644 bytes  received 8,260,168 bytes  96,968,852.91 bytes/sec
+total size is 82,798,818,473  speedup is 1.00
 ```
