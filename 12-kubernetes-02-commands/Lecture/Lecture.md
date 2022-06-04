@@ -110,12 +110,13 @@ PremiumBonus
 * -f — указывается файл с ресурсами для применения;
 * --grace-period — можно задать таймаут для действия.
 
-### 19kubectl cordon / uncordon / drain
+### 19kubectl cordon / uncordon / drain / taint
 Манипуляции с нодами. Исключение ноды из планирования,
 возврат в планировщик и установка режима обслуживания
 Полезные флаги:
 * --ignore-daemosets(drain) — игнорирует поды демонов,
 позволяя им оставаться и работать на ноде.
+* -- taint - добавляет запах, признак кноде, чтобы на нее могли присоединяться конкретные поды, или не присоединяться если у них нет соотв. толеранотности.
 
 ### 20kubectl port-forward      -00:21:17
 Проксирование трафика до выбранного ресурса
@@ -158,6 +159,48 @@ Annotate - это для создания аннотации для ресурс
 - kubernetes dashboard.
 
 ### Практическая часть лекции   -00:29:05
+
+Подготовка соего ПК:
+1. Создана директория для учебных целей `/root/learning-kubernetis`
+2. Склонирован в нее репозиторий от преподавателя: https://github.com/aak74/kubernetes-for-beginners
+3. Запущен PyCharm от root и открыть проект `kubernetes-for-beginners`
+
+#### -00:31:24 - О команде cubectl
+![cubectl-command_01](/12-kubernetes-02-commands/Files/cubectl-command_01.png)
+* Команды слева - относятся к управлению нодами
+* Команды справа - команды для управления, не относятся к управлению нод.
+* Команды  врамочках - для управлению нодами в том числе
+
+![cubeadm-command_01](/12-kubernetes-02-commands/Files/cubeadm-command_01.png)
+
+#### -00:34:20 kubectl get
+
+#### -00:37:25 k9s
+![k9s_01](/12-kubernetes-02-commands/Files/k9s_01.png)
+Выход из него: `:q`
+Редактировать с помощью этой утилиты тоже можно.
+
+#### -00:40:10 kubectl logs
+#### -00:40:50 kubectl delete
+#### -00:41:20 watch 'kubectl pods'
+#### -00:48:15 kubectl describe
+#### -00:49:40 kubectl get -o yaml / json
+#### -00:53:20 kubectl logs -f -c
+#### -00:55:20 watch 'kubectl get pods -l app'
+#### -01:00:10 kubectl taint
+#### -01:05:00 kubectl edit deployment main
+#### -01:07:00 kubectl scale deployment main --replicas=2
+#### -01:09:55 kubectl apply
+#### -01:11:30 kubectl drain
+#### -01:13:00 про taint, tolerante 
+#### -01:14:40 kubectl port-forward
+#### -01:21:30 kubectl get svc
+#### -01:23:30 kubectl config
+#### -01:24:20 kubectl --context=prod get nodes
+#### -01:27:00 kubectl uncordon node01
+#### -01:28:30 kubectl create deployment   -  можно использовать в ДЗ
+
+
 
 ### 25Домашнее задание
 Давайте посмотрим ваше домашнее задание.
