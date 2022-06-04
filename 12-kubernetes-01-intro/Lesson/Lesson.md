@@ -167,6 +167,44 @@ maestro@PC-Ubuntu:~/Рабочий стол$ minikube start --vm-driver=virtualb
 🏄  Готово! kubectl настроен для использования кластера "minikube" и "default" пространства имён по умолчанию
 
 ```
+* 10 Проверка статуса
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube status
+minikube
+type: Control Plane
+host: Stopped
+kubelet: Stopped
+apiserver: Stopped
+kubeconfig: Stopped
+
+```
+* 11 Запуск
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube start
+😄  minikube v1.25.2 на Ubuntu 20.04
+✨  Используется драйвер virtualbox на основе существующего профиля
+👍  Запускается control plane узел minikube в кластере minikube
+🔄  Перезагружается существующий virtualbox VM для "minikube" ...
+🐳  Подготавливается Kubernetes v1.23.3 на Docker 20.10.12 ...
+    ▪ kubelet.housekeeping-interval=5m
+    ▪ Используется образ gcr.io/k8s-minikube/storage-provisioner:v5
+🔎  Компоненты Kubernetes проверяются ...
+🌟  Включенные дополнения: storage-provisioner, default-storageclass
+🏄  Готово! kubectl настроен для использования кластера "minikube" и "default" пространства имён по умолчанию
+```
+* 12 Проверка статуса
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube status
+minikube
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+```
+
+
 
 ## Задача 2: Запуск Hello World
 После установки Minikube требуется его проверить. Для этого подойдет стандартное приложение hello world. А для доступа к нему потребуется ingress.
