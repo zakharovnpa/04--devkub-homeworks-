@@ -52,8 +52,10 @@ root@PC-Ubuntu:/opt/pycharm-community-2022.1/bin# ./pycharm.sh
 3. Устанавливаем локально kubectl [Установка и настройка kubectl](https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/)
 4. Устанавливаем локально на ВМ minikube [Установка Minikube](https://kubernetes.io/ru/docs/tasks/tools/install-minikube/)
 
+**Ответ:**
+
 #### Ход выполнения вопроса №1
-1. Проверка точго, что Linux и процессор поддерживает виртуализацию. Вывод не должен быть пкстым.
+1. Проверка того, что Linux и процессор поддерживает виртуализацию. Вывод не должен быть пкстым.
 ```
 root@PC-Ubuntu:~# grep -E --color 'vmx|svm' /proc/cpuinfo
 flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni monitor cx16 popcnt lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt nodeid_msr cpb hw_pstate vmmcall npt lbrv svm_lock nrip_save pausefilter
@@ -65,6 +67,8 @@ flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
 root@PC-Ubuntu:~# 
 
 ```
+#### Установка minikube
+
 2. Скачиваем по ссылке minikube
 ```
 root@PC-Ubuntu:~# mc
@@ -201,9 +205,23 @@ host: Running
 kubelet: Running
 apiserver: Running
 kubeconfig: Configured
-
 ```
-
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   3d12h
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods --namespace=kube-system
+NAME                               READY   STATUS    RESTARTS      AGE
+coredns-64897985d-wfr44            1/1     Running   1 (18h ago)   3d15h
+etcd-minikube                      1/1     Running   1 (18h ago)   3d15h
+kube-apiserver-minikube            1/1     Running   1 (18h ago)   3d15h
+kube-controller-manager-minikube   1/1     Running   1 (18h ago)   3d15h
+kube-proxy-lqzfd                   1/1     Running   1 (18h ago)   3d15h
+kube-scheduler-minikube            1/1     Running   1 (18h ago)   3d15h
+storage-provisioner                1/1     Running   4 (49m ago)   3d15h
+```
 
 
 ## Задача 2: Запуск Hello World
@@ -212,11 +230,206 @@ kubeconfig: Configured
 - развернуть через Minikube тестовое приложение по [туториалу](https://kubernetes.io/ru/docs/tutorials/hello-minikube/#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%B0-minikube)
 - установить аддоны ingress и dashboard
 
+**Ответ:**
+#### Создание докер-образа для контейнера на основе файлов
+* Dockerfile
+```
+FROM node:6.14.2
+EXPOSE 8080
+COPY server.js .
+CMD [ "node", "server.js" ]
+
+```
+server.js
+```
+var http = require('http');
+
+var handleRequest = function(request, response) {
+  console.log('Получен запрос на URL: ' + request.url);
+  response.writeHead(200);
+  response.end('Hello World!');
+};
+var www = http.createServer(handleRequest);
+www.listen(8080);
+
+```
+* Создание образа
+```
+root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker build .
+Sending build context to Docker daemon  2.111GB
+Step 1/4 : FROM node:6.14.2
+6.14.2: Pulling from library/node
+3d77ce4481b1: Pull complete 
+7d2f32934963: Pull complete 
+0c5cf711b890: Pull complete 
+9593dc852d6b: Pull complete 
+4e3b8a1eb914: Pull complete 
+ddcf13cc1951: Pull complete 
+2e460d114172: Pull complete 
+d94b1226fbf2: Pull complete 
+Digest: sha256:62b9d88be259a344eb0b4e0dd1b12347acfe41c1bb0f84c3980262f8032acc5a
+Status: Downloaded newer image for node:6.14.2
+ ---> 00165cd5d0c0
+Step 2/4 : EXPOSE 8080
+ ---> Running in ffba5dc28dd7
+Removing intermediate container ffba5dc28dd7
+ ---> bb7eaf408861
+Step 3/4 : COPY server.js .
+ ---> dc44ddc3dd2a
+Step 4/4 : CMD [ "node", "server.js" ]
+ ---> Running in c180a54ca83c
+Removing intermediate container c180a54ca83c
+ ---> ce35230a77b3
+Successfully built ce35230a77b3
+
+```
+
+```
+root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker image list
+REPOSITORY                                                          TAG               IMAGE ID       CREATED          SIZE
+node/hellow-world                                                   1.0               ce35230a77b3   44 minutes ago   660MB
+node                                                                6.14.2            00165cd5d0c0   3 years ago      660MB
+```
+```
+root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker run --name=hellow-world -d ce35230a77b3
+d5790a5e17fe6b56ac951eda96d0c9aee5bf364d91dcc1451451703ad7369a1b
+```
+```
+root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker ps
+CONTAINER ID   IMAGE          COMMAND            CREATED         STATUS         PORTS      NAMES
+d5790a5e17fe   ce35230a77b3   "node server.js"   6 seconds ago   Up 5 seconds   8080/tcp   hellow-world
+
+```
+#### Запуск 
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create deployment hello-world --image=node/hellow-world:1.0
+deployment.apps/hello-world created
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployments
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+hello-world   0/1     1            0           10s
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployments
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+hello-world   0/1     1            0           10s
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube dashboard
+🤔  Verifying dashboard health ...
+🚀  Launching proxy ...
+🤔  Verifying proxy health ...
+🎉  Opening http://127.0.0.1:33807/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/ in your default browser...
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                         READY   STATUS             RESTARTS   AGE
+hello-world-9b56d5d7-q2sww   0/1     ImagePullBackOff   0          9m56s
+
+```
+
+#### Установка аддонов ingress и dashboard
+1.  Смортим какие установлены аддоны (листинг сокращен):
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons list
+|-----------------------------|----------|--------------|--------------------------------|
+|         ADDON NAME          | PROFILE  |    STATUS    |           MAINTAINER           |
+|-----------------------------|----------|--------------|--------------------------------|                   |
+| default-storageclass        | minikube | enabled ✅   | kubernetes                     |
+| storage-provisioner         | minikube | enabled ✅   | google                         |              |
+|-----------------------------|----------|--------------|--------------------------------|
+
+```
+
+2. Устанавливаем аддон ingress:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons enable ingress
+    ▪ Используется образ k8s.gcr.io/ingress-nginx/controller:v1.1.1
+    ▪ Используется образ k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+    ▪ Используется образ k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+🔎  Verifying ingress addon...
+🌟  The 'ingress' addon is enabled
+
+```
+3. Устанавливаем аддон dashboard:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons enable dashboard
+    ▪ Используется образ kubernetesui/dashboard:v2.3.1
+    ▪ Используется образ kubernetesui/metrics-scraper:v1.0.7
+💡  Some dashboard features require the metrics-server addon. To enable all features please run:
+
+	minikube addons enable metrics-server	
+
+
+🌟  The 'dashboard' addon is enabled
+```
+
+4. Смортим какие установлены новые аддоны (листинг сокращен):
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons list
+|-----------------------------|----------|--------------|--------------------------------|
+|         ADDON NAME          | PROFILE  |    STATUS    |           MAINTAINER           |
+|-----------------------------|----------|--------------|--------------------------------|
+| dashboard                   | minikube | enabled ✅   | kubernetes                     |
+| default-storageclass        | minikube | enabled ✅   | kubernetes                     |
+| ingress                     | minikube | enabled ✅   | unknown (third-party)          |
+| storage-provisioner         | minikube | enabled ✅   | google                         |
+|-----------------------------|----------|--------------|--------------------------------|
+
+```
+#### Разворачивание через Minikube тестового приложения
+1. 
+
 ## Задача 3: Установить kubectl
 
 Подготовить рабочую машину для управления корпоративным кластером. Установить клиентское приложение kubectl.
 - подключиться к minikube 
 - проверить работу приложения из задания 2, запустив port-forward до кластера
+
+**Ответ:**
+#### 1. Подключаемся к minikube 
+```
+
+```
+    
+
+#### 2.Установка kubectl
+1. Установлен
+
+```
+root@PC-Ubuntu:~# curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 43.5M  100 43.5M    0     0  9296k      0  0:00:04  0:00:04 --:--:-- 9489k
+```
+```
+root@PC-Ubuntu:~# ls -lha | grep kubectl
+-rw-r--r--  1 root    root     44M мая 31 23:10 kubectl
+```
+```
+root@PC-Ubuntu:~# chmod +x kubectl
+```
+```
+root@PC-Ubuntu:~# ls -lha | grep kubectl
+-rwxr-xr-x  1 root    root     44M мая 31 23:10 kubectl
+```
+```
+root@PC-Ubuntu:~# mv kubectl /usr/local/bin/
+```
+```
+root@PC-Ubuntu:~# ls -lha | grep kubectl
+```
+```
+root@PC-Ubuntu:~# ls -lha /usr/local/bin/ | grep kubectl
+-rwxr-xr-x  1 root root  44M мая 31 23:10 kubectl
+
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ whereis kubectl
+kubectl: /usr/local/bin/kubectl
+
+```
 
 ## Задача 4 (*): собрать через ansible (необязательное)
 
