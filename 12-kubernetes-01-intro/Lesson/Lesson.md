@@ -377,7 +377,25 @@ users:
     client-key: /home/maestro/.minikube/profiles/minikube/client.key
 
 ```
-#### Перенос в DockerHub
+* Экспорт переменных для работы  Docker и Minikebe
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube -p minikube docker-env
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.59.100:2376"
+export DOCKER_CERT_PATH="/home/maestro/.minikube/certs"
+export MINIKUBE_ACTIVE_DOCKERD="minikube"
+
+# To point your shell to minikube's docker-daemon, run:
+# eval $(minikube -p minikube docker-env)
+
+```
+* После редактирования .bashrc:
+```
+source .bashrc
+```
+
+
+#### Перенос образа приложения, созданного на основании Dockerfile и Server.js в DockerHub
 ```
 root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker build -t zakharovnpa/k8s-hello-world:05.06.22 .
 Sending build context to Docker daemon  3.121GB
@@ -431,6 +449,14 @@ root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube#
 
 ```
 [Репозиторий для создания образа](https://hub.docker.com/repository/docker/zakharovnpa/k8s-hello-world)
+
+#### Тестирование работы приложения
+1. Запуск создания Deployment
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create deployment k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
+deployment.apps/k8s-hello-world created
+```
+2. 
 
 #### Установка аддонов ingress и dashboard
 1.  Смортим какие установлены аддоны (листинг сокращен):
