@@ -197,162 +197,9 @@ root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker image list
 REPOSITORY                                                          TAG               IMAGE ID       CREATED          SIZE
 zakharovnpa/k8s-hello-world                                         05.06.22          ce35230a77b3   25 hours ago    660MB
 ```
-3. Пушим образ на DockerHub:
-```
-root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker push zakharovnpa/k8s-hello-world:05.06.22
-The push refers to repository [docker.io/zakharovnpa/k8s-hello-world]
-a4c7d3a9dd6f: Pushed 
-aeaa1edefd60: Mounted from library/node 
-6e650662f0e3: Mounted from library/node 
-8c825a971eaf: Mounted from library/node 
-bf769027dbbd: Mounted from library/node 
-f3693db46abb: Mounted from library/node 
-bb6d734b467e: Mounted from library/node 
-5f349fdc9028: Mounted from library/node 
-2c833f307fd8: Mounted from library/node 
-05.06.22: digest: sha256:1ea8575845aa74617f31afd497856fc2b12e6f0fe21c002638e67e02ac089d0a size: 2214
-
-```
-
-#### Запуск 
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create deployment k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
-deployment.apps/k8s-hello-world created
-```
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployments
-NAME              READY   UP-TO-DATE   AVAILABLE   AGE
-k8s-hello-world   1/1     1            1           18h
-```
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get nodes
-NAME       STATUS   ROLES                  AGE   VERSION
-minikube   Ready    control-plane,master   5d    v1.23.3
-```
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
-NAME                               READY   STATUS             RESTARTS         AGE
-k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                22m
-```
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ minikube dashboard
-🤔  Verifying dashboard health ...
-🚀  Launching proxy ...
-🤔  Verifying proxy health ...
-🎉  Opening http://127.0.0.1:36107/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/ in your default browser...
-
-```
-![dashboard_01](/12-kubernetes-01-intro/Files/dashboard_01.png)
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
-NAME                         READY   STATUS             RESTARTS   AGE
-hello-world-9b56d5d7-q2sww   0/1     ImagePullBackOff   0          9m56s
-
-```
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get events
-LAST SEEN   TYPE      REASON              OBJECT                            MESSAGE
-18m         Normal    Scheduled           pod/hello-world-9b56d5d7-q2sww    Successfully assigned default/hello-world-9b56d5d7-q2sww to minikube
-17m         Normal    Pulling             pod/hello-world-9b56d5d7-q2sww    Pulling image "node/hellow-world:1.0"
-17m         Warning   Failed              pod/hello-world-9b56d5d7-q2sww    Failed to pull image "node/hellow-world:1.0": rpc error: code = Unknown desc = Error response from daemon: pull access denied for node/hellow-world, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
-17m         Warning   Failed              pod/hello-world-9b56d5d7-q2sww    Error: ErrImagePull
-3m48s       Normal    BackOff             pod/hello-world-9b56d5d7-q2sww    Back-off pulling image "node/hellow-world:1.0"
-17m         Warning   Failed              pod/hello-world-9b56d5d7-q2sww    Error: ImagePullBackOff
-18m         Normal    SuccessfulCreate    replicaset/hello-world-9b56d5d7   Created pod: hello-world-9b56d5d7-q2sww
-18m         Normal    ScalingReplicaSet   deployment/hello-world            Scaled up replica set hello-world-9b56d5d7 to 1
-
-```
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl config view
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority: /home/maestro/.minikube/ca.crt
-    extensions:
-    - extension:
-        last-update: Fri, 03 Jun 2022 20:41:53 +04
-        provider: minikube.sigs.k8s.io
-        version: v1.25.2
-      name: cluster_info
-    server: https://192.168.59.100:8443
-  name: minikube
-contexts:
-- context:
-    cluster: minikube
-    extensions:
-    - extension:
-        last-update: Fri, 03 Jun 2022 20:41:53 +04
-        provider: minikube.sigs.k8s.io
-        version: v1.25.2
-      name: context_info
-    namespace: default
-    user: minikube
-  name: minikube
-current-context: minikube
-kind: Config
-preferences: {}
-users:
-- name: minikube
-  user:
-    client-certificate: /home/maestro/.minikube/profiles/minikube/client.crt
-    client-key: /home/maestro/.minikube/profiles/minikube/client.key
-
-```
-* Экспорт переменных для работы  Docker и Minikebe
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ minikube -p minikube docker-env
-export DOCKER_TLS_VERIFY="1"
-export DOCKER_HOST="tcp://192.168.59.100:2376"
-export DOCKER_CERT_PATH="/home/maestro/.minikube/certs"
-export MINIKUBE_ACTIVE_DOCKERD="minikube"
-
-# To point your shell to minikube's docker-daemon, run:
-# eval $(minikube -p minikube docker-env)
-
-```
-* После редактирования .bashrc:
-```
-source .bashrc
-```
-
-
 #### Перенос образа приложения, созданного на основании Dockerfile и Server.js в DockerHub
-```
-root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker build -t zakharovnpa/k8s-hello-world:05.06.22 .
-Sending build context to Docker daemon  3.121GB
-Step 1/4 : FROM node:6.14.2
- ---> 00165cd5d0c0
-Step 2/4 : EXPOSE 8080
- ---> Using cache
- ---> bb7eaf408861
-Step 3/4 : COPY server.js .
- ---> Using cache
- ---> dc44ddc3dd2a
-Step 4/4 : CMD [ "node", "server.js" ]
- ---> Using cache
- ---> ce35230a77b3
-Successfully built ce35230a77b3
-Successfully tagged zakharovnpa/k8s-hello-world:05.06.22
-```
-```
-root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker image list
-REPOSITORY                                                          TAG               IMAGE ID       CREATED         SIZE
-node/hellow-world                                                   1.0               ce35230a77b3   25 hours ago    660MB
-zakharovnpa/k8s-hello-world                                         05.06.22          ce35230a77b3   25 hours ago    660MB
-registry                                                            latest            773dbf02e42e   9 days ago      24.1MB
-some_docker_build                                                   latest            b79a8a0840b1   3 weeks ago     427MB
-registry.gitlab.com/zakharovnpa/gitlablesson/python-api             latest            b79a8a0840b1   3 weeks ago     427MB
-registry.gitlab.com/zakharovnpa/gitlablesson                        latest            e87a0e154f99   3 weeks ago     427MB
-registry.gitlab.com/zakharovnpa/gitlablesson/python-api             <none>            e87a0e154f99   3 weeks ago     427MB
-docker                                                              dind              c89d806adeb8   4 weeks ago     236MB
-docker                                                              latest            da88b5cbcdd8   4 weeks ago     219MB
-gitlab/gitlab-runner                                                latest            89944ac4ab2c   4 weeks ago     691MB
-registry.gitlab.com/gitlab-org/gitlab-runner/gitlab-runner-helper   x86_64-f761588f   257667c17e33   4 weeks ago     66.9MB
-centos                                                              7                 eeb6ee3f44bd   8 months ago    204MB
-docker                                                              20.10.5-dind      0a9822c8848d   14 months ago   258MB
-docker                                                              20.10.5           1588477122de   14 months ago   241MB
-node                                                                6.14.2            00165cd5d0c0   3 years ago     660MB
-```
+
+* Пушим образ на DockerHub:
 ```
 root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# docker push zakharovnpa/k8s-hello-world:05.06.22
 The push refers to repository [docker.io/zakharovnpa/k8s-hello-world]
@@ -370,6 +217,88 @@ root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube#
 
 ```
 [Репозиторий для создания образа](https://hub.docker.com/repository/docker/zakharovnpa/k8s-hello-world)
+
+
+#### Запуск деплоймента
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create deployment k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
+deployment.apps/k8s-hello-world created
+```
+* Смотрим информацию о Deployment
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployments
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+k8s-hello-world   1/1     1            1           18h
+```
+* Смотрим информацию о поде
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                               READY   STATUS             RESTARTS         AGE
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                22m
+```
+* Смотрим `kubectl` конфигурацию
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl config view
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/maestro/.minikube/ca.crt
+    extensions:
+    - extension:
+        last-update: Sun, 05 Jun 2022 12:26:01 +04
+        provider: minikube.sigs.k8s.io
+        version: v1.25.2
+      name: cluster_info
+    server: https://192.168.59.100:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    extensions:
+    - extension:
+        last-update: Sun, 05 Jun 2022 12:26:01 +04
+        provider: minikube.sigs.k8s.io
+        version: v1.25.2
+      name: context_info
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/maestro/.minikube/profiles/minikube/client.crt
+    client-key: /home/maestro/.minikube/profiles/minikube/client.key
+
+```
+#### Создание сервиса
+* Создаем сервис
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl expose deployment k8s-hello-world --type=LoadBalancer --port=8080
+service/k8s-hello-world exposed
+```
+* Смотрим сервис
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get services
+NAME              TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+k8s-hello-world   LoadBalancer   10.103.62.88   <pending>     8080:30928/TCP   19s
+kubernetes        ClusterIP      10.96.0.1      <none>        443/TCP          5d15h
+```
+
+#### Запуск Dashboard (на странице показаны также неудачные попытки из-за локального расположения образа приложения)
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube dashboard
+🤔  Verifying dashboard health ...
+🚀  Launching proxy ...
+🤔  Verifying proxy health ...
+🎉  Opening http://127.0.0.1:36107/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/ in your default browser...
+
+```
+![dashboard_01](/12-kubernetes-01-intro/Files/dashboard_01.png)
+
+
 
 #### Тестирование работы приложения
 1. Запуск создания Deployment
@@ -415,7 +344,7 @@ maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons enable dashboard
 🌟  The 'dashboard' addon is enabled
 ```
 
-4. Смортим какие установлены новые аддоны (листинг сокращен):
+4. Смотрим какие установлены новые аддоны (листинг сокращен):
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons list
 |-----------------------------|----------|--------------|--------------------------------|
@@ -428,10 +357,6 @@ maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons list
 |-----------------------------|----------|--------------|--------------------------------|
 
 ```
-#### Разворачивание через Minikube тестового приложения
-1. 
-
-
 
 
 ## Задача 3: Установить kubectl
@@ -440,30 +365,32 @@ maestro@PC-Ubuntu:~/Рабочий стол$ minikube addons list
 - подключиться к minikube 
 - проверить работу приложения из задания 2, запустив port-forward до кластера
 
+**Ответ:**
 
+#### Установка kubectl
 
-4.  Установка Cubectl
+1.  Установка kubectl была выполнена до выполнения Задачи №1.
 ```
 root@PC-Ubuntu:~# curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100 43.5M  100 43.5M    0     0  9296k      0  0:00:04  0:00:04 --:--:-- 9489k
-root@PC-Ubuntu:~# 
-root@PC-Ubuntu:~# ls -lha | grep kubectl
--rw-r--r--  1 root    root     44M мая 31 23:10 kubectl
-root@PC-Ubuntu:~# 
+```
+* Делаем файл исполняемым
+```
 root@PC-Ubuntu:~# chmod +x kubectl
-root@PC-Ubuntu:~# 
-root@PC-Ubuntu:~# ls -lha | grep kubectl
--rwxr-xr-x  1 root    root     44M мая 31 23:10 kubectl
-root@PC-Ubuntu:~# 
+```
+* Переносим в каталог `/usr/local/bin/`
+```
 root@PC-Ubuntu:~# mv kubectl /usr/local/bin/
-root@PC-Ubuntu:~# 
-root@PC-Ubuntu:~# ls -lha | grep kubectl
-root@PC-Ubuntu:~# 
+```
+```
 root@PC-Ubuntu:~# ls -lha /usr/local/bin/ | grep kubectl
 -rwxr-xr-x  1 root root  44M мая 31 23:10 kubectl
-
+```
+```
+root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# kubectl version
+Kustomize Version: v4.5.4
 ```
 
 ## Задача 4 (*): собрать через ansible (необязательное)
