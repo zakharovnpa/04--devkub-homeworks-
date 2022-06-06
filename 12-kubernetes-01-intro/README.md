@@ -287,7 +287,7 @@ k8s-hello-world   LoadBalancer   10.103.62.88   <pending>     8080:30928/TCP   1
 kubernetes        ClusterIP      10.96.0.1      <none>        443/TCP          5d15h
 ```
 
-#### Запуск Dashboard (на странице показаны также неудачные попытки из-за локального расположения образа приложения)
+#### Запуск Dashboard
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ minikube dashboard
 🤔  Verifying dashboard health ...
