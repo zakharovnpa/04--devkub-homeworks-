@@ -392,6 +392,28 @@ maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get po -o wide
 NAME                               READY   STATUS             RESTARTS          AGE   IP            NODE       NOMINATED NODE   READINESS GATES
 k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                 30h   172.17.0.11   minikube   <none>           <none>
 ```
+* Включаем сервис
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl expose deployment k8s-hello-world --type=LoadBalancer --port=8080
+service/k8s-hello-world exposed
+```
+*
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube service list
+|----------------------|------------------------------------|--------------|-----------------------------|
+|      NAMESPACE       |                NAME                | TARGET PORT  |             URL             |
+|----------------------|------------------------------------|--------------|-----------------------------|
+| default              | k8s-hello-world                    |         8080 | http://192.168.59.100:32429 |
+|----------------------|------------------------------------|--------------|-----------------------------|
+
+```
+
+* Команда `minikube service k8s-hello-world` не дает никакого вывода:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube service k8s-hello-world
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+
+```
 
 * Запускаем port-forwarding с порта 8080 на порт 8080. Работает до тех пор, пока не сделаем Ctrl-C
 ```
