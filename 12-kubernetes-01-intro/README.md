@@ -113,11 +113,13 @@ kubelet: Running
 apiserver: Running
 kubeconfig: Configured
 ```
+*Сервисы
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get svc
 NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   3d12h
 ```
+* Поды
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods --namespace=kube-system
 NAME                               READY   STATUS    RESTARTS      AGE
@@ -299,15 +301,6 @@ maestro@PC-Ubuntu:~/Рабочий стол$ minikube dashboard
 ![dashboard_01](/12-kubernetes-01-intro/Files/dashboard_01.png)
 
 
-
-#### Тестирование работы приложения
-1. Запуск создания Deployment
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create deployment k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
-deployment.apps/k8s-hello-world created
-```
-2. 
-
 #### Установка аддонов ingress и dashboard
 1.  Смортим какие установлены аддоны (листинг сокращен):
 ```
@@ -392,7 +385,14 @@ root@PC-Ubuntu:~# ls -lha /usr/local/bin/ | grep kubectl
 root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# kubectl version
 Kustomize Version: v4.5.4
 ```
-#### Проверка работы приложения из задания 2, запустив port-forward до кластера
+#### Подключаемся к minikube и проверяем работу приложения из задания 2, запустив port-forward до кластера
+* Находим наш под
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get po -o wide
+NAME                               READY   STATUS             RESTARTS          AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                 30h   172.17.0.11   minikube   <none>           <none>
+```
+
 * Запускаем port-forwarding с порта 8080 на порт 8080
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ kubectl port-forward k8s-hello-world-6969845fcf-5v7xk 8080:8080
@@ -406,6 +406,7 @@ root@PC-Ubuntu:~# curl http://127.0.0.1:8080
 Hello World!
 ```
 * В браузере ответ от сервиса:
+
 ![curl_hello-world_01](/12-kubernetes-01-intro/Files/curl_hello-world_01.png)
 
 
