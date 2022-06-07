@@ -560,6 +560,53 @@ kubectl: /usr/local/bin/kubectl
 
 ```
 
+1.  Установка kubectl была выполнена до выполнения Задачи №1.
+```
+root@PC-Ubuntu:~# curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 43.5M  100 43.5M    0     0  9296k      0  0:00:04  0:00:04 --:--:-- 9489k
+```
+* Делаем файл исполняемым
+```
+root@PC-Ubuntu:~# chmod +x kubectl
+```
+* Переносим в каталог `/usr/local/bin/`
+```
+root@PC-Ubuntu:~# mv kubectl /usr/local/bin/
+```
+```
+root@PC-Ubuntu:~# ls -lha /usr/local/bin/ | grep kubectl
+-rwxr-xr-x  1 root root  44M мая 31 23:10 kubectl
+```
+```
+root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# kubectl version
+Kustomize Version: v4.5.4
+```
+#### Подключаемся к minikube и проверяем работу приложения из задания 2, запустив port-forward до кластера
+* Находим наш под
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get po -o wide
+NAME                               READY   STATUS             RESTARTS          AGE   IP            NODE       NOMINATED NODE   READINESS GATES
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                 30h   172.17.0.11   minikube   <none>           <none>
+```
+
+* Запускаем port-forwarding с порта 8080 на порт 8080. Работает до тех пор, пока не сделаем Ctrl-C
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl port-forward k8s-hello-world-6969845fcf-5v7xk 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+Forwarding from [::1]:8080 -> 8080
+
+```
+* В другом окне терминала запускае curl и получаем ответ от сервиса:
+```
+root@PC-Ubuntu:~# curl http://127.0.0.1:8080
+Hello World!
+```
+* В браузере ответ от сервиса:
+
+![curl_hello-world_01](/12-kubernetes-01-intro/Files/curl_hello-world_01.png)
+
 ## Задача 4 (*): собрать через ansible (необязательное)
 
 Профессионалы не делают одну и ту же задачу два раза. Давайте закрепим полученные навыки, автоматизировав выполнение заданий  ansible-скриптами. При выполнении задания обратите внимание на доступные модули для k8s под ansible.
