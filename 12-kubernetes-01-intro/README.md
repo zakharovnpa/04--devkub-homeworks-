@@ -393,12 +393,15 @@ NAME                               READY   STATUS             RESTARTS          
 k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                 30h   172.17.0.11   minikube   <none>           <none>
 ```
 
-* Запускаем port-forwarding с порта 8080 на порт 8080
+* Запускаем port-forwarding с порта 8080 на порт 8080. Работает до тех пор, пока не сделаем Ctrl-C
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ kubectl port-forward k8s-hello-world-6969845fcf-5v7xk 8080:8080
 Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
-
+Handling connection for 8080
+Handling connection for 8080
+Handling connection for 8080
+Handling connection for 8080
 ```
 * В другом окне терминала запускае curl и получаем ответ от сервиса:
 ```
