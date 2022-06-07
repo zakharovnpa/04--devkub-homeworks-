@@ -180,6 +180,7 @@ Annotate - это для создания аннотации для ресурс
 Выход из него: `:q`
 Редактировать с помощью этой утилиты тоже можно.
 
+#### -00:39:20 kubectl get pods -l app=event-processing
 #### -00:40:10 kubectl logs
 #### -00:40:50 kubectl delete
 #### -00:41:20 watch 'kubectl pods'
