@@ -282,8 +282,8 @@ service/k8s-hello-world exposed
 * Смотрим сервис
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get services
-NAME              TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
-k8s-hello-world   LoadBalancer   10.103.62.88   <pending>     8080:30928/TCP   19s
+NAME              TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+k8s-hello-world   LoadBalancer   10.100.178.38   <pending>     8080:32429/TCP   3m40s
 kubernetes        ClusterIP      10.96.0.1      <none>        443/TCP          5d15h
 ```
 
@@ -392,6 +392,22 @@ root@PC-Ubuntu:~# ls -lha /usr/local/bin/ | grep kubectl
 root@PC-Ubuntu:/home/maestro/.minikube/machines/minikube# kubectl version
 Kustomize Version: v4.5.4
 ```
+#### Проверка работы приложения из задания 2, запустив port-forward до кластера
+* Запускаем port-forwarding с порта 8080 на порт 8080
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl port-forward k8s-hello-world-6969845fcf-5v7xk 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+Forwarding from [::1]:8080 -> 8080
+
+```
+* В другом окне терминала запускае curl и получаем ответ от сервиса:
+```
+root@PC-Ubuntu:~# curl http://127.0.0.1:8080
+Hello World!
+```
+* В браузере ответ от сервиса:
+![curl_hello-world_01](/12-kubernetes-01-intro/Files/curl_hello-world_01.png)
+
 
 ## Задача 4 (*): собрать через ansible (необязательное)
 
