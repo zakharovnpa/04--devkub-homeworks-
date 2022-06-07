@@ -2,6 +2,14 @@
 
 Вы DevOps инженер в крупной компании с большим парком сервисов. Ваша задача — разворачивать эти продукты в корпоративном кластере. 
 
+* Ссылки для выполнения ДЗ:
+![Привет, Minikube](https://kubernetes.io/ru/docs/tutorials/hello-minikube/#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D1%80%D0%B0-minikube)
+![docker build](https://docs.docker.com/engine/reference/commandline/build/)
+![Установка Minikube](https://kubernetes.io/ru/docs/tasks/tools/install-minikube/)
+![Установка Kubernetes с помощью Minikube](https://kubernetes.io/ru/docs/setup/learning-environment/minikube/)
+![Установка и настройка kubectl](https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/)
+
+
 ## Задача 1: Установить Minikube
 
 Для экспериментов и валидации ваших решений вам нужно подготовить тестовую среду для работы с Kubernetes. Оптимальное решение — развернуть на рабочей машине Minikube.
