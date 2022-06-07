@@ -434,6 +434,14 @@ Hello World!
 
 ![curl_hello-world_01](/12-kubernetes-01-intro/Files/curl_hello-world_01.png)
 
+* Логи пода:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl logs -f k8s-hello-world-6969845fcf-5v7xk
+Получен запрос на URL: /
+Получен запрос на URL: /
+Получен запрос на URL: /favicon.ico
+Получен запрос на URL: /
+```
 
 ## Задача 4 (*): собрать через ansible (необязательное)
 
