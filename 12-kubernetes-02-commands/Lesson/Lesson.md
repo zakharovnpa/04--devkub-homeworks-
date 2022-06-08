@@ -294,13 +294,21 @@ User "jean" set.
 kubectl config set-context jean-context \
 --cluster=kubernetes --user=jean
 ```
+* Результат:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl config set-context jean-context \
+> --cluster=kubernetes --user=jean
+Context "jean-context" created.
+
+```
+
 8. Отредактируйте файл конфигурации пользователя. В нем содержится информация, необходимая для аутентификации в кластере. Можно воспользоваться файлом конфигурации кластера, который обычно лежит в /etc/kubernetes: переменные certificate-authority-data и server должны быть такими же, как в упомянутом файле:
 ```
 apiVersion: v1
 clusters:
 - cluster:
- certificate-authority-data: {Сюда вставьте данные}
- server: {Сюда вставьте данные}
+  certificate-authority-data: {Сюда вставьте данные}
+  server: {Сюда вставьте данные}
 name: kubernetes
 contexts:
 - context:
@@ -316,17 +324,79 @@ user:
  client-certificate: /home/jean/.certs/jean.cert
  client-key: /home/jean/.certs/jean.key
 ```
+* Наш искомый файл лежит здесь: `/home/maestro/.kub/config`
+```
+root@PC-Ubuntu:/home/jean/.certs# cat /home/maestro/.kube/config 
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/maestro/.minikube/ca.crt
+    extensions:
+    - extension:
+        last-update: Sun, 05 Jun 2022 12:26:01 +04
+        provider: minikube.sigs.k8s.io
+        version: v1.25.2
+      name: cluster_info
+    server: https://192.168.59.100:8443
+  name: minikube
+contexts:
+- context:
+    cluster: kubernetes
+    user: jean
+  name: jean-context
+- context:
+    cluster: minikube
+    extensions:
+    - extension:
+        last-update: Sun, 05 Jun 2022 12:26:01 +04
+        provider: minikube.sigs.k8s.io
+        version: v1.25.2
+      name: context_info
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: jean
+  user:
+    client-certificate: /home/jean/.certs/jean.crt
+    client-key: /home/jean/.certs/jean.key
+- name: minikube
+  user:
+    client-certificate: /home/maestro/.minikube/profiles/minikube/client.crt
+    client-key: /home/maestro/.minikube/profiles/minikube/client.key
+```
+
+
 
 9. Теперь нужно скопировать приведенный выше конфиг в каталог .kube:
 ```
 mkdir .kube && vi .kube/config
 ```
+Шаг пропущен
 
 10. Осталось сделать пользователя владельцем всех созданных файлов и каталогов:
 ```
 chown -R jean: /home/jean/
 ```
+* Результат:
+```
+root@PC-Ubuntu:/home/jean# chown -R jean: /home/jean/
+root@PC-Ubuntu:/home/jean# 
+root@PC-Ubuntu:/home/jean# ls -lha
+итого 28K
+drwxr-xr-x 3 jean jean 4,0K июн  8 21:43 .
+drwxr-xr-x 5 root root 4,0K июн  8 20:45 ..
+-rw-r--r-- 1 jean jean  220 фев 25  2020 .bash_logout
+-rw-r--r-- 1 jean jean 3,7K фев 25  2020 .bashrc
+drwxr-xr-x 2 jean jean 4,0K июн  8 21:06 .certs
+-rw-r--r-- 1 jean jean  883 июн  8 20:53 jean.csr
+-rw-r--r-- 1 jean jean  807 фев 25  2020 .profile
+```
 Пользователь jean успешно создан.
+
 
 #### Теперь у нас есть пользователи, и можно переходить к созданию двух пространств имен:
 
@@ -370,7 +440,9 @@ Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resou
 
 3. Создание Role и ClusterRole
 
-> Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. Вот пример YAML-файла:
+> Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. 
+
+* Вот пример YAML-файла:
 ```
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -381,7 +453,9 @@ rules:
   - apiGroups: [ apps ]
     resources: [ deployments ]
     verbs: [ get, list ]
----------------------------------
+```
+* Вот пример другого YAML-файла:
+```
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -399,15 +473,17 @@ kubectl create -f /path/to/your/yaml/file
 #### Привязка Role или ClusterRole к пользователям
 
 1. Теперь привяжем ClusterRole по умолчанию (edit и view) к нашим пользователям следующим образом:
-```
+
 - jean:
   - edit — в пространстве имен my-project-dev;
   - view — в пространстве имен my-project-prod;
 - sarah:
   - edit — в пространстве имен my-project-prod.
-```
 
-2. RoleBinding'и нужно задавать по пространствам имен, а не по пользователям. Другими словами, для авторизации jean мы создадим два RoleBinding'а. Пример YAML-файла, определяющего RoleBinding'и для jean:
+
+2. RoleBinding'и нужно задавать по пространствам имен, а не по пользователям. Другими словами, для авторизации jean мы создадим два RoleBinding'а. 
+
+* Пример YAML-файла, определяющего RoleBinding'и для jean:
 ```
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -422,7 +498,9 @@ roleRef:
   kind: ClusterRole
   name: edit
   apiGroup: rbac.authorization.k8s.io
----------------------------------
+```
+
+```
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -438,7 +516,9 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ```
 
-3. Мы разрешаем jean просматривать (view) my-project-prod и редактировать (edit) my-project-dev. То же самое необходимо сделать с авторизациями для sarah. Для их активации выполните команду:
+3. Мы разрешаем jean просматривать (view) my-project-prod и редактировать (edit) my-project-dev. То же самое необходимо сделать с авторизациями для sarah. 
+
+* Для их активации выполните команду:
 ```
 kubectl apply -f /path/to/your/yaml/file
 ```
