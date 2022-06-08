@@ -60,6 +60,253 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14
 
 **Ответ:**
 
+#### API-объекты RBAC
+
+Управление доступом на основе ролей (RBAC) — это метод регулирования доступа к компьютерам и сетевым ресурсам, опирающийся на роли отдельных пользователей в компании. RBAC можно использовать со всеми ресурсами Kubernetes, которые поддерживают CRUD (Create, Read, Update, Delete). Примеры таких ресурсов:
+- пространства имен;
+- Pod'ы;
+- Deployment'ы;
+- постоянные тома (PersistentVolumes);
+- ConfigMap'ы.
+
+#### А вот примеры возможных операций с ними:
+
+- create (создание);
+- get (получение);
+- delete (удаление);
+- list (просмотр списка);
+- update (обновление).
+
+##### Для управления RBAC в Kubernetes, нам необходимо объявить:
+- Role и ClusterRole. Это просто наборы правил, представляющие набор разрешений. Role может использоваться только для предоставления доступа к ресурсам внутри пространств имен. ClusterRole может предоставлять те же разрешения, что и Role, а также давать доступ к ресурсам, доступных в пределах всего кластера, и так называемым нересурсным endpoint'ам (вроде /healthz — прим. перев.).
+- Subjects. Subject (субъект) — это сущность, которая будет выполнять операции в кластере. Ей могут являться пользователи, сервисы или даже группы.
+- RoleBinding и ClusterRoleBinding. Как следует из названия, это просто привязка субъекта к Role или ClusterRole.
+
+
+#### В Kubernetes имеются следующие роли по умолчанию:
+
+- view: доступ только для чтения, исключает секреты;
+- edit: перечисленное выше + возможность редактировать большинство ресурсов, исключает роли и привязки ролей;
+- admin: перечисленное выше + возможность управлять ролями и привязками ролей на уровне пространств имен;
+- cluster-admin: все возможные привилегии.
+
+#### Примечание: нашему пользователю необходимо выдать разрешения на:
+- чтение конфигурации подов в app-namespace
+- чтение логов подов в app-namespace
+Следовательно необходимо выдать роль `view`
+
+1. Создадим пространство имен `my-project-dev`
+2. Создадим пользователя jean
+
+#### Создание и аутентификация пользователей с помощью клиентских сертификатов X.509
+
+Как правило, имеется два типа пользователей: учетные записи служб (service accounts), управляемые Kubernetes, и обычные пользователи. Мы сфокусируемся на последних. Вот как они описываются в официальной документации:
+
+> Предполагается, что обычными пользователями управляет внешняя, независимая служба. В ее роли может выступать администратор, распределяющий закрытые ключи, хранилище пользователей вроде Keystone или Google Accounts, или даже файл со списком имен пользователей и паролей. В связи с этим в Kubernetes нет объектов, представляющих обычных пользователей. Обычных пользователей нельзя добавить в кластер через вызов API.
+
+Существует несколько способов управления обычными пользователями:
+
+- Базовая аутентификация (basic auth):
+  - передача конфигурации API-серверу со следующим (или похожим) содержимым: password, username, uid, group;
+- Клиентский сертификат X.509:
+  - создание секретного ключа пользователя и запроса на подпись сертификата;
+  - заверение его в центре сертификации (Kubernetes CA) для получения сертификата пользователя;
+- Bearer-токены (JSON Web Tokens, JWT):
+  - OpenID Connect;
+  - слой аутентификации поверх OAuth 2.0;
+  - веб-хуки (webhooks).
+
+Мы будем использовать сертификаты X.509 и OpenSSL из-за их простоты. 
+Создание пользователей проходит в несколько этапов — мы пройдем их все. Операции следует выполнять под учеткой пользователя с правами администратора кластера (cluster-admin). Вот все шаги по созданию пользователя (на примере jean):
+
+* Создайте пользователя на мастере, а затем перейдите в его домашнюю директорию для выполнения остальных шагов:
+```
+useradd jean && cd /home/jean
+```
+* Создайте закрытый ключ:
+```
+openssl genrsa -out jean.key 2048
+```
+* Создайте запрос на подпись сертификата (certificate signing request, CSR). CN — имя пользователя, O — группа. Можно устанавливать разрешения по группам. Это упростит работу, если, например, у вас много пользователей с одинаковыми полномочиями:
+```
+# Без группы
+openssl req -new -key jean.key \
+-out jean.csr \
+-subj "/CN=jean"
+
+# С группой под названием $group
+openssl req -new -key jean.key \
+-out jean.csr \
+-subj "/CN=jean/O=$group"
+
+# Если пользователь входит в несколько групп
+openssl req -new -key jean.key \
+-out jean.csr \
+-subj "/CN=jean/O=$group1/O=$group2/O=$group3"
+```
+
+### Выполнение задания:
+
+Выполняется по статье [Пользователи и авторизация RBAC в Kubernetes](https://habr.com/ru/company/flant/blog/470503/)
+
+#### Создание пользователей
+1. Создайте пользователя на мастере, а затем перейдите в его домашнюю директорию для выполнения остальных шагов:
+```
+useradd jean && cd /home/jean
+```
+
+2. Создайте закрытый ключ:
+```
+openssl genrsa -out jean.key 2048
+```
+3. Создайте запрос на подпись сертификата (certificate signing request, CSR). CN — имя пользователя, O — группа. Можно устанавливать разрешения по группам. Это упростит работу, если, например, у вас много пользователей с одинаковыми полномочиями:
+```
+# Без группы
+openssl req -new -key jean.key \
+-out jean.csr \
+-subj "/CN=jean"
+
+# С группой под названием $group
+openssl req -new -key jean.key \
+-out jean.csr \
+-subj "/CN=jean/O=$group"
+
+# Если пользователь входит в несколько групп
+openssl req -new -key jean.key \
+-out jean.csr \
+-subj "/CN=jean/O=$group1/O=$group2/O=$group3"
+```
+4. Подпишите CSR в Kubernetes CA. Мы должны использовать сертификат CA и ключ, которые обычно находятся в /etc/kubernetes/pki. Сертификат будет действителен в течение 500 дней:
+```
+openssl x509 -req -in jean.csr \
+-CA /etc/kubernetes/pki/ca.crt \
+-CAkey /etc/kubernetes/pki/ca.key \
+-CAcreateserial \
+-out jean.crt -days 500
+```
+
+5. Создайте каталог .certs. В нем мы будем хранить открытый и закрытый ключи пользователя:
+```
+mkdir .certs && mv jean.crt jean.key .certs
+```
+
+6. Создайте пользователя внутри Kubernetes:
+```
+kubectl config set-credentials jean \
+--client-certificate=/home/jean/.certs/jean.crt \
+--client-key=/home/jean/.certs/jean.key
+```
+7. Задайте контекст для пользователя:
+```
+kubectl config set-context jean-context \
+--cluster=kubernetes --user=jean
+```
+8. Отредактируйте файл конфигурации пользователя. В нем содержится информация, необходимая для аутентификации в кластере. Можно воспользоваться файлом конфигурации кластера, который обычно лежит в /etc/kubernetes: переменные certificate-authority-data и server должны быть такими же, как в упомянутом файле:
+```
+apiVersion: v1
+clusters:
+- cluster:
+ certificate-authority-data: {Сюда вставьте данные}
+ server: {Сюда вставьте данные}
+name: kubernetes
+contexts:
+- context:
+ cluster: kubernetes
+ user: jean
+name: jean-context
+current-context: jean-context
+kind: Config
+preferences: {}
+users:
+- name: jean
+user:
+ client-certificate: /home/jean/.certs/jean.cert
+ client-key: /home/jean/.certs/jean.key
+```
+
+9. Теперь нужно скопировать приведенный выше конфиг в каталог .kube:
+```
+mkdir .kube && vi .kube/config
+```
+
+10. Осталось сделать пользователя владельцем всех созданных файлов и каталогов:
+```
+chown -R jean: /home/jean/
+```
+Пользователь jean успешно создан.
+
+#### Теперь у нас есть пользователи, и можно переходить к созданию двух пространств имен:
+
+1. Создаем неймспейс
+```
+kubectl create namespace my-project-dev
+kubectl create namespace my-project-prod
+```
+
+2. Поскольку мы пока не определили авторизацию пользователей, у них не должно быть доступа к ресурсам кластера:
+```
+User: Jean
+
+kubectl get nodes
+Error from server (Forbidden): nodes is forbidden: User "jean" cannot list resource "nodes" in API group "" at the cluster scope
+
+kubectl get pods -n default
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+
+kubectl get pods -n my-project-prod
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "my-project-prod"
+
+kubectl get pods -n my-project-dev
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
+```
+```
+User: Sarah
+
+kubectl get nodes
+Error from server (Forbidden): nodes is forbidden: User "sarah" cannot list resource "nodes" in API group "" at the cluster scope
+
+kubectl get pods -n default
+Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "default"
+
+kubectl get pods -n my-project-prod
+Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-prod"
+
+kubectl get pods -n my-project-dev
+Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
+```
+
+3. Создание Role и ClusterRole
+
+> Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. Вот пример YAML-файла:
+```
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: list-deployments
+  namespace: my-project-dev
+rules:
+  - apiGroups: [ apps ]
+    resources: [ deployments ]
+    verbs: [ get, list ]
+---------------------------------
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: list-deployments
+rules:
+  - apiGroups: [ apps ]
+    resources: [ deployments ]
+    verbs: [ get, list ]
+```
+4. Чтобы их создать, выполните команду:
+```
+kubectl create -f /path/to/your/yaml/file
+```
+
+5. 
+
+
+
 
 
 ## Задание 3: Изменение количества реплик 
