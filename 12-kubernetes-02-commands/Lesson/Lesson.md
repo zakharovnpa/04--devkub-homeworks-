@@ -62,7 +62,9 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14
 
 #### API-объекты RBAC
 
-Управление доступом на основе ролей (RBAC) — это метод регулирования доступа к компьютерам и сетевым ресурсам, опирающийся на роли отдельных пользователей в компании. RBAC можно использовать со всеми ресурсами Kubernetes, которые поддерживают CRUD (Create, Read, Update, Delete). Примеры таких ресурсов:
+Управление доступом на основе ролей (RBAC) — это метод регулирования доступа к компьютерам и сетевым ресурсам, опирающийся на роли отдельных пользователей в компании. 
+
+RBAC можно использовать со всеми ресурсами Kubernetes, которые поддерживают CRUD (Create, Read, Update, Delete). Примеры таких ресурсов:
 - пространства имен;
 - Pod'ы;
 - Deployment'ы;
@@ -78,7 +80,9 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14
 - update (обновление).
 
 ##### Для управления RBAC в Kubernetes, нам необходимо объявить:
-- Role и ClusterRole. Это просто наборы правил, представляющие набор разрешений. Role может использоваться только для предоставления доступа к ресурсам внутри пространств имен. ClusterRole может предоставлять те же разрешения, что и Role, а также давать доступ к ресурсам, доступных в пределах всего кластера, и так называемым нересурсным endpoint'ам (вроде /healthz — прим. перев.).
+- Role и ClusterRole. Это просто наборы правил, представляющие набор разрешений. 
+- Role может использоваться только для предоставления доступа к ресурсам внутри пространств имен. 
+- ClusterRole может предоставлять те же разрешения, что и Role, а также давать доступ к ресурсам, доступных в пределах всего кластера, и так называемым нересурсным endpoint'ам (вроде /healthz — прим. перев.).
 - Subjects. Subject (субъект) — это сущность, которая будет выполнять операции в кластере. Ей могут являться пользователи, сервисы или даже группы.
 - RoleBinding и ClusterRoleBinding. Как следует из названия, это просто привязка субъекта к Role или ClusterRole.
 
@@ -154,11 +158,45 @@ openssl req -new -key jean.key \
 ```
 useradd jean && cd /home/jean
 ```
+* Создаем пользователя с домашним каталогом
+```
+root@PC-Ubuntu:/home# sudo useradd -m jean
+root@PC-Ubuntu:/home# 
+root@PC-Ubuntu:/home# ls -lha
+итого 20K
+drwxr-xr-x  5 root          root          4,0K июн  8 20:45 .
+drwxr-xr-x 20 root          root          4,0K июн  4 09:13 ..
+drwxr-xr-x  2 gitlab-runner gitlab-runner 4,0K мая 10 12:53 gitlab-runner
+drwxr-xr-x  2 jean          jean          4,0K июн  8 20:45 jean
+drwxr-xr-x 34 maestro       maestro       4,0K июн  8 20:37 maestro
 
+```
+* Переходим в домашний каталог
+```
+root@PC-Ubuntu:/home# cd jean/
+root@PC-Ubuntu:/home/jean# pwd
+/home/jean
+
+```
 2. Создайте закрытый ключ:
 ```
 openssl genrsa -out jean.key 2048
 ```
+```
+root@PC-Ubuntu:/home/jean# openssl genrsa -out jean.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+....................+++++
+.+++++
+e is 65537 (0x010001)
+```
+* Результат:
+```
+root@PC-Ubuntu:/home/jean# ls -lha
+-rw------- 1 root root 1,7K июн  8 20:51 jean.key
+
+```
+
+
 3. Создайте запрос на подпись сертификата (certificate signing request, CSR). CN — имя пользователя, O — группа. Можно устанавливать разрешения по группам. Это упростит работу, если, например, у вас много пользователей с одинаковыми полномочиями:
 ```
 # Без группы
@@ -176,6 +214,12 @@ openssl req -new -key jean.key \
 -out jean.csr \
 -subj "/CN=jean/O=$group1/O=$group2/O=$group3"
 ```
+* Результат:
+```
+root@PC-Ubuntu:/home/jean# ls -lha
+-rw-r--r-- 1 root root  883 июн  8 20:53 jean.csr
+-rw------- 1 root root 1,7K июн  8 20:51 jean.key
+```
 4. Подпишите CSR в Kubernetes CA. Мы должны использовать сертификат CA и ключ, которые обычно находятся в /etc/kubernetes/pki. Сертификат будет действителен в течение 500 дней:
 ```
 openssl x509 -req -in jean.csr \
@@ -184,10 +228,50 @@ openssl x509 -req -in jean.csr \
 -CAcreateserial \
 -out jean.crt -days 500
 ```
+* Результат:
+```
+root@PC-Ubuntu:/home/jean# openssl x509 -req -in jean.csr \
+> -CA /etc/kubernetes/pki/ca.crt \
+> -CAkey /etc/kubernetes/pki/ca.key \
+> -CAcreateserial \
+> -out jean.crt -days 500
+Signature ok
+subject=CN = jean
+Can't open /etc/kubernetes/pki/ca.crt for reading, No such file or directory
+139956666627392:error:02001002:system library:fopen:No such file or directory:../crypto/bio/bss_file.c:69:fopen('/etc/kubernetes/pki/ca.crt','r')
+139956666627392:error:2006D080:BIO routines:BIO_new_file:no such file:../crypto/bio/bss_file.c:76:
+unable to load certificate
+```
+* Изменили директории с файлами ca.crt, ca.key 
+```
+root@PC-Ubuntu:/home/jean# openssl x509 -req -in jean.csr -CA /home/maestro/.minikube/ca.crt -CAkey /home/maestro/.minikube/ca.key -CAcreateserial -out jean.crt -days 500
+Signature ok
+subject=CN = jean
+Getting CA Private Key
+```
+* Результат
+```
+root@PC-Ubuntu:/home/jean# ls -lha
+-rw-r--r-- 1 root root  985 июн  8 21:03 jean.crt
+-rw-r--r-- 1 root root  883 июн  8 20:53 jean.csr
+-rw------- 1 root root 1,7K июн  8 20:51 jean.key
+```
+
 
 5. Создайте каталог .certs. В нем мы будем хранить открытый и закрытый ключи пользователя:
 ```
 mkdir .certs && mv jean.crt jean.key .certs
+```
+```
+root@PC-Ubuntu:/home/jean# cd .certs/
+root@PC-Ubuntu:/home/jean/.certs# 
+root@PC-Ubuntu:/home/jean/.certs# ls -lha
+итого 16K
+drwxr-xr-x 2 root root 4,0K июн  8 21:06 .
+drwxr-xr-x 3 jean jean 4,0K июн  8 21:06 ..
+-rw-r--r-- 1 root root  985 июн  8 21:03 jean.crt
+-rw------- 1 root root 1,7K июн  8 20:51 jean.key
+
 ```
 
 6. Создайте пользователя внутри Kubernetes:
@@ -196,6 +280,15 @@ kubectl config set-credentials jean \
 --client-certificate=/home/jean/.certs/jean.crt \
 --client-key=/home/jean/.certs/jean.key
 ```
+* Результат:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl config set-credentials jean \
+> --client-certificate=/home/jean/.certs/jean.crt \
+> --client-key=/home/jean/.certs/jean.key
+User "jean" set.
+
+```
+
 7. Задайте контекст для пользователя:
 ```
 kubectl config set-context jean-context \
