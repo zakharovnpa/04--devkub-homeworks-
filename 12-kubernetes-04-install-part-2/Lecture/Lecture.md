@@ -38,12 +38,16 @@ echo "deb
 kubelet kubeadm kubectl
 
 ### 7Зависимости в ansible
+![install_01](/12-kubernetes-04-install-part-2/Files/install_01.png)
 
 ### 8Инициализация мастер ноды
+![install_02](/12-kubernetes-04-install-part-2/Files/install_02.png)
 
 ### 9Подключение остальных мастеров
+![install_03](/12-kubernetes-04-install-part-2/Files/install_03.png)
 
 ### 10Подключение рабочих нод
+![install_04](/12-kubernetes-04-install-part-2/Files/install_04.png)
 
 ### 11Проверка работоспособности
 - забрать конфиг с мастера
@@ -56,6 +60,7 @@ kubelet kubeadm kubectl
 - В качестве IaaS в этом случае могут выступать AWS, GCE, Azure, OpenStack или обычные виртуальные машины.
 
 ### 14Пример настройки через kubespray
+![install_05](/12-kubernetes-04-install-part-2/Files/install_05.png)
 
 ### 15Проверка статуса кластера
 - kubectl get nodes — покажет все ноды кластера;
@@ -64,6 +69,7 @@ kubelet kubeadm kubectl
 ### 16Полезный софт
 - Ingress
 - Kubernetes dashboard
+![install_06](/12-kubernetes-04-install-part-2/Files/install_06.png)
 
 ### 17Итоги
 Сегодня мы изучили:
