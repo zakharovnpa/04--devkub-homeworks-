@@ -69,6 +69,7 @@ kubelet kubeadm kubectl
 ### 16Полезный софт
 - Ingress
 - Kubernetes dashboard
+
 ![install_06](/12-kubernetes-04-install-part-2/Files/install_06.png)
 
 ### 17Итоги
