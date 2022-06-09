@@ -405,8 +405,18 @@ drwxr-xr-x 2 jean jean 4,0K июн  8 21:06 .certs
 kubectl create namespace my-project-dev
 kubectl create namespace my-project-prod
 ```
+* Результат:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create namespace my-project-dev
+namespace/my-project-dev created
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create namespace my-project-prod
+namespace/my-project-prod created
 
+```
 2. Поскольку мы пока не определили авторизацию пользователей, у них не должно быть доступа к ресурсам кластера:
+
 ```
 User: Jean
 
@@ -443,7 +453,7 @@ Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resou
 > Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. 
 
 * Вот пример YAML-файла:
-```
+```yml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
@@ -453,9 +463,7 @@ rules:
   - apiGroups: [ apps ]
     resources: [ deployments ]
     verbs: [ get, list ]
-```
-* Вот пример другого YAML-файла:
-```
+-------------------------------------------------
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -465,12 +473,14 @@ rules:
     resources: [ deployments ]
     verbs: [ get, list ]
 ```
-4. Чтобы их создать, выполните команду:
+4. Чтобы создать Role и ClusterRole на основе этого файла, выполните команду:
 ```
 kubectl create -f /path/to/your/yaml/file
 ```
 
 #### Привязка Role или ClusterRole к пользователям
+
+[Использование авторизации RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-resources)
 
 1. Теперь привяжем ClusterRole по умолчанию (edit и view) к нашим пользователям следующим образом:
 
@@ -484,7 +494,7 @@ kubectl create -f /path/to/your/yaml/file
 2. RoleBinding'и нужно задавать по пространствам имен, а не по пользователям. Другими словами, для авторизации jean мы создадим два RoleBinding'а. 
 
 * Пример YAML-файла, определяющего RoleBinding'и для jean:
-```
+```yml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -498,9 +508,7 @@ roleRef:
   kind: ClusterRole
   name: edit
   apiGroup: rbac.authorization.k8s.io
-```
-
-```
+---------------------------------------------
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
