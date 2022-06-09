@@ -17,25 +17,29 @@ PremiumBonus
 ### 3Требования к серверам
 
 ### 4Требования для Control Plane (3 шт.)
-● CPU — от 2 ядер
-● ОЗУ — от 2 ГБ
-● Диск — от 50 ГБ
+- CPU — от 2 ядер
+- ОЗУ — от 2 ГБ
+- Диск — от 50 ГБ
 
 ### 5Требования для рабочих нод (5 шт.)
-● CPU — от 1 ядра
-● ОЗУ — от 1 ГБ
-● Диск — от 100 ГБ
+- CPU — от 1 ядра
+- ОЗУ — от 1 ГБ
+- Диск — от 100 ГБ
 
 ### 6Зависимости
 - Системные:
 apt-transport-https ca-certiﬁcates curl
 - Новый репозиторий:
+```
 echo "deb
 [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg
 ] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee
 /etc/apt/sources.list.d/kubernetes.list
+```
 - Системные для кубера:
+```
 kubelet kubeadm kubectl
+```
 
 ### 7Зависимости в ansible
 ![install_01](/12-kubernetes-04-install-part-2/Files/install_01.png)
