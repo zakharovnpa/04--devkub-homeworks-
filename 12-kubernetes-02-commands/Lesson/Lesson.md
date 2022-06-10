@@ -203,7 +203,9 @@ root@PC-Ubuntu:/home/jean# ls -lha
 openssl req -new -key jean.key \
 -out jean.csr \
 -subj "/CN=jean"
-
+```
+* Эти команды не вводились:
+```
 # С группой под названием $group
 openssl req -new -key jean.key \
 -out jean.csr \
@@ -221,6 +223,7 @@ root@PC-Ubuntu:/home/jean# ls -lha
 -rw------- 1 root root 1,7K июн  8 20:51 jean.key
 ```
 3. Подписываем CSR в Kubernetes CA. Мы должны использовать сертификат CA и ключ, которые обычно находятся в /etc/kubernetes/pki. Сертификат будет действителен в течение 500 дней:
+* Пример:
 ```
 openssl x509 -req -in jean.csr \
 -CA /etc/kubernetes/pki/ca.crt \
@@ -228,7 +231,7 @@ openssl x509 -req -in jean.csr \
 -CAcreateserial \
 -out jean.crt -days 500
 ```
-* Результат:
+* Результат после выполнения команды из примера выше:
 ```
 root@PC-Ubuntu:/home/jean# openssl x509 -req -in jean.csr \
 > -CA /etc/kubernetes/pki/ca.crt \
@@ -242,7 +245,8 @@ Can't open /etc/kubernetes/pki/ca.crt for reading, No such file or directory
 139956666627392:error:2006D080:BIO routines:BIO_new_file:no such file:../crypto/bio/bss_file.c:76:
 unable to load certificate
 ```
-4. Изменяем директории с файлами `ca.crt`, `ca.key`
+4. Вышла ошибка доступа (неверно указано (дано для примера) расположение `ca.crt`, `ca.key`) 
+* Изменяем директории с файлами `ca.crt`, `ca.key` на верные /home/maestro/.minikube/
 ```
 root@PC-Ubuntu:/home/jean# openssl x509 -req -in jean.csr -CA /home/maestro/.minikube/ca.crt -CAkey /home/maestro/.minikube/ca.key -CAcreateserial -out jean.crt -days 500
 Signature ok
@@ -322,7 +326,7 @@ preferences: {}
 users:
 - name: jean
 user:
- client-certificate: /home/jean/.certs/jean.cert
+ client-certificate: /home/jean/.certs/jean.crt
  client-key: /home/jean/.certs/jean.key
 ```
 * Наш искомый файл лежит здесь: `/home/maestro/.kub/config`
@@ -395,7 +399,7 @@ preferences: {}
 users:
 - name: jean
 user:
- client-certificate: /home/jean/.certs/jean.cert
+ client-certificate: /home/jean/.certs/jean.crt
  client-key: /home/jean/.certs/jean.key
 ```
 6. Редактируем его, дополняя данные
@@ -417,7 +421,7 @@ preferences: {}
 users:
 - name: jean
   user:
-    client-certificate: /home/jean/.certs/jean.cert
+    client-certificate: /home/jean/.certs/jean.crt
     client-key: /home/jean/.certs/jean.key
 ```
 
@@ -439,10 +443,38 @@ drwxr-xr-x 2 jean jean 4,0K июн  8 21:06 .certs
 -rw-r--r-- 1 jean jean  883 июн  8 20:53 jean.csr
 drwxr-xr-x 2 jean jean 4,0K июн 10 08:14 .kub
 -rw-r--r-- 1 jean jean  807 фев 25  2020 .profile
+```
+8. Также необходимо присвоить права пользователя jean файлу /home/maestro/.minikube/profiles/minikube/client.key
+```
+-rw------- 1 jean    jean    1,7K мая 31 23:23 client.key
+```
+
+9. Пользователь jean успешно создан. Запускать команды от имени jean:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean whoami
+jean
 
 ```
-Пользователь jean успешно создан.
-
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods -n default
+[sudo] пароль для maestro: 
+NAME                               READY   STATUS             RESTARTS        AGE
+hello-node-8657b68576-b5s8h        0/1     CrashLoopBackOff   923 (31s ago)   5d13h
+hello-world-2-7d8857465b-8bssw     0/1     ImagePullBackOff   0               5d4h
+hello-world-3-5df85bbcc9-9g2mq     0/1     ImagePullBackOff   0               5d4h
+hello-world-4-c485f65f-2wqgn       1/1     Running            0               3d5h
+hello-world-4-c485f65f-f4wsb       1/1     Running            0               3d5h
+hello-world-4-c485f65f-hpdhw       1/1     Running            0               3d3h
+hello-world-4-c485f65f-kcgpz       1/1     Running            0               3d3h
+hello-world-4-c485f65f-mq7p2       1/1     Running            0               3d3h
+hello-world-9b56d5d7-69ch2         0/1     ImagePullBackOff   0               5d13h
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0               4d23h
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               3d2h
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods -n my-project-prod
+No resources found in my-project-prod namespace.
+```
 
 #### 4. Создание пространств имен:
 
@@ -469,40 +501,48 @@ The connection to the server localhost:8080 was refused - did you specify the ri
 
 2. Поскольку мы пока не определили авторизацию пользователей, у них не должно быть доступа к ресурсам кластера:
 
-```
-User: Jean
 
+* Для пользователя jean
+```
 kubectl get nodes
 Error from server (Forbidden): nodes is forbidden: User "jean" cannot list resource "nodes" in API group "" at the cluster scope
-
+```
+```
 kubectl get pods -n default
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
-
+```
+```
 kubectl get pods -n my-project-prod
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "my-project-prod"
-
+```
+```
 kubectl get pods -n my-project-dev
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
 ```
-```
-User: Sarah
 
+* Для пользователя Sarah
+```
 kubectl get nodes
 Error from server (Forbidden): nodes is forbidden: User "sarah" cannot list resource "nodes" in API group "" at the cluster scope
-
+```
+```
 kubectl get pods -n default
 Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "default"
-
+```
+```
 kubectl get pods -n my-project-prod
 Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-prod"
-
+```
+```
 kubectl get pods -n my-project-dev
 Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
 ```
 #### 5. Создание ролей для пользователя
 1. Создание Role и ClusterRole
 
-> Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. 
+Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. 
+
+* По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. 
 
 * Вот пример YAML-файла:
 ```yml
