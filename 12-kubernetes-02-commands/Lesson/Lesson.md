@@ -153,7 +153,7 @@ openssl req -new -key jean.key \
 
 Выполняется по статье [Пользователи и авторизация RBAC в Kubernetes](https://habr.com/ru/company/flant/blog/470503/)
 
-#### Создание пользователей
+#### 1. Создание пользователей
 1. Создайте пользователя на мастере, а затем перейдите в его домашнюю директорию для выполнения остальных шагов:
 ```
 useradd jean && cd /home/jean
@@ -178,7 +178,8 @@ root@PC-Ubuntu:/home/jean# pwd
 /home/jean
 
 ```
-2. Создайте закрытый ключ:
+#### 2. Создание токена / ключа / сертификата
+1. Создаем закрытый ключ:
 ```
 openssl genrsa -out jean.key 2048
 ```
@@ -196,8 +197,7 @@ root@PC-Ubuntu:/home/jean# ls -lha
 
 ```
 
-
-3. Создайте запрос на подпись сертификата (certificate signing request, CSR). CN — имя пользователя, O — группа. Можно устанавливать разрешения по группам. Это упростит работу, если, например, у вас много пользователей с одинаковыми полномочиями:
+2. Создаем запрос на подпись сертификата (certificate signing request, CSR). CN — имя пользователя, O — группа. Можно устанавливать разрешения по группам. Это упростит работу, если, например, у нас много пользователей с одинаковыми полномочиями:
 ```
 # Без группы
 openssl req -new -key jean.key \
@@ -220,7 +220,7 @@ root@PC-Ubuntu:/home/jean# ls -lha
 -rw-r--r-- 1 root root  883 июн  8 20:53 jean.csr
 -rw------- 1 root root 1,7K июн  8 20:51 jean.key
 ```
-4. Подпишите CSR в Kubernetes CA. Мы должны использовать сертификат CA и ключ, которые обычно находятся в /etc/kubernetes/pki. Сертификат будет действителен в течение 500 дней:
+3. Подписываем CSR в Kubernetes CA. Мы должны использовать сертификат CA и ключ, которые обычно находятся в /etc/kubernetes/pki. Сертификат будет действителен в течение 500 дней:
 ```
 openssl x509 -req -in jean.csr \
 -CA /etc/kubernetes/pki/ca.crt \
@@ -242,7 +242,7 @@ Can't open /etc/kubernetes/pki/ca.crt for reading, No such file or directory
 139956666627392:error:2006D080:BIO routines:BIO_new_file:no such file:../crypto/bio/bss_file.c:76:
 unable to load certificate
 ```
-* Изменили директории с файлами ca.crt, ca.key 
+4. Изменяем директории с файлами `ca.crt`, `ca.key`
 ```
 root@PC-Ubuntu:/home/jean# openssl x509 -req -in jean.csr -CA /home/maestro/.minikube/ca.crt -CAkey /home/maestro/.minikube/ca.key -CAcreateserial -out jean.crt -days 500
 Signature ok
@@ -258,10 +258,11 @@ root@PC-Ubuntu:/home/jean# ls -lha
 ```
 
 
-5. Создайте каталог .certs. В нем мы будем хранить открытый и закрытый ключи пользователя:
+5. Создаем каталог .certs. В нем мы будем хранить открытый и закрытый ключи пользователя:
 ```
 mkdir .certs && mv jean.crt jean.key .certs
 ```
+* Результат
 ```
 root@PC-Ubuntu:/home/jean# cd .certs/
 root@PC-Ubuntu:/home/jean/.certs# 
@@ -273,8 +274,8 @@ drwxr-xr-x 3 jean jean 4,0K июн  8 21:06 ..
 -rw------- 1 root root 1,7K июн  8 20:51 jean.key
 
 ```
-
-6. Создайте пользователя внутри Kubernetes:
+#### 3. Создание пользователя в Kubernetis
+1. Создаем пользователя внутри Kubernetes:
 ```
 kubectl config set-credentials jean \
 --client-certificate=/home/jean/.certs/jean.crt \
@@ -289,7 +290,7 @@ User "jean" set.
 
 ```
 
-7. Задайте контекст для пользователя:
+2. Задайте контекст `ean-context` для пользователя:
 ```
 kubectl config set-context jean-context \
 --cluster=kubernetes --user=jean
@@ -302,7 +303,7 @@ Context "jean-context" created.
 
 ```
 
-8. Отредактируйте файл конфигурации пользователя. В нем содержится информация, необходимая для аутентификации в кластере. Можно воспользоваться файлом конфигурации кластера, который обычно лежит в /etc/kubernetes: переменные certificate-authority-data и server должны быть такими же, как в упомянутом файле:
+3. Отредактируем файл конфигурации пользователя. В нем содержится информация, необходимая для аутентификации в кластере. Можно воспользоваться файлом конфигурации кластера, который обычно лежит в /etc/kubernetes: переменные certificate-authority-data и server должны быть такими же, как в упомянутом файле:
 ```
 apiVersion: v1
 clusters:
@@ -371,13 +372,56 @@ users:
 
 
 
-9. Теперь нужно скопировать приведенный выше конфиг в каталог .kube:
+4. Теперь нужно скопировать приведенный выше конфиг в каталог .kube в домашней папке пользователя jean:
 ```
-mkdir .kube && vi .kube/config
+mkdir .kub && vi .kub/config
 ```
-Шаг пропущен
+5. Из этого файла-шаблона создаем новый конфиг:
+```
+apiVersion: v1
+clusters:
+- cluster:
+  certificate-authority-data: {Сюда вставьте данные}
+  server: {Сюда вставьте данные}
+name: kubernetes
+contexts:
+- context:
+ cluster: kubernetes
+ user: jean
+name: jean-context
+current-context: jean-context
+kind: Config
+preferences: {}
+users:
+- name: jean
+user:
+ client-certificate: /home/jean/.certs/jean.cert
+ client-key: /home/jean/.certs/jean.key
+```
+6. Редактируем его, дополняя данные
+```
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: /home/maestro/.minikube/ca.crt
+    server: https://192.168.59.100:8443
+  name: minikube
+contexts:
+- context:
+    cluster: kubernetes
+    user: jean
+  name: jean-context
+current-context: jean-context
+kind: Config
+preferences: {}
+users:
+- name: jean
+  user:
+    client-certificate: /home/jean/.certs/jean.cert
+    client-key: /home/jean/.certs/jean.key
+```
 
-10. Осталось сделать пользователя владельцем всех созданных файлов и каталогов:
+7. Осталось сделать пользователя владельцем всех созданных файлов и каталогов:
 ```
 chown -R jean: /home/jean/
 ```
@@ -386,19 +430,21 @@ chown -R jean: /home/jean/
 root@PC-Ubuntu:/home/jean# chown -R jean: /home/jean/
 root@PC-Ubuntu:/home/jean# 
 root@PC-Ubuntu:/home/jean# ls -lha
-итого 28K
-drwxr-xr-x 3 jean jean 4,0K июн  8 21:43 .
+итого 32K
+drwxr-xr-x 4 jean jean 4,0K июн 10 08:08 .
 drwxr-xr-x 5 root root 4,0K июн  8 20:45 ..
 -rw-r--r-- 1 jean jean  220 фев 25  2020 .bash_logout
 -rw-r--r-- 1 jean jean 3,7K фев 25  2020 .bashrc
 drwxr-xr-x 2 jean jean 4,0K июн  8 21:06 .certs
 -rw-r--r-- 1 jean jean  883 июн  8 20:53 jean.csr
+drwxr-xr-x 2 jean jean 4,0K июн 10 08:14 .kub
 -rw-r--r-- 1 jean jean  807 фев 25  2020 .profile
+
 ```
 Пользователь jean успешно создан.
 
 
-#### Теперь у нас есть пользователи, и можно переходить к созданию двух пространств имен:
+#### 4. Создание пространств имен:
 
 1. Создаем неймспейс
 ```
@@ -415,6 +461,12 @@ maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create namespace my-project
 namespace/my-project-prod created
 
 ```
+* На данном этапе запрос от ползовтеля jean:
+```
+root@PC-Ubuntu:/home/jean# kubectl get pods -n my-project-prod 
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+```
+
 2. Поскольку мы пока не определили авторизацию пользователей, у них не должно быть доступа к ресурсам кластера:
 
 ```
@@ -447,8 +499,8 @@ Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resou
 kubectl get pods -n my-project-dev
 Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
 ```
-
-3. Создание Role и ClusterRole
+#### 5. Создание ролей для пользователя
+1. Создание Role и ClusterRole
 
 > Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. 
 
@@ -473,12 +525,12 @@ rules:
     resources: [ deployments ]
     verbs: [ get, list ]
 ```
-4. Чтобы создать Role и ClusterRole на основе этого файла, выполните команду:
+2. Чтобы создать Role и ClusterRole на основе этого файла, выполните команду:
 ```
 kubectl create -f /path/to/your/yaml/file
 ```
 
-#### Привязка Role или ClusterRole к пользователям
+#### 6. Привязка Role или ClusterRole к пользователям
 
 [Использование авторизации RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-resources)
 
@@ -530,9 +582,10 @@ roleRef:
 ```
 kubectl apply -f /path/to/your/yaml/file
 ```
-В данном случае была использована kubectl apply вместо kubectl create. Разница между ними в том, что create создает объект и больше ничего не делает, а apply — не только создает объект (в случае, если его не существует), но и обновляет при необходимости.
+В данном случае была использована `kubectl apply` вместо `kubectl create`. Разница между ними в том, что create создает объект и больше ничего не делает, а apply — не только создает объект (в случае, если его не существует), но и обновляет при необходимости.
 
-4. Давайте проверим, получили ли наши пользователи нужные разрешения.
+#### 7. Проверка получения пользователями нужных разрешений
+1. Давайте проверим, получили ли наши пользователи нужные разрешения.
 - Пользователь: sarah (edit в my-project-prod)
 ```
   - my-project-prod
@@ -545,17 +598,21 @@ kubectl apply -f /path/to/your/yaml/file
 ```
 (1) kubectl get pods -n my-project-prod 
 No resources found. 
-
+```
+```
 (2) kubectl run nginx --image=nginx --replicas=1 -n my-project-prod 
 deployment.apps/nginx created 
-
+```
+```
 (3) kubectl get pods -n my-project-prod 
 NAME                    READY  STATUS   RESTARTS  AGE 
 nginx-7db9fccd9b-t14qw  1/1    Running  0         4s 
-
+```
+```
 (4) kubectl get pods -n my-project-dev
 Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
-
+```
+```
 (5) kubectl run nginx --image=nginx --replicas=1 -n my-project-dev 
 Error from server (Forbidden): deployments.apps is forbidden: User "sarah" cannot create resource "deployments" in API group "apps" in the namespace "my-project-dev"
 ```
@@ -600,11 +657,11 @@ deployment.extensions "nginx" deleted
 No resources found.
 ```
 
-#### Управление пользователями и их авторизацией
+#### 8. Управление пользователями и их авторизацией
 
 1. Итак, мы успешно задали различные роли и авторизации пользователей. Возникает вопрос: как теперь управлять всем этим? Как узнать, правильно ли заданы права доступа для конкретного пользователя? Как узнать, кто обладает полномочиями на выполнение определенного действия? Как получить общую картину разрешений пользователей?
 
-Нам необходимы ответы на все эти вопросы, чтобы обеспечить безопасность кластера. Команда kubectl auth can-i позволяет выяснить, может ли пользователь выполнить определенное действие:
+Нам необходимы ответы на все эти вопросы, чтобы обеспечить безопасность кластера. Команда `kubectl auth can-i` позволяет выяснить, может ли пользователь выполнить определенное действие:
 ```
 # kubectl auth can-i $action $resource --as $subject
 
@@ -615,7 +672,46 @@ No resources found.
 
 Это практически все, что можно сделать с помощью встроенного инструментария. Именно поэтому представлю и некоторые Open Source-проекты, позволяющие расширить возможности, предлагаемые командой kubectl auth can-i. Прежде чем представить их, установим зависимости: Go и Krew.
 
+* Пример вывода команд:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl auth can-i list pods
+yes
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl auth can-i list nodes
+Warning: resource 'nodes' is not namespace scoped
+yes
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl auth can-i list nod
+Warning: the server doesn't have a resource type 'nod'
+yes
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl auth can-i --list --namespace=foo
+Resources                                       Non-Resource URLs   Resource Names   Verbs
+*.*                                             []                  []               [*]
+                                                [*]                 []               [*]
+selfsubjectaccessreviews.authorization.k8s.io   []                  []               [create]
+selfsubjectrulesreviews.authorization.k8s.io    []                  []               [create]
+                                                [/api/*]            []               [get]
+                                                [/api]              []               [get]
+                                                [/apis/*]           []               [get]
+                                                [/apis]             []               [get]
+                                                [/healthz]          []               [get]
+                                                [/healthz]          []               [get]
+                                                [/livez]            []               [get]
+                                                [/livez]            []               [get]
+                                                [/openapi/*]        []               [get]
+                                                [/openapi]          []               [get]
+                                                [/readyz]           []               [get]
+                                                [/readyz]           []               [get]
+                                                [/version/]         []               [get]
+                                                [/version/]         []               [get]
+                                                [/version]          []               [get]
+                                                [/version]          []               [get]
 
+```
 
 
 
