@@ -445,6 +445,7 @@ drwxr-xr-x 2 jean jean 4,0K июн 10 08:14 .kub
 -rw-r--r-- 1 jean jean  807 фев 25  2020 .profile
 ```
 8. Также необходимо присвоить права пользователя jean файлу /home/maestro/.minikube/profiles/minikube/client.key
+* Но при этом пропадает доступ у пользователя maestro
 ```
 -rw------- 1 jean    jean    1,7K мая 31 23:23 client.key
 ```
