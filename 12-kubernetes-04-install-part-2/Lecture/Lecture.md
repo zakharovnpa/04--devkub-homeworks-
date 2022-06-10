@@ -6,6 +6,8 @@
 TechLead
 PremiumBonus
 Андрей Копылов
+[1](https://github.com/kubernetes-sigs/kubespray)
+[2](https://devops.stackexchange.com/questions/9483/how-can-i-add-an-additional-ip-hostname-to-my-kubernetes-certificate)
 
 ### 2План занятия
 1. Требования к серверам
@@ -86,6 +88,9 @@ kubelet kubeadm kubectl
 - Вопросы по домашней работе задавайте в чате мессенджера Slack.
 - Задачи можно сдавать по частям.
 - Зачёт по домашней работе проставляется после того, как приняты все задачи.
+
+
+К домашке рикладывать испавленные файлы для проверки.
 
 ### 19Задавайте вопросы и
 пишите отзыв о лекции!
