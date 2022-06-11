@@ -278,8 +278,8 @@ drwxr-xr-x 3 jean jean 4,0K июн  8 21:06 ..
 -rw------- 1 root root 1,7K июн  8 20:51 jean.key
 
 ```
-#### 3. Создание пользователя в Kubernetis
-1. Создаем пользователя внутри Kubernetes:
+#### 3. Создание пользователя внутри Minikube
+1. Создаем пользователя внутри Minikube (добавляем пользователя в файл-конфиг minikube). Файл находится здесь: `/home/maestro/.kube/config`
 ```
 kubectl config set-credentials jean \
 --client-certificate=/home/jean/.certs/jean.crt \
@@ -294,19 +294,23 @@ User "jean" set.
 
 ```
 
-2. Задайте контекст `ean-context` для пользователя:
+2. Задайте контекст `jean-context` для пользователя в нашем кластере minikube:
 ```
 kubectl config set-context jean-context \
---cluster=kubernetes --user=jean
+--cluster=minikube --user=jean
 ```
 * Результат:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl config set-context jean-context \
-> --cluster=kubernetes --user=jean
+root@PC-Ubuntu:/home/jean# kubectl config set-context jean-context \
+> --cluster=minikube --user=jean
 Context "jean-context" created.
 
 ```
-
+* Результат запроса от имени пользователя jean:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+```
 3. Отредактируем файл конфигурации пользователя. В нем содержится информация, необходимая для аутентификации в кластере. Можно воспользоваться файлом конфигурации кластера, который обычно лежит в /etc/kubernetes: переменные certificate-authority-data и server должны быть такими же, как в упомянутом файле:
 ```
 apiVersion: v1
