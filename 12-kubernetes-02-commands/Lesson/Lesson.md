@@ -1166,6 +1166,116 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running   0          3d14h
 
 ```
 
+### Вне Домашнеого Задания. Остановка кдастера.
+
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                               READY   STATUS             RESTARTS      AGE
+hello-node-8657b68576-vrcx7        0/1     CrashLoopBackOff   3 (22s ago)   84s
+hello-world-2-7d8857465b-gc6mp     0/1     ErrImagePull       0             84s
+hello-world-3-5df85bbcc9-4cb59     0/1     ErrImagePull       0             84s
+hello-world-4-c485f65f-5rrd4       1/1     Running            0             84s
+hello-world-4-c485f65f-fnj7g       1/1     Running            0             84s
+hello-world-4-c485f65f-jgl2z       1/1     Running            0             83s
+hello-world-4-c485f65f-k9dpv       1/1     Running            0             83s
+hello-world-4-c485f65f-kx8f9       1/1     Running            0             83s
+hello-world-9b56d5d7-ds9sm         0/1     ErrImagePull       0             83s
+k8s-hello-world-6969845fcf-7xk5l   1/1     Running            0             83s
+k8s-hello-world-6969845fcf-9qnpc   1/1     Running            0             83s
+k8s-hello-world-6969845fcf-k82rd   1/1     Running            0             83s
+k8s-hello-world-6969845fcf-k9mdm   1/1     Running            0             83s
+k8s-hello-world-6969845fcf-p5ghx   1/1     Running            0             83s
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl delete pods --all
+pod "hello-node-8657b68576-vrcx7" deleted
+pod "hello-world-2-7d8857465b-gc6mp" deleted
+pod "hello-world-3-5df85bbcc9-4cb59" deleted
+pod "hello-world-4-c485f65f-5rrd4" deleted
+pod "hello-world-4-c485f65f-fnj7g" deleted
+pod "hello-world-4-c485f65f-jgl2z" deleted
+pod "hello-world-4-c485f65f-k9dpv" deleted
+pod "hello-world-4-c485f65f-kx8f9" deleted
+pod "hello-world-9b56d5d7-ds9sm" deleted
+pod "k8s-hello-world-6969845fcf-7xk5l" deleted
+pod "k8s-hello-world-6969845fcf-9qnpc" deleted
+pod "k8s-hello-world-6969845fcf-k82rd" deleted
+pod "k8s-hello-world-6969845fcf-k9mdm" deleted
+pod "k8s-hello-world-6969845fcf-p5ghx" deleted
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployment
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+hello-node        0/1     1            0           6d20h
+hello-world       0/1     1            0           6d21h
+hello-world-2     0/1     1            0           6d1h
+hello-world-3     0/1     1            0           6d1h
+hello-world-4     5/5     5            5           6d
+k8s-hello-world   5/5     5            5           5d20h
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl delete deployment hello-node
+deployment.apps "hello-node" deleted
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployment
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+hello-world       0/1     1            0           6d21h
+hello-world-2     0/1     1            0           6d1h
+hello-world-3     0/1     1            0           6d1h
+hello-world-4     5/5     5            5           6d
+k8s-hello-world   5/5     5            5           5d20h
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl delete deployment --all
+deployment.apps "hello-world" deleted
+deployment.apps "hello-world-2" deleted
+deployment.apps "hello-world-3" deleted
+deployment.apps "hello-world-4" deleted
+deployment.apps "k8s-hello-world" deleted
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployment
+No resources found in default namespace.
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                               READY   STATUS        RESTARTS   AGE
+hello-world-4-c485f65f-2mgcn       1/1     Terminating   0          101s
+hello-world-4-c485f65f-fgvw6       1/1     Terminating   0          101s
+hello-world-4-c485f65f-lqdl8       1/1     Terminating   0          101s
+hello-world-4-c485f65f-lvf7j       1/1     Terminating   0          101s
+hello-world-4-c485f65f-mxrqr       1/1     Terminating   0          101s
+k8s-hello-world-6969845fcf-67mxg   1/1     Terminating   0          100s
+k8s-hello-world-6969845fcf-ckl5s   1/1     Terminating   0          100s
+k8s-hello-world-6969845fcf-cmgcj   1/1     Terminating   0          100s
+k8s-hello-world-6969845fcf-vf9xh   1/1     Terminating   0          101s
+k8s-hello-world-6969845fcf-z5lsc   1/1     Terminating   0          101s
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl delete pods --all
+pod "hello-world-4-c485f65f-2mgcn" deleted
+pod "hello-world-4-c485f65f-fgvw6" deleted
+pod "hello-world-4-c485f65f-lqdl8" deleted
+pod "hello-world-4-c485f65f-lvf7j" deleted
+pod "hello-world-4-c485f65f-mxrqr" deleted
+pod "k8s-hello-world-6969845fcf-67mxg" deleted
+pod "k8s-hello-world-6969845fcf-ckl5s" deleted
+pod "k8s-hello-world-6969845fcf-cmgcj" deleted
+pod "k8s-hello-world-6969845fcf-vf9xh" deleted
+pod "k8s-hello-world-6969845fcf-z5lsc" deleted
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+No resources found in default namespace.
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ 
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube stop
+✋  Узел "minikube" останавливается ...
+🛑  Остановлено узлов: 1.
+maestro@PC-Ubuntu:~/Рабочий стол$ minikube status
+minikube
+type: Control Plane
+host: Stopped
+kubelet: Stopped
+apiserver: Stopped
+kubeconfig: Stopped
+
+
+```
 ---
 
 ### Как оформить ДЗ?
