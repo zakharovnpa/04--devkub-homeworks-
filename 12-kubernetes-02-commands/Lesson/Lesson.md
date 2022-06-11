@@ -58,6 +58,27 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14
  * пользователь прописан в локальный конфиг (~/.kube/config, блок users)
  * пользователь может просматривать логи подов и их конфигурацию (kubectl logs pod <pod_id>, kubectl describe pod <pod_id>)
 
+### Пояснение
+-01:38:00 - по Заданию №2. Сложное задание. Самое интересное и исследовательское. Выполнив это задание мы будем готовы делать много других вещей.  Нужо сначала завести пользователя кубера. Поптом предоставить доступа. ИЛи. Не создавать пользователя, а создать сервис-аккаунт и для этого сервис-аккаунта предоставить какой-то набор прав с тем чтобы плзователи имели доступ. Подскахки: RBAC, ServiceAccounte, Role, RoleBinding.
+
+Итого:
+- Нужно завести пользователя кубернетис (можно глянуть в интернете или в чатике)
+- потом дать права доступа пользователю.
+
+- Создать сервис-акаунт
+- Сервис-аккаунту предоставить права доступа
+- Подсказки: RBAC, ServiceAccounte, Role, RoleBinding.
+- Подсказка: `kubectl create clasterrole readonlyuser`
+
+
+- Ответ должен выгледеть так:
+  - Каким образом мы создаем пользователя или Сервисеаккаунт (какие команды)
+  - Продемонстрировать с помощью команд кубконфиг, блок юзерс. там должен быть пользователь. Показать, что  пользователя что он не может создать намеспейс,
+но может посмотреть логи, дескрайб. А другие команды ползователь не может выполнить.
+  - Продемонстрировать что этот пользователь другие команды не может выполнить.
+- Подсказка: `kubectl create clasterrole readonlyuser`
+
+
 **Ответ:**
 
 #### API-объекты RBAC
@@ -935,7 +956,116 @@ maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl create deploym
 error: failed to create deployment: deployments.apps is forbidden: User "jean" cannot create resource "deployments" in API group "apps" in the namespace "default"
 
 ```
+### Таблица возможностей пользователя jean
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl auth can-i --list
+[sudo] пароль для maestro: 
+Resources                                       Non-Resource URLs   Resource Names   Verbs
+selfsubjectaccessreviews.authorization.k8s.io   []                  []               [create]
+selfsubjectrulesreviews.authorization.k8s.io    []                  []               [create]
+bindings                                        []                  []               [get list watch]
+configmaps                                      []                  []               [get list watch]
+endpoints                                       []                  []               [get list watch]
+events                                          []                  []               [get list watch]
+limitranges                                     []                  []               [get list watch]
+namespaces/status                               []                  []               [get list watch]
+namespaces                                      []                  []               [get list watch]
+persistentvolumeclaims/status                   []                  []               [get list watch]
+persistentvolumeclaims                          []                  []               [get list watch]
+pods/log                                        []                  []               [get list watch]
+pods/status                                     []                  []               [get list watch]
+pods                                            []                  []               [get list watch]
+replicationcontrollers/scale                    []                  []               [get list watch]
+replicationcontrollers/status                   []                  []               [get list watch]
+replicationcontrollers                          []                  []               [get list watch]
+resourcequotas/status                           []                  []               [get list watch]
+resourcequotas                                  []                  []               [get list watch]
+serviceaccounts                                 []                  []               [get list watch]
+services/status                                 []                  []               [get list watch]
+services                                        []                  []               [get list watch]
+controllerrevisions.apps                        []                  []               [get list watch]
+daemonsets.apps/status                          []                  []               [get list watch]
+daemonsets.apps                                 []                  []               [get list watch]
+deployments.apps/scale                          []                  []               [get list watch]
+deployments.apps/status                         []                  []               [get list watch]
+deployments.apps                                []                  []               [get list watch]
+replicasets.apps/scale                          []                  []               [get list watch]
+replicasets.apps/status                         []                  []               [get list watch]
+replicasets.apps                                []                  []               [get list watch]
+statefulsets.apps/scale                         []                  []               [get list watch]
+statefulsets.apps/status                        []                  []               [get list watch]
+statefulsets.apps                               []                  []               [get list watch]
+horizontalpodautoscalers.autoscaling/status     []                  []               [get list watch]
+horizontalpodautoscalers.autoscaling            []                  []               [get list watch]
+cronjobs.batch/status                           []                  []               [get list watch]
+cronjobs.batch                                  []                  []               [get list watch]
+jobs.batch/status                               []                  []               [get list watch]
+jobs.batch                                      []                  []               [get list watch]
+endpointslices.discovery.k8s.io                 []                  []               [get list watch]
+daemonsets.extensions/status                    []                  []               [get list watch]
+daemonsets.extensions                           []                  []               [get list watch]
+deployments.extensions/scale                    []                  []               [get list watch]
+deployments.extensions/status                   []                  []               [get list watch]
+deployments.extensions                          []                  []               [get list watch]
+ingresses.extensions/status                     []                  []               [get list watch]
+ingresses.extensions                            []                  []               [get list watch]
+networkpolicies.extensions                      []                  []               [get list watch]
+replicasets.extensions/scale                    []                  []               [get list watch]
+replicasets.extensions/status                   []                  []               [get list watch]
+replicasets.extensions                          []                  []               [get list watch]
+replicationcontrollers.extensions/scale         []                  []               [get list watch]
+ingresses.networking.k8s.io/status              []                  []               [get list watch]
+ingresses.networking.k8s.io                     []                  []               [get list watch]
+networkpolicies.networking.k8s.io               []                  []               [get list watch]
+poddisruptionbudgets.policy/status              []                  []               [get list watch]
+poddisruptionbudgets.policy                     []                  []               [get list watch]
+                                                [/api/*]            []               [get]
+                                                [/api]              []               [get]
+                                                [/apis/*]           []               [get]
+                                                [/apis]             []               [get]
+                                                [/healthz]          []               [get]
+                                                [/healthz]          []               [get]
+                                                [/livez]            []               [get]
+                                                [/livez]            []               [get]
+                                                [/openapi/*]        []               [get]
+                                                [/openapi]          []               [get]
+                                                [/readyz]           []               [get]
+                                                [/readyz]           []               [get]
+                                                [/version/]         []               [get]
+                                                [/version/]         []               [get]
+                                                [/version]          []               [get]
+                                                [/version]          []               [get]
 
+```
+
+
+### Другой вариант создания роли  для пльзователя
+
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create clusterrole --help
+Create a cluster role.
+
+Examples:
+  # Create a cluster role named "pod-reader" that allows user to perform "get", "watch" and "list" on pods
+  kubectl create clusterrole pod-reader --verb=get,list,watch --resource=pods
+  
+  # Create a cluster role named "pod-reader" with ResourceName specified
+  kubectl create clusterrole pod-reader --verb=get --resource=pods --resource-name=readablepod
+--resource-name=anotherpod
+  
+  # Create a cluster role named "foo" with API Group specified
+  kubectl create clusterrole foo --verb=get,list,watch --resource=rs.extensions
+  
+  # Create a cluster role named "foo" with SubResource specified
+  kubectl create clusterrole foo --verb=get,list,watch --resource=pods,pods/status
+  
+  # Create a cluster role name "foo" with NonResourceURL specified
+  kubectl create clusterrole "foo" --verb=get --non-resource-url=/logs/*
+  
+  # Create a cluster role name "monitoring" with AggregationRule specified
+  kubectl create clusterrole monitoring --aggregation-rule="rbac.example.com/aggregate-to-monitoring=true"
+
+```
 
 #### 8. Управление пользователями и их авторизацией
 
