@@ -928,9 +928,15 @@ Node-Selectors:              <none>
 Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:                      <none>
-
+```
+5. Попытка создания нового пода пользователем jean
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl create deployment 2-k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
+error: failed to create deployment: deployments.apps is forbidden: User "jean" cannot create resource "deployments" in API group "apps" in the namespace "default"
 
 ```
+
+
 #### 8. Управление пользователями и их авторизацией
 
 1. Итак, мы успешно задали различные роли и авторизации пользователей. Возникает вопрос: как теперь управлять всем этим? Как узнать, правильно ли заданы права доступа для конкретного пользователя? Как узнать, кто обладает полномочиями на выполнение определенного действия? Как получить общую картину разрешений пользователей?
@@ -998,7 +1004,37 @@ selfsubjectrulesreviews.authorization.k8s.io    []                  []          
 
 **Ответ:**
 
+1. Один инстас приложения уже работает. Для масштабирования запускаем приложение командой `kubectl scale deployment k8s-hello-world --replicas=2`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl scale deployment k8s-hello-world --replicas=2
+deployment.apps/k8s-hello-world scaled
 
+```
+
+2. Просмотр количества подов командой `kubectl get pods -l app=k8s-hello-world`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                               READY   STATUS             RESTARTS        AGE
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0               45h
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14m
+
+```
+3. Масштабируем приложение до 5 инстансов
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl scale deployment k8s-hello-world --replicas=5
+deployment.apps/k8s-hello-world scaled
+```
+4. Работает 5 экземпляров приложения
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods -l app=k8s-hello-world
+NAME                               READY   STATUS    RESTARTS   AGE
+k8s-hello-world-6969845fcf-4lp47   1/1     Running   0          5s
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running   0          5d11h
+k8s-hello-world-6969845fcf-bv6kp   1/1     Running   0          5s
+k8s-hello-world-6969845fcf-lwncw   1/1     Running   0          5s
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running   0          3d14h
+
+```
 
 ---
 
