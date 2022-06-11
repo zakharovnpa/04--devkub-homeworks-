@@ -607,10 +607,51 @@ rules:
     resources: [ deployments ]
     verbs: [ get, list ]
 ```
-2. Чтобы создать Role и ClusterRole на основе этого файла, выполните команду:
+2. Смотрим каие API ресурсы нам доступны (вывод сокращен, показано только для ролей):
+
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl api-resources
+NAME                              SHORTNAMES   APIVERSION                             NAMESPACED   KIND
+clusterrolebindings                            rbac.authorization.k8s.io/v1           false        ClusterRoleBinding
+clusterroles                                   rbac.authorization.k8s.io/v1           false        ClusterRole
+rolebindings                                   rbac.authorization.k8s.io/v1           true         RoleBinding
+roles                                          rbac.authorization.k8s.io/v1           true         Role
+
+```
+3. Создаем наш YAML-фай. Правим значения apiVersion, kind, name, resources, verbs.
+
+* По заданию наш пользователь может только просматривать логи контейнеров. 
+* Значит:
+  * resources: [ pods ]
+
+```yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: list-deployments
+  namespace: my-project-dev
+rules:
+  - apiGroups: [ apps ]
+    resources: [ pods ]
+    verbs: [ get, list ]
+-------------------------------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: list-deployments
+rules:
+  - apiGroups: [ apps ]
+    resources: [ pods ]
+    verbs: [ get, list ]
+```
+
+4. Чтобы создать Role и ClusterRole на основе этого файла, выполните команду:
 ```
 kubectl create -f /path/to/your/yaml/file
 ```
+5. Данные роли уже доступны по умолчанию. Действия не требуется.
+
+
 
 #### 6. Привязка Role или ClusterRole к пользователям
 
@@ -665,6 +706,28 @@ roleRef:
 kubectl apply -f /path/to/your/yaml/file
 ```
 В данном случае была использована `kubectl apply` вместо `kubectl create`. Разница между ними в том, что create создает объект и больше ничего не делает, а apply — не только создает объект (в случае, если его не существует), но и обновляет при необходимости.
+4. Создаем наш файл:
+
+```yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jean
+  namespace: default
+subjects:
+- kind: User
+  name: jean
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
+```
+5. Активируем привязку ролей:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl apply -f /home/jean/jean-rolebinding.yml
+rolebinding.rbac.authorization.k8s.io/jean created
+```
 
 #### 7. Проверка получения пользователями нужных разрешений
 1. Давайте проверим, получили ли наши пользователи нужные разрешения.
@@ -739,6 +802,135 @@ deployment.extensions "nginx" deleted
 No resources found.
 ```
 
+2. Проверяем. 
+* Было:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+```
+* Стало:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods
+NAME                               READY   STATUS             RESTARTS          AGE
+hello-node-8657b68576-b5s8h        0/1     CrashLoopBackOff   961 (4m56s ago)   6d
+hello-world-2-7d8857465b-8bssw     0/1     ImagePullBackOff   0                 5d15h
+hello-world-3-5df85bbcc9-9g2mq     0/1     ImagePullBackOff   0                 5d15h
+hello-world-4-c485f65f-2wqgn       1/1     Running            0                 3d16h
+hello-world-4-c485f65f-f4wsb       1/1     Running            0                 3d16h
+hello-world-4-c485f65f-hpdhw       1/1     Running            0                 3d14h
+hello-world-4-c485f65f-kcgpz       1/1     Running            0                 3d14h
+hello-world-4-c485f65f-mq7p2       1/1     Running            0                 3d14h
+hello-world-9b56d5d7-69ch2         0/1     ImagePullBackOff   0                 6d
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0                 5d10h
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0                 3d13h
+
+```
+3. Просмотр логов пользователем jean:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+Получен запрос на URL: /
+Получен запрос на URL: /
+Получен запрос на URL: /favicon.ico
+Получен запрос на URL: /
+
+```
+4. Просмотр описания пода
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl describe pods k8s-hello-world
+Name:         k8s-hello-world-6969845fcf-5v7xk
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.59.100
+Start Time:   Sun, 05 Jun 2022 23:02:45 +0400
+Labels:       app=k8s-hello-world
+              pod-template-hash=6969845fcf
+Annotations:  <none>
+Status:       Running
+IP:           172.17.0.11
+IPs:
+  IP:           172.17.0.11
+Controlled By:  ReplicaSet/k8s-hello-world-6969845fcf
+Containers:
+  k8s-hello-world:
+    Container ID:   docker://5caeb85ded09def5d031af16b4bee41e51da22b0b948ed15846cee0551453725
+    Image:          zakharovnpa/k8s-hello-world:05.06.22
+    Image ID:       docker-pullable://zakharovnpa/k8s-hello-world@sha256:1ea8575845aa74617f31afd497856fc2b12e6f0fe21c002638e67e02ac089d0a
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sun, 05 Jun 2022 23:02:50 +0400
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-l5jdn (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-l5jdn:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+
+Name:         k8s-hello-world-6969845fcf-tbtzv
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.59.100
+Start Time:   Tue, 07 Jun 2022 19:52:55 +0400
+Labels:       app=k8s-hello-world
+              pod-template-hash=6969845fcf
+Annotations:  <none>
+Status:       Running
+IP:           172.17.0.14
+IPs:
+  IP:           172.17.0.14
+Controlled By:  ReplicaSet/k8s-hello-world-6969845fcf
+Containers:
+  k8s-hello-world:
+    Container ID:   docker://a38c7a1a1a3f94b86190b8c2a13b5428a5c38f63de293f533a6921ec1d9cd6a3
+    Image:          zakharovnpa/k8s-hello-world:05.06.22
+    Image ID:       docker-pullable://zakharovnpa/k8s-hello-world@sha256:1ea8575845aa74617f31afd497856fc2b12e6f0fe21c002638e67e02ac089d0a
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Tue, 07 Jun 2022 19:52:56 +0400
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-vcdtv (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-vcdtv:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:                      <none>
+
+
+```
 #### 8. Управление пользователями и их авторизацией
 
 1. Итак, мы успешно задали различные роли и авторизации пользователей. Возникает вопрос: как теперь управлять всем этим? Как узнать, правильно ли заданы права доступа для конкретного пользователя? Как узнать, кто обладает полномочиями на выполнение определенного действия? Как получить общую картину разрешений пользователей?
