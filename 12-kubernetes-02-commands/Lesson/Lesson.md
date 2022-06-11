@@ -297,20 +297,16 @@ User "jean" set.
 2. Задайте контекст `jean-context` для пользователя в нашем кластере minikube:
 ```
 kubectl config set-context jean-context \
---cluster=minikube --user=jean
+--cluster=kubernetes --user=jean
 ```
 * Результат:
 ```
 root@PC-Ubuntu:/home/jean# kubectl config set-context jean-context \
-> --cluster=minikube --user=jean
+> --cluster=kubernetes --user=jean
 Context "jean-context" created.
 
 ```
-* Результат запроса от имени пользователя jean:
-```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
-Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
-```
+
 3. Отредактируем файл конфигурации пользователя. В нем содержится информация, необходимая для аутентификации в кластере. Можно воспользоваться файлом конфигурации кластера, который обычно лежит в /etc/kubernetes: переменные certificate-authority-data и server должны быть такими же, как в упомянутом файле:
 ```
 apiVersion: v1
@@ -448,18 +444,29 @@ drwxr-xr-x 2 jean jean 4,0K июн  8 21:06 .certs
 drwxr-xr-x 2 jean jean 4,0K июн 10 08:14 .kub
 -rw-r--r-- 1 jean jean  807 фев 25  2020 .profile
 ```
-8. Также необходимо присвоить права пользователя jean файлу /home/maestro/.minikube/profiles/minikube/client.key
+8. На данном этапе запрос от ползовтеля jean:
+```
+root@PC-Ubuntu:/home/jean# kubectl get pods -n my-project-prod 
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+```
+
+
+##### 3.1 Пример ошибочного действия. Когда контекст нового пользователя был добавлен в другой кластер (kubernetes), которого у нас нет. Мы не могли выполнить действия от имени ного пользователя, т.к. не было доступа к файлу `/home/maestro/.minikube/profiles/minikube/client.key`. Выходила ошибка отклонения доступа. 
+
+1. Также необходимо присвоить права пользователя jean файлу /home/maestro/.minikube/profiles/minikube/client.key
 * Но при этом пропадает доступ у пользователя maestro
 ```
 -rw------- 1 jean    jean    1,7K мая 31 23:23 client.key
 ```
 
-9. Пользователь jean успешно создан. Запускать команды от имени jean:
+2. Пользователь jean успешно создан. Запускать команды от имени jean:
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean whoami
 jean
 
 ```
+
+3. Делаем запрос от имени jean, а на самом деле от имени пользователя minikube (админа в кластере)
 ```
 maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods -n default
 [sudo] пароль для maestro: 
@@ -481,6 +488,20 @@ maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods -n my
 No resources found in my-project-prod namespace.
 ```
 
+##### 3.2 Для правильного решения необходимо в конфиге пользователя указать наш кластер - minikube
+1. Задаем контекст `jean-context` для пользователя в нашем кластере minikube:
+```
+kubectl config set-context jean-context \
+--cluster=minikube --user=jean
+```
+* Результат:
+```
+root@PC-Ubuntu:/home/jean# kubectl config set-context jean-context \
+> --cluster=minikube --user=jean
+Context "jean-context" created.
+
+```
+
 #### 4. Создание пространств имен:
 
 1. Создаем неймспейс
@@ -497,11 +518,6 @@ namespace/my-project-dev created
 maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create namespace my-project-prod
 namespace/my-project-prod created
 
-```
-* На данном этапе запрос от ползовтеля jean:
-```
-root@PC-Ubuntu:/home/jean# kubectl get pods -n my-project-prod 
-The connection to the server localhost:8080 was refused - did you specify the right host or port?
 ```
 
 2. Поскольку мы пока не определили авторизацию пользователей, у них не должно быть доступа к ресурсам кластера:
@@ -542,6 +558,27 @@ Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resou
 kubectl get pods -n my-project-dev
 Error from server (Forbidden): pods is forbidden: User "sarah" cannot list resource "pods" in API group "" in the namespace "my-project-dev"
 ```
+
+3. Результат запроса от имени пользователя jean при правильных настройках пользователя:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+```
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods -n default
+Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
+
+```
+
+
 #### 5. Создание ролей для пользователя
 1. Создание Role и ClusterRole
 
