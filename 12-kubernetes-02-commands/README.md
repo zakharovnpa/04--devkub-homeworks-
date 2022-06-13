@@ -79,14 +79,6 @@ openssl x509 -req -in jean.csr \
 -CAcreateserial \
 -out jean.crt -days 500
 ```
-* Результат
-```
-root@PC-Ubuntu:/home/jean# ls -lha
--rw-r--r-- 1 root root  985 июн  8 21:03 jean.crt
--rw-r--r-- 1 root root  883 июн  8 20:53 jean.csr
--rw------- 1 root root 1,7K июн  8 20:51 jean.key
-```
-
 
 4. Создаем каталог .certs. В нем мы будем хранить открытый и закрытый ключи пользователя:
 ```
@@ -145,21 +137,20 @@ kubectl create namespace my-project-prod
 
 2. Поскольку мы пока не определили авторизацию пользователя, у него нет доступа к ресурсам кластера. Результат запроса от имени пользователя jean при правильных настройках пользователя:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+sudo -u jean kubectl logs -l app=k8s-hello-world
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
 ```
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+sudo -u jean kubectl logs -l app=k8s-hello-world
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
 ```
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods
+sudo -u jean kubectl get pods
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
 ```
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods -n default
+sudo -u jean kubectl get pods -n default
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
-
 ```
 
 
@@ -170,10 +161,10 @@ Error from server (Forbidden): pods is forbidden: User "jean" cannot list resour
 
 * По сути Role и ClusterRole — это всего лишь набор действий (называемых как verbs, т.е. дословно — «глаголов»), разрешенных для определенных ресурсов и пространств имен. 
 
-2. Смотрим каие API ресурсы нам доступны (вывод сокращен, показано только ресурсы для ролей):
+2. Смотрим какие API ресурсы нам доступны (вывод сокращен, показано только ресурсы для ролей):
 
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl api-resources
+kubectl api-resources
 NAME                              SHORTNAMES   APIVERSION                             NAMESPACED   KIND
 clusterrolebindings                            rbac.authorization.k8s.io/v1           false        ClusterRoleBinding
 clusterroles                                   rbac.authorization.k8s.io/v1           false        ClusterRole
@@ -181,7 +172,7 @@ rolebindings                                   rbac.authorization.k8s.io/v1     
 roles                                          rbac.authorization.k8s.io/v1           true         Role
 ```
 
-#### 6. Привязка Role или ClusterRole к пользователям
+#### 6. Привязка Role или ClusterRole к пользователю
 
 1. RoleBinding'и нужно задавать по пространствам имен, а не по пользователям. Другими словами, для авторизации jean мы создадим RoleBinding. 
 2. Мы разрешаем jean просматривать (view) неймспейс default и привяжем ClusterRole view к нашему пользователю
@@ -204,22 +195,22 @@ roleRef:
 ```
 5. Активируем привязку ролей:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl apply -f /home/jean/jean-rolebinding.yml
+kubectl apply -f /home/jean/jean-rolebinding.yml
 rolebinding.rbac.authorization.k8s.io/jean created
 ```
 * В данном случае была использована `kubectl apply` вместо `kubectl create`. Разница между ними в том, что create создает объект и больше ничего не делает, а apply — не только создает объект (в случае, если его не существует), но и обновляет при необходимости.
 
 
-#### 7. Проверка получения пользователями нужных разрешений
+#### 7. Проверка получения пользователем нужных разрешений
 1. Проверим, получили ли наш пользователь jean нужные разрешения.
 * Было:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods
+sudo -u jean kubectl get pods
 Error from server (Forbidden): pods is forbidden: User "jean" cannot list resource "pods" in API group "" in the namespace "default"
 ```
 * Стало:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl get pods
+sudo -u jean kubectl get pods
 NAME                               READY   STATUS             RESTARTS          AGE
 hello-node-8657b68576-b5s8h        0/1     CrashLoopBackOff   961 (4m56s ago)   6d
 hello-world-2-7d8857465b-8bssw     0/1     ImagePullBackOff   0                 5d15h
@@ -236,7 +227,7 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0                 
 ```
 3. Просмотр логов пользователем jean:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8s-hello-world
+sudo -u jean kubectl logs -l app=k8s-hello-world
 Получен запрос на URL: /
 Получен запрос на URL: /
 Получен запрос на URL: /favicon.ico
@@ -245,7 +236,7 @@ maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl logs -l app=k8
 ```
 4. Просмотр описания пода
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl describe pods k8s-hello-world
+sudo -u jean kubectl describe pods k8s-hello-world
 Name:         k8s-hello-world-6969845fcf-5v7xk
 Namespace:    default
 Priority:     0
@@ -340,13 +331,12 @@ Events:                      <none>
 ```
 5. Попытка создания нового пода пользователем jean приводит к ошибке., т.к. разрешения на это у него нет:
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl create deployment 2-k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
+sudo -u jean kubectl create deployment 2-k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
 error: failed to create deployment: deployments.apps is forbidden: User "jean" cannot create resource "deployments" in API group "apps" in the namespace "default"
-
 ```
-### Таблица возможностей пользователя jean
+#### 8. Таблица возможностей пользователя jean
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ sudo -u jean kubectl auth can-i --list
+sudo -u jean kubectl auth can-i --list
 [sudo] пароль для maestro: 
 Resources                                       Non-Resource URLs   Resource Names   Verbs
 selfsubjectaccessreviews.authorization.k8s.io   []                  []               [create]
@@ -426,34 +416,11 @@ poddisruptionbudgets.policy                     []                  []          
 
 ```
 
-### Другой вариант создания роли для пльзователя
+#### 9. Примеры создания роли пользователя только для чтоения логов пода:
 
 ```
-maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create clusterrole --help
-Create a cluster role.
-
-Examples:
-  # Create a cluster role named "pod-reader" that allows user to perform "get", "watch" and "list" on pods
-  kubectl create clusterrole pod-reader --verb=get,list,watch --resource=pods
-  
-  # Create a cluster role named "pod-reader" with ResourceName specified
-  kubectl create clusterrole pod-reader --verb=get --resource=pods --resource-name=readablepod
---resource-name=anotherpod
-  
-  # Create a cluster role named "foo" with API Group specified
-  kubectl create clusterrole foo --verb=get,list,watch --resource=rs.extensions
-  
-  # Create a cluster role named "foo" with SubResource specified
-  kubectl create clusterrole foo --verb=get,list,watch --resource=pods,pods/status
-  
-  # Create a cluster role name "foo" with NonResourceURL specified
-  kubectl create clusterrole "foo" --verb=get --non-resource-url=/logs/*
-  
-  # Create a cluster role name "monitoring" with AggregationRule specified
-  kubectl create clusterrole monitoring --aggregation-rule="rbac.example.com/aggregate-to-monitoring=true"
-
+kubectl create clusterrole pod-logs --verb=get,list,watch --resource=pods/log
 ```
-
 
 
 
