@@ -57,12 +57,12 @@ k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14
  * пользователь прописан в локальный конфиг (~/.kube/config, блок users)
  * пользователь может просматривать логи подов и их конфигурацию (kubectl logs pod <pod_id>, kubectl describe pod <pod_id>)
 
-#### 1. Создание пользователей
+### 1. Создание пользователей
 1. Создаем пользователя на мастере, а затем переходим в его домашнюю директорию для выполнения остальных шагов:
 ```
 useradd jean && cd /home/jean
 ```
-#### 2. Создание токена / ключа / сертификата
+### 2. Создание токена / ключа / сертификата
 1. Создаем закрытый ключ:
 ```
 openssl genrsa -out jean.key 2048
@@ -85,7 +85,7 @@ openssl x509 -req -in jean.csr \
 mkdir .certs && mv jean.crt jean.key .certs
 ```
 
-#### 3. Создание пользователя внутри Minikube
+### 3. Создание пользователя внутри Minikube
 1. Создаем пользователя внутри Minikube (добавляем пользователя в файл-конфиг minikube). Файл находится здесь: `/home/maestro/.kube/config`
 ```
 kubectl config set-credentials jean \
@@ -127,7 +127,7 @@ kubectl config set-context jean-context --cluster=minikube --user=jean
 ```
 
 
-#### 4. Создание пространств имен:
+### 4. Создание пространств имен:
 
 1. Создаем неймспейс
 ```
@@ -154,7 +154,7 @@ Error from server (Forbidden): pods is forbidden: User "jean" cannot list resour
 ```
 
 
-#### 5. Создание ролей для пользователя
+### 5. Создание ролей для пользователя
 1. Создание Role и ClusterRole
 
 Мы будем использовать ClusterRole, доступный по умолчанию. Впрочем, также покажем, как создавать свои Role и ClusterRole. 
@@ -172,11 +172,11 @@ rolebindings                                   rbac.authorization.k8s.io/v1     
 roles                                          rbac.authorization.k8s.io/v1           true         Role
 ```
 
-#### 6. Привязка Role или ClusterRole к пользователю
+### 6. Привязка Role или ClusterRole к пользователю
 
 1. RoleBinding'и нужно задавать по пространствам имен, а не по пользователям. Другими словами, для авторизации jean мы создадим RoleBinding. 
 2. Мы разрешаем jean просматривать (view) неймспейс default и привяжем ClusterRole view к нашему пользователю
-4. Создаем файл:
+3. Создаем файл:
 
 ```yml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -193,7 +193,7 @@ roleRef:
   name: view
   apiGroup: rbac.authorization.k8s.io
 ```
-5. Активируем привязку ролей:
+4. Активируем привязку ролей:
 ```
 kubectl apply -f /home/jean/jean-rolebinding.yml
 rolebinding.rbac.authorization.k8s.io/jean created
@@ -201,7 +201,7 @@ rolebinding.rbac.authorization.k8s.io/jean created
 * В данном случае была использована `kubectl apply` вместо `kubectl create`. Разница между ними в том, что create создает объект и больше ничего не делает, а apply — не только создает объект (в случае, если его не существует), но и обновляет при необходимости.
 
 
-#### 7. Проверка получения пользователем нужных разрешений
+### 7. Проверка получения пользователем нужных разрешений
 1. Проверим, получили ли наш пользователь jean нужные разрешения.
 * Было:
 ```
@@ -334,7 +334,7 @@ Events:                      <none>
 sudo -u jean kubectl create deployment 2-k8s-hello-world --image=zakharovnpa/k8s-hello-world:05.06.22
 error: failed to create deployment: deployments.apps is forbidden: User "jean" cannot create resource "deployments" in API group "apps" in the namespace "default"
 ```
-#### 8. Таблица возможностей пользователя jean
+### 8. Таблица возможностей пользователя jean
 ```
 sudo -u jean kubectl auth can-i --list
 [sudo] пароль для maestro: 
@@ -416,7 +416,7 @@ poddisruptionbudgets.policy                     []                  []          
 
 ```
 
-#### 9. Примеры создания роли пользователя только для чтоения логов пода:
+### 9. Примеры создания роли пользователя только для чтоения логов пода:
 
 ```
 kubectl create clusterrole pod-logs --verb=get,list,watch --resource=pods/log
