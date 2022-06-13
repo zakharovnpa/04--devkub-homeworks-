@@ -13,6 +13,41 @@
  * наличие подов можно проверить командой kubectl get pods
 
 
+**Ответ:**
+
+#### Запуск приложения
+1. Находимся на ноде `minikube`:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get nodes
+NAME       STATUS   ROLES                  AGE     VERSION
+minikube   Ready    control-plane,master   6d20h   v1.23.3
+```
+2. Создаем деплой командой `kubectl create deployment <app_name> --image=name_repo/name_image:tagged`:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl create deployment k8s-hello-world --namespace default --image=zakharovnpa/k8s-hello-world:05.06.22
+deployment.apps/k8s-hello-world created
+```
+3. Деплой создан `k8s-hello-world`:
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get deployments
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+k8s-hello-world   1/1     1            1           18h
+```
+4. Один инстас приложения уже работает. Для масштабирования запускаем приложение командой `kubectl scale deployment k8s-hello-world --replicas=2`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl scale deployment k8s-hello-world --replicas=2
+deployment.apps/k8s-hello-world scaled
+```
+
+5. Просмотр количества подов командой `kubectl get pods -l app=k8s-hello-world`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                               READY   STATUS             RESTARTS        AGE
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0               45h
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14m
+```
+
+
 ## Задание 2: Просмотр логов для разработки
 Разработчикам крайне важно получать обратную связь от штатно работающего приложения и, еще важнее, об ошибках в его работе. 
 Требуется создать пользователя и выдать ему доступ на чтение конфигурации и логов подов в app-namespace.
@@ -29,6 +64,37 @@
 Требования:
  * в deployment из задания 1 изменено количество реплик на 5
  * проверить что все поды перешли в статус running (kubectl get pods)
+
+**Ответ:**
+
+1. Один инстас приложения уже работает. Для масштабирования запускаем приложение командой `kubectl scale deployment k8s-hello-world --replicas=2`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl scale deployment k8s-hello-world --replicas=2
+deployment.apps/k8s-hello-world scaled
+```
+
+2. Просмотр количества подов командой `kubectl get pods -l app=k8s-hello-world`
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods
+NAME                               READY   STATUS             RESTARTS        AGE
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running            0               45h
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running            0               14m
+```
+3. Масштабируем приложение до 5 инстансов
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl scale deployment k8s-hello-world --replicas=5
+deployment.apps/k8s-hello-world scaled
+```
+4. Работает 5 экземпляров приложения
+```
+maestro@PC-Ubuntu:~/Рабочий стол$ kubectl get pods -l app=k8s-hello-world
+NAME                               READY   STATUS    RESTARTS   AGE
+k8s-hello-world-6969845fcf-4lp47   1/1     Running   0          5s
+k8s-hello-world-6969845fcf-5v7xk   1/1     Running   0          5d11h
+k8s-hello-world-6969845fcf-bv6kp   1/1     Running   0          5s
+k8s-hello-world-6969845fcf-lwncw   1/1     Running   0          5s
+k8s-hello-world-6969845fcf-tbtzv   1/1     Running   0          3d14h
+```
 
 ---
 
