@@ -421,7 +421,7 @@ CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inv
 - 00:25:35 - с этим файлом можно дальше спокойно работать. Но рекомендуется убрать лишнее и некоторые вещи довести до нужного состояния.
 А именно:
 
-![myclaste-hosts](/12-kubernetes-04-install-part-2/Files/myclaste-hosts.png)
+![myclaster-hosts](/12-kubernetes-04-install-part-2/Files/myclaster-hosts.png)
 
 - 00:30:05 - Теперь мы готовы устанавливать наш кластер
 * Смотрим и изменяем файлы переменных
