@@ -418,12 +418,20 @@ declare -a IPS=(10.10.1.3 10.10.1.4 10.10.1.5)
 CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
 ```
 - 00:24:30 - указываем внешние IP адреса наших ВМ. И запускаем команду. В результате создастся файл `hosts.yaml`
+- 00:25:35 - с этим файлом можно дальше спокойно работать. Но рекомендуется убрать лишнее и некоторые вещи довести до нужного состояния.
+А именно:
 
+![myclaste-hosts](/12-kubernetes-04-install-part-2/Files/myclaste-hosts.png)
+
+- 00:30:05 - Теперь мы готовы устанавливать наш кластер
+* Смотрим и изменяем файлы переменных
 ```ShellSession
 # Review and change parameters under ``inventory/mycluster/group_vars``
 cat inventory/mycluster/group_vars/all/all.yml
 cat inventory/mycluster/group_vars/k8s_cluster/k8s-cluster.yml
-
+```
+- 00:30:30 - Запускаемустановку кластера
+```ShellSession
 # Deploy Kubespray with Ansible Playbook - run the playbook as root
 # The option `--become` is required, as for example writing SSL keys in /etc/,
 # installing packages and interacting with various systemd daemons.
