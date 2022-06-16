@@ -6,7 +6,9 @@
 TechLead
 PremiumBonus
 Андрей Копылов
+
 [1](https://github.com/kubernetes-sigs/kubespray)
+
 [2](https://devops.stackexchange.com/questions/9483/how-can-i-add-an-additional-ip-hostname-to-my-kubernetes-certificate)
 
 ### 2План занятия
@@ -15,6 +17,15 @@ PremiumBonus
 3. Kubespray
 4. Итоги
 5. Домашнее задание
+
+-00:03:30 - Занятие посвящено развертыванию кластера с помощью Ansible и Kubespray
+- С помощью Ansible - не самый рекоментуемый способ, но просто и быстро
+- С помошью Kubespray можно сконфигурировать все что нужно. Устновить несколько Control Play
+- Control Plane должно быть нечетное кол-во
+- 
+
+
+
 
 ### 3Требования к серверам
 
@@ -28,9 +39,11 @@ PremiumBonus
 - ОЗУ — от 1 ГБ
 - Диск — от 100 ГБ
 
-### 6Зависимости
+### 6Зависимости      - 00:06:50
 - Системные:
+```
 apt-transport-https ca-certiﬁcates curl
+```
 - Новый репозиторий:
 ```
 echo "deb
@@ -43,11 +56,15 @@ echo "deb
 kubelet kubeadm kubectl
 ```
 
-### 7Зависимости в ansible
+### 7Зависимости в ansible      - 00:07:10
 ![install_01](/12-kubernetes-04-install-part-2/Files/install_01.png)
 
-### 8Инициализация мастер ноды
+- В Ансибл мы переносим команды все теже самые, что и при запуске из Шелл
+
+### 8Инициализация мастер ноды      - 00:07:30
 ![install_02](/12-kubernetes-04-install-part-2/Files/install_02.png)
+
+- Может быть выведена в отдельную таску
 
 ### 9Подключение остальных мастеров
 ![install_03](/12-kubernetes-04-install-part-2/Files/install_03.png)
@@ -55,31 +72,364 @@ kubelet kubeadm kubectl
 ### 10Подключение рабочих нод
 ![install_04](/12-kubernetes-04-install-part-2/Files/install_04.png)
 
+- 00:08:40 - использование Ансибл позволяет упростить процесс добавления нод в кластер
+
 ### 11Проверка работоспособности
 - забрать конфиг с мастера
 - kubectl get nodes
 
-### 12Kubespray
+### 12Kubespray     - 00:09:15 - новые кластреы лучше ставить с помощью Kubespray
 
-### 13Что за “зверь”?
-- Набор Ansible ролей для установки и конфигурации системы оркестрации контейнерами Kubernetes.
+### 13Что за “зверь”?     - 00:10:10
+- Kubespray - это набор Ansible ролей для установки и конфигурирования системы оркестрации контейнерами Kubernetes.
 - В качестве IaaS в этом случае могут выступать AWS, GCE, Azure, OpenStack или обычные виртуальные машины.
 
-### 14Пример настройки через kubespray
+- Можно устанавливать в обфчные ВМ или в облака
+
+### 14Пример настройки через kubespray      - 00:10:40
 ![install_05](/12-kubernetes-04-install-part-2/Files/install_05.png)
 
-### 15Проверка статуса кластера
-- kubectl get nodes — покажет все ноды кластера;
-- kubectl get pods — покажет поды в default namespace.
+- Здесь приведен вариант конфига в виде ini файла
+- Также может быть конфиг в виде yaml файла
+- Далее будем работать с yaml файлом конфига
+- Этого файла достаточно для установки кластреа
 
-### 16Полезный софт
+### 15Проверка статуса кластера     - 00:11:35
+- `kubectl get nodes` — покажет все ноды кластера;
+- `kubectl get pods` — покажет поды в default namespace.
+
+### 16Полезный софт     - 00:11:50
 - Ingress
 - Kubernetes dashboard
+- Lens - аналог Kubernetes dashboard, устанавливаемый на локальный ПК
 
 ![install_06](/12-kubernetes-04-install-part-2/Files/install_06.png)
 
-### Практическая часть Лекии   -00:22:50
 
+
+### Практическая часть Лекции   - 00:13:30
+
+- Про Ansible playbook. ВАриант ручной установки
+
+
+* setup-worker.yml
+```yml
+---
+- import_playbook: playbooks/soft.yml
+- import_playbook: playbooks/worker.yml
+```
+* setup-controlplane.yml
+```yml
+---
+- import_playbook: playbooks/soft.yml
+- import_playbook: playbooks/control-plane.yml
+```
+* setup-cluster.yml
+```yml
+---
+- import_playbook: playbooks/soft.yml
+- import_playbook: playbooks/control-plane.yml
+- import_playbook: playbooks/worker.yml
+```
+* control-plane.yml
+```yml
+---
+- hosts: master
+  tasks:
+  - name: Kubeadm init
+    shell: kubeadm init --node-name=m1 --apiserver-cert-extra-sans=master --pod-network-cidr 10.244.0.0/16
+
+  - name: Copy config to home directory
+    shell: mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+  - name: Download CNI plugin
+    shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+  - name: Kubeadm token print
+    shell: kubeadm token create --print-join-command
+```
+* soft.yml
+```yml
+---
+- hosts: all
+  tasks:
+  - name: Install packages that allow apt to be used over HTTPS
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+
+  - name: Add kubernetes apt-key
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+
+  - name: Add kubernetes apt repository
+    apt_repository:
+      repo: 'deb http://apt.kubernetes.io/ kubernetes-xenial main'
+      state: present
+      filename: kubernetes
+
+
+  - name: Install Kubernetes packages
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+        - kubelet
+        - kubeadm
+        - kubectl
+        - containerd
+
+  - name: Fix settings
+    shell: echo 1 > /proc/sys/net/ipv4/ip_forward && modprobe br_netfilter
+
+```
+* worker.yml
+```yml
+---
+- hosts: workers
+  tasks:
+  - name: Join node
+    shell: kubeadm join 10.0.90.30:6443
+#    shell: kubeadm join --skip-phases=preflight 10.0.90.30:6443
+```
+* control-plane-reset.yml
+```yml
+---
+- hosts: workers
+  tasks:
+  - name: Join node
+    shell: kubeadm join 10.0.90.30:6443
+#    shell: kubeadm join --skip-phases=preflight 10.0.90.30:6443
+```
+
+- 00:15:40 
+* hosts
+```
+[master]
+10.0.90.30
+
+[workers]
+10.0.90.16
+10.0.90.3
+```
+* hosts-control-plane
+```
+[master]
+10.0.90.30
+```
+* hosts-new-node
+```
+[workers]
+10.0.90.3
+```
+- 00:16:10 - в Ansible много ручной работы. Иногда это хорошо
+
+- 00:16:19 - про Kubespray
+
+## Установка Kubernetes с помощью kubespray
+[Документация](https://kubespray.io/)
+
+## Подготовка
+Склонируйте себе репозиторий:
+```shell script
+git clone https://github.com/kubernetes-sigs/kubespray
+```
+
+```shell script
+# Установка зависимостей
+sudo pip3 install -r requirements.txt
+
+# Копирование примера в папку с вашей конфигурацией
+cp -rfp inventory/sample inventory/mycluster
+```
+
+## Конфигурация     - 00:18:00
+После установки зависимостей и подготовки шаблона с конфигурацией необходимо подготовить inventory файл.
+Этот файл будет содержать конфигурацию вашего кластера.
+
+Тут возможны два варианта:
+- запуск билдера и ручная правка `hosts.yaml` при необходимости; 
+- ручная правка `inventory.ini`.
+Эти способы равнозначны. Их использование зависит только от ваших личных предпочтений.
+ 
+ - 00:18:15 - Билдер готовит файл `hosts.yaml`. Мы пойдем этим путем
+
+
+Практически любой параметр кластера может быть сконфигурирован.
+Минимальный набор параметров такой:
+- имена нод;
+- роли нод;
+- ноды, на которых будет запущен etcd;
+- CNI плагин;
+- CRI плагин.
+
+### Конфигурация с запуском билдера   - 00:18:35
+Подготовьте список IP адресов и скопируйте их через пробел в первую команду.  
+```shell script
+# Обновление Ansible inventory с помощью билдера 
+declare -a IPS=(10.10.1.3 10.10.1.4 10.10.1.5)
+CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
+
+# 10.10.1.3 10.10.1.4 10.10.1.5 - адреса ваших серверов
+```
+- 00:18:55
+Билдер подготовит файл `inventory/mycluster/hosts.yaml`. Там будут прописаны адреса серверов, которые вы указали.
+Остальные настройки нужно делать самостоятельно.
+
+### Конфигурация без запуска билдера 
+Далее необходимо отредактировать файл `inventory/mycluster/inventory.ini` в соответствии с вашими предпочтениями.
+
+## Установка кластера
+Вне зависимости от предыдущего шага установка кластера производится однообразно.
+Меняется только указываемый `inventory` файл для playbook.
+
+Установка кластера занимает значительное количество времени.
+Время установки кластер из двух нод может занять более 10 минут.
+Чем больше нод, тем больше времени занимает установка.
+
+### Установка кластера после билдера 
+```shell script
+ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
+```
+
+### Установка кластера без билдера 
+```shell script
+ansible-playbook -i inventory/mycluster/inventory.ini cluster.yml -b -v
+```
+
+## Проверка установки
+```shell script
+kubectl version
+kubectl get nodes
+
+kubectl create deploy nginx --image=nginx:latest --replicas=2
+kubectl get po -o wide
+```
+
+## Добавление ноды
+```shell script
+ansible-playbook -i inventory/mycluster/hosts.yml scale.yml -b -v
+```
+
+## Удаление ноды
+```shell script
+ansible-playbook -i inventory/mycluster/hosts.yml remove-node.yml -b -v \
+  --private-key=~/.ssh/private_key \
+  --extra-vars "node=nodename,nodename2
+```
+
+- 00:19:55
+- Начало показа установки
+- 00:20:14 - установки ВМ на Яндекс.Облаке
+* `./create-vms.sh`
+```ShellSession
+#!/bin/bash
+
+set -e
+
+function create_vm {
+  local NAME=$1
+
+  YC=$(cat <<END
+    yc compute instance create \
+      --name $NAME \
+      --hostname $NAME \
+      --zone ru-central1-c \
+      --network-interface subnet-name=default,nat-ip-version=ipv4 \
+      --memory 2 \
+      --cores 2 \
+      --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2004-lts,type=network-ssd,size=20 \
+      --ssh-key /home/andrey/.ssh/id_rsa.pub
+END
+)
+#  echo "$YC"
+  eval "$YC"
+}
+
+create_vm "cp1"
+create_vm "node1"
+create_vm "node2"
+```
+* 00:20:30 - заходим в директорию со скачанным Kuberspray. Заносим в этот файл IP адреса наших ВМ из облака
+* `inventory.ini`
+```ini
+# ## Configure 'ip' variable to bind kubernetes services on a
+# ## different ip than the default iface
+# ## We should set etcd_member_name for etcd cluster. The node that is not a etcd member do not need to set the value, or can set the empty string value.
+[all]
+# node1 ansible_host=95.54.0.12  # ip=10.3.0.1 etcd_member_name=etcd1
+# node2 ansible_host=95.54.0.13  # ip=10.3.0.2 etcd_member_name=etcd2
+# node3 ansible_host=95.54.0.14  # ip=10.3.0.3 etcd_member_name=etcd3
+# node4 ansible_host=95.54.0.15  # ip=10.3.0.4 etcd_member_name=etcd4
+# node5 ansible_host=95.54.0.16  # ip=10.3.0.5 etcd_member_name=etcd5
+# node6 ansible_host=95.54.0.17  # ip=10.3.0.6 etcd_member_name=etcd6
+
+# ## configure a bastion host if your nodes are not directly reachable
+# [bastion]
+# bastion ansible_host=x.x.x.x ansible_user=some_user
+
+[kube_control_plane]
+# node1
+# node2
+# node3
+
+[etcd]
+# node1
+# node2
+# node3
+
+[kube_node]
+# node2
+# node3
+# node4
+# node5
+# node6
+
+[calico_rr]
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+calico_rr
+
+```
+- 00:22:00 - далее делаем пошагово по файлу README.md каталога kubespray
+-00:22:50 Создаем новую папку и копируем в нее файл 
+```ShellSession
+# Copy ``inventory/sample`` as ``inventory/mycluster``
+cp -rfp inventory/sample inventory/mycluster
+```
+* Теперь работаем в новом файле `inventory/mycluster` Или можно работать в `inventory.ini` Или создаем `inventory/mycluster/hosts.yaml`
+с нужными нам параметрами
+```ShellSession
+# Update Ansible inventory file with inventory builder
+declare -a IPS=(10.10.1.3 10.10.1.4 10.10.1.5)
+CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
+```
+- 00:24:30 - указываем внешние IP адреса наших ВМ. И запускаем команду. В результате создастся файл `hosts.yaml`
+
+```ShellSession
+# Review and change parameters under ``inventory/mycluster/group_vars``
+cat inventory/mycluster/group_vars/all/all.yml
+cat inventory/mycluster/group_vars/k8s_cluster/k8s-cluster.yml
+
+# Deploy Kubespray with Ansible Playbook - run the playbook as root
+# The option `--become` is required, as for example writing SSL keys in /etc/,
+# installing packages and interacting with various systemd daemons.
+# Without --become the playbook will fail to run!
+ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml
+```
 
 ### 17Итоги
 Сегодня мы изучили:
@@ -88,12 +438,18 @@ kubelet kubeadm kubectl
 
 ### 18Домашнее задание      -01:37:30
 
+Пошагово повторить то, что было показано на лекции
 - Папку с kubespray сохранить у себя и потом использовать
 - Кластер можно использовать и на меньшее кол-во рабочих нод, а не как в задании.
 - Немного усложним задание:
   - кластер должен быть доступен извне. Нужно чтобы кластер был не в локальной сети
-В ответе прикладывать только те файлы, которые были изменены.
 - Можно в Яндекс.Облаке запускать. 
+- Для доступа с вашего ПК надо будет указать ключик supplementory-ssl
+
+В ответе прикладывать только те файлы, которые были изменены.
+  - inventory.ini
+  - hosts.yaml
+  - те файлы, какие были изменены
 
 
 Давайте посмотрим ваше домашнее задание.
