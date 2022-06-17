@@ -430,7 +430,7 @@ CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inv
 cat inventory/mycluster/group_vars/all/all.yml
 cat inventory/mycluster/group_vars/k8s_cluster/k8s-cluster.yml
 ```
-- 00:30:30 - Запускаемустановку кластера
+- 00:30:30 - Запускаем установку кластера `ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml`
 ```ShellSession
 # Deploy Kubespray with Ansible Playbook - run the playbook as root
 # The option `--become` is required, as for example writing SSL keys in /etc/,
@@ -438,7 +438,72 @@ cat inventory/mycluster/group_vars/k8s_cluster/k8s-cluster.yml
 # Without --become the playbook will fail to run!
 ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml
 ```
+- 00:30:43 - запуск с ошибкой `ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml`
+- 00:35:55 - `ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml`
 
+- 00:41:35 - про установку etcd на два разных кластера
+- 00:51:50 - про ДЗ комментарий. 
+```ShellSession
+# Review and change parameters under ``inventory/mycluster/group_vars``
+cat inventory/mycluster/group_vars/all/all.yml
+cat inventory/mycluster/group_vars/k8s_cluster/k8s-cluster.yml
+```
+* В файле `all.yml` секция про ДНС сервера. Можно настроить свои и даже сервера провайдера
+
+- 00:54:00 - Завершение установки кластера
+
+### Тестирование нового кластера      - 00:55:15
+- вход на первую ноду.
+- 00:55:25 - команда для подключения пользователя ОС к Kubernetes
+- 00:56:01 - проверка кластера с ноды Control plane. !!! Нам надо сделать так, чтобы можно был оуправлять кластрером со своего ПК.
+- 00:58:15 - проверка доступности к кластеру с локального ПК
+- 00:58:45 - пояснение про Белые IP адерса. Нужно добавить (в?) нужный сертификат и тогда на локальной машине все заработает.
+- 00:59:00 - ответы на вопросы студентов. Почему надо делать колв- управляющих нод, на которых установлено etcd нечетное кол-во. Смотри материалы по теме "split brain" 
+- 01:03:10 - смотрим в `yml` файлах в директории вида `myclaster/group_vars/k8s_claster/` строчки кода, где настраиваются параметры для белых IP
+- обзор файла `k8s-claster.yml`
+- 01:05:50 - про то как может быть установлен внешний балансировщик
+- 01:06:25 - как выбрать какую версию Kubernetes можно установить.
+- 01:07:40 - про то где прописывается установка Calico
+- 01:08:20 - где прописывать диапазон IP адресов для сервисов `kube_service_address`, для подов `kube_pods_subnet`
+- данные диапазоны сетей можно задать только на стадии развертывания кластера, но потом, на работающем кластере их менять не жедательно. Это может нарушить работу сервисов со всеми вытекающими. Выход будет один - `kubeadm reset` (ну или настройки сети возвращать на место)
+- 01:13:45 - !!! про то, какой будет контейнер менеджер `conteiner_manager: conteinerd`
+- 01:14:20 - про ДЗ. какие файла показать в решении
+- 01:15:00 - как выставить параметры ограничения потребления ресурсов кластером
+- 01:16:10 - обзор файла `addons.yml`
+- 01:16:15 - где прописать установку Helm `helm_enabled: true`
+- 01:16:35 - provisioner
+- 01:17:05 - ingress
+- 01:18:50 - про ДЗ. Надо найти ключик для подключения домашнего ПК к kubectl. С его помощью можно будет прописать IP адрес в нужное место
+- 01:20:10 - как лучше искать: надо в одном из плейбуков найти место где сертификаты выписываются и там найти непосредственную ссылку и указать какой там был ключик.
+- 01:23:20 - найден ключ   `supplementary_addresses_in_ssl_keys` в таске `kubeadm-setup.yml`
+- 01:23:50 - !!! в файле `k8s-claster.yml` раскомментируем ключ `supplementary_addresses_in_ssl_keys` и указываем там наш внешний ip адрес нашего сервера с управляющей нодой и тогда ыишется сертификат, с которым можно будет установить kubesprey так как нужно и этим опльзоваться.
+- 01:26:25 - про рабочую нагрузку кластера
+```
+# Рабочая нагрузка
+В Kubernetes есть объекты, в которых запускается рабочая нагрузка.
+
+## Основные компоненты
+- [Pod](./10-pod/README.md) — минимальная единица развертывания;
+- [Deployment](./20-deployment/README.md) — создание подов и их масштабирование;
+- [ReplicaSet](./30-replicaset/README.md) — создание подов и их масштабирование (версионирование);
+- [StatefulSet](./40-statefulset/README.md) — создание подов с сохранением состояния и их масштабирование;
+- [DaemonSet](./50-daemonset/README.md) - запуск подов на каждой ноде; 
+- Job - запуск одноразовой задачи;
+- CronJob - запуск задачи по крону.
+
+Все эти объекты создают поды, в которых запускаются приложения с полезной нагрузкой.
+```
+### -01:26:50 - про поды
+### -01:28:26 - про deployments
+- У одного Deployment может быть несколько ReplicaSet
+- 01:31:39 - про то, где описано про поды `/learning-kubernetis/kubernetes-for-beginners/20-concepts/10-workload/10-pod/README.md`
+### -01:31:50 - про StatefullSet
+- `~/learning-kubernetis/kubernetes-for-beginners/20-concepts/10-workload/40-statefulset/README.md`
+### -01:33:40 - про DaemonSet
+- Создает по одному поду на каждой ноже
+- 01:33:50 - показаны демонсеты с помощью команды `kubectl --context=efox -n kube-system get pods -o wide`
+- `~/learning-kubernetis/kubernetes-for-beginners/20-concepts/10-workload/50-daemonset/README.md`
+![deamonsets](//Files/deamonsets.png)
 ### 17Итоги
 Сегодня мы изучили:
 - Установку мастеров и рабочих нод через ansible;
