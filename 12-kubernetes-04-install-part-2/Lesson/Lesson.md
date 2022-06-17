@@ -67,7 +67,7 @@ create_vm "node1"
 #create_vm "node2"
 
 ```
-4. Результат работы скрипта
+4. Результат работы скрипта. Создано две ВМ
 ```
 (venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# ./create-vms.sh 
 done (22s)
@@ -156,6 +156,124 @@ placement_policy: {}
 +----+------+---------+--------+-------------+-------------+
 
 (venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# 
+
+```
+5. Устанавливаем зависимости
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# sudo pip3 install -r requirements.txt
+Collecting ansible==5.7.1
+  Downloading ansible-5.7.1.tar.gz (35.7 MB)
+     |████████████████████████████████| 35.7 MB 42 kB/s 
+Collecting ansible-core==2.12.5
+  Downloading ansible-core-2.12.5.tar.gz (7.8 MB)
+     |████████████████████████████████| 7.8 MB 6.1 MB/s 
+Collecting cryptography==3.4.8
+  Downloading cryptography-3.4.8-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.2 MB)
+     |████████████████████████████████| 3.2 MB 10.0 MB/s 
+Collecting jinja2==2.11.3
+  Downloading Jinja2-2.11.3-py2.py3-none-any.whl (125 kB)
+     |████████████████████████████████| 125 kB 6.6 MB/s 
+Requirement already satisfied: netaddr==0.7.19 in /usr/lib/python3/dist-packages (from -r requirements.txt (line 5)) (0.7.19)
+Collecting pbr==5.4.4
+  Downloading pbr-5.4.4-py2.py3-none-any.whl (110 kB)
+     |████████████████████████████████| 110 kB 6.7 MB/s 
+Collecting jmespath==0.9.5
+  Downloading jmespath-0.9.5-py2.py3-none-any.whl (24 kB)
+Collecting ruamel.yaml==0.16.10
+  Downloading ruamel.yaml-0.16.10-py2.py3-none-any.whl (111 kB)
+     |████████████████████████████████| 111 kB 6.3 MB/s 
+Requirement already satisfied: ruamel.yaml.clib==0.2.6 in /usr/local/lib/python3.8/dist-packages (from -r requirements.txt (line 9)) (0.2.6)
+Collecting MarkupSafe==1.1.1
+  Downloading MarkupSafe-1.1.1-cp38-cp38-manylinux2010_x86_64.whl (32 kB)
+Requirement already satisfied: PyYAML in /usr/lib/python3/dist-packages (from ansible-core==2.12.5->-r requirements.txt (line 2)) (5.3.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.8/dist-packages (from ansible-core==2.12.5->-r requirements.txt (line 2)) (21.3)
+Requirement already satisfied: resolvelib<0.6.0,>=0.5.3 in /usr/local/lib/python3.8/dist-packages (from ansible-core==2.12.5->-r requirements.txt (line 2)) (0.5.4)
+Collecting cffi>=1.12
+  Downloading cffi-1.15.0-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl (446 kB)
+     |████████████████████████████████| 446 kB 6.6 MB/s 
+Requirement already satisfied: pyparsing!=3.0.5,>=2.0.2 in /usr/local/lib/python3.8/dist-packages (from packaging->ansible-core==2.12.5->-r requirements.txt (line 2)) (3.0.7)
+Collecting pycparser
+  Downloading pycparser-2.21-py2.py3-none-any.whl (118 kB)
+     |████████████████████████████████| 118 kB 6.7 MB/s 
+Building wheels for collected packages: ansible, ansible-core
+  Building wheel for ansible (setup.py) ... done
+  Created wheel for ansible: filename=ansible-5.7.1-py3-none-any.whl size=61777681 sha256=1194e3a5f723508a73e576af660c545571866cfe111c5830081b69643c9e9120
+  Stored in directory: /root/.cache/pip/wheels/02/07/2a/7b3eb5d79e268b769b0910cded0d524b4647ae5bc19f3ebb70
+  Building wheel for ansible-core (setup.py) ... done
+  Created wheel for ansible-core: filename=ansible_core-2.12.5-py3-none-any.whl size=2077336 sha256=61b48f504a0036b1d83a00f02098685e8dd5aad050f004c81a30bf99636fe21d
+  Stored in directory: /root/.cache/pip/wheels/13/09/5b/799a6bc9ca05da9805eaee2afea07e7f63e2ff03b37799d930
+Successfully built ansible ansible-core
+Installing collected packages: pycparser, cffi, cryptography, MarkupSafe, jinja2, ansible-core, ansible, pbr, jmespath, ruamel.yaml
+  Attempting uninstall: cryptography
+    Found existing installation: cryptography 2.8
+    Not uninstalling cryptography at /usr/lib/python3/dist-packages, outside environment /usr
+    Can't uninstall 'cryptography'. No files were found to uninstall.
+  Attempting uninstall: MarkupSafe
+    Found existing installation: MarkupSafe 2.1.1
+    Uninstalling MarkupSafe-2.1.1:
+      Successfully uninstalled MarkupSafe-2.1.1
+  Attempting uninstall: jinja2
+    Found existing installation: Jinja2 3.1.2
+    Uninstalling Jinja2-3.1.2:
+      Successfully uninstalled Jinja2-3.1.2
+  Attempting uninstall: ansible-core
+    Found existing installation: ansible-core 2.12.2
+    Uninstalling ansible-core-2.12.2:
+      Successfully uninstalled ansible-core-2.12.2
+  Attempting uninstall: ansible
+    Found existing installation: ansible 5.3.0
+    Uninstalling ansible-5.3.0:
+      Successfully uninstalled ansible-5.3.0
+  Attempting uninstall: jmespath
+    Found existing installation: jmespath 0.9.4
+    Not uninstalling jmespath at /usr/lib/python3/dist-packages, outside environment /usr
+    Can't uninstall 'jmespath'. No files were found to uninstall.
+  Attempting uninstall: ruamel.yaml
+    Found existing installation: ruamel.yaml 0.17.21
+    Uninstalling ruamel.yaml-0.17.21:
+      Successfully uninstalled ruamel.yaml-0.17.21
+Successfully installed MarkupSafe-1.1.1 ansible-5.7.1 ansible-core-2.12.5 cffi-1.15.0 cryptography-3.4.8 jinja2-2.11.3 jmespath-0.9.5 pbr-5.4.4 pycparser-2.21 ruamel.yaml-0.16.10
+
+```
+6. Создаем локальную директорию для настройки кластера
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# cp -rfp inventory/sample inventory/mycluster
+(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# 
+(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# cd inventory/mycluster/
+(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray/inventory/mycluster# 
+(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray/inventory/mycluster# ls -lha
+итого 16K
+drwxr-xr-x 3 root root 4,0K июн 13 22:10 .
+drwxr-xr-x 5 root root 4,0K июн 17 10:41 ..
+drwxr-xr-x 4 root root 4,0K июн 13 22:10 group_vars
+-rw-r--r-- 1 root root 1,1K июн 13 22:10 inventory.ini
+```
+7. Подготавливаем файлы инвентори
+
+* inventory.ini 
+```
+# ## Configure 'ip' variable to bind kubernetes services on a
+# ## different ip than the default iface
+# ## We should set etcd_member_name for etcd cluster. The node that is not a etcd member do not need to set the value, or can set the empty string value.
+[all]
+# node1 ansible_host=95.54.0.12  # ip=10.3.0.1 etcd_member_name=etcd1
+# node2 ansible_host=95.54.0.13  # ip=10.3.0.2 etcd_member_name=etcd2
+
+
+
+[kube_control_plane]
+cp1
+
+[etcd]
+cp1
+
+[kube_node]
+node1
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+
 
 ```
 
