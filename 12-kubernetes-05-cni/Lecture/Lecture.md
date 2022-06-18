@@ -228,6 +228,32 @@ spec:
 ```shell script
 kubectl apply -f templates/network-policy
 ```
+* 10-default.yml
+```yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+```
+* 10-frontend.yml
+```yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+
+```
 * 20-backend.yaml
 ```
 apiVersion: networking.k8s.io/v1
@@ -253,6 +279,31 @@ spec:
           port: 443
 
 ```
+* cashe.yml
+```yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cache
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: cache
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: backend
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+```
 
 Теперь проверим доступность между подами по прежней схеме.
 
@@ -264,6 +315,35 @@ spec:
 
 Вторая гипотеза подтвердилась полностью.
 
+- 01:37:45 - удаление политики
+- `kubectl apply -f templates/network-policy/00-default.yml`
+- 00:38:50 - как сделать Egress доступный для Backend
+- 
+- 99-egress-backend.yml Не факт, что работает.
+```yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: egress-backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        podSelector:
+          matchLabels:
+            app: frontend
+      ports:
+       - protocol: TCP
+         port: 80
+       - protocol: TCP
+         port: 443
+      
+```
 
 
 
@@ -277,12 +357,12 @@ spec:
 1. Необходимо правильно настроить NetworkPolicy.
 
 
-### 13Итоги
+### 13Итоги    - 01:48:00
 Сегодня мы изучили:
 - зачем нужен CNI и как он устроен;
 - какие есть популярные реализации.
 
-### 14Домашнее задание
+### 14Домашнее задание    - 01:49:00
 Давайте посмотрим ваше домашнее задание.
 - Вопросы по домашней работе задавайте в чате мессенджера
 Slack.
