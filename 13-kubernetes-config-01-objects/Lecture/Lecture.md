@@ -67,6 +67,7 @@ PremiumBonus
 - работает поверх replicaset.
 
 ### 12Схема компонентов
+![shems_01](/13-kubernetes-config-01-objects/Files/shems_01.png)
 
 ### 13Statefulset
 
@@ -77,6 +78,7 @@ PremiumBonus
 данных, например).
 
 ### 15Схема компонентов
+![shems_02](/13-kubernetes-config-01-objects/Files/shems_02.png)
 
 ### 16Services
 
@@ -87,6 +89,7 @@ PremiumBonus
 - имеет свой IP-адрес (и dns-имя).
 
 ### 18Схема компонентов
+![shems_03](/13-kubernetes-config-01-objects/Files/shems_03.png)
 
 ### 19Endpoints
 
@@ -95,7 +98,10 @@ PremiumBonus
 - можно создать вручную;
 - позволяет направлять трафик наружу из кластера.
 
-### 21Схема компонентовИтоги
+### 21Схема компонентов
+![shems_04](/13-kubernetes-config-01-objects/Files/shems_04.png)
+
+### 22Итоги
 Сегодня мы изучили:
 - что такое pods, deployments, statefulset, services, endpoints;
 - зачем нужен каждый элемент;
