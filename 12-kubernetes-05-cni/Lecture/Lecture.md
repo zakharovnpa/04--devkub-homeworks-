@@ -205,7 +205,76 @@ spec:
   - kubectl delete networkpolicies
 - 01:22:40 - Устанавливаем в новом кластере поды: kubectl apply -f ./manifest/main
 
+- 01:24:15 - применение политики по умоланию "все запрещено"
+- Применим этот конфиг:
+```shell script
+kubectl apply -f templates/network-policy/00-default.yaml
+```
+- 00-default.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
 
+```
+- 01:25:45 - применяем политику согласно нашей предполгаемой схеме
+- ### Применение NetworkPolicy
+Применяем остальные наши сетевые политики. 
+```shell script
+kubectl apply -f templates/network-policy
+```
+* 20-backend.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: backend   # Политика распространяется на поды, имена app которых содержат  backend
+  policyTypes:
+    - Ingress       # Входящий тип сетевой политики
+  ingress:
+    - from:        # Откуда
+      - podSelector:
+          matchLabels:
+            app: frontend    # С пода, имя app которого содержит frontend
+      ports:                 # для портов. Перечислить столько сколько надо
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+```
+
+Теперь проверим доступность между подами по прежней схеме.
+
+Будут доступны поды только по нашей схеме.
+- frontend -> backend
+- backend -> cache
+
+Остальные варианты недоступны.
+
+Вторая гипотеза подтвердилась полностью.
+
+
+
+
+
+
+
+
+## Выводы
+Для обеспечения безопасной работы с сетью необходимо выполнить 2 пункта:
+1. Использовать CNI плагин с поддержкой NetworkPolicy.
+1. Необходимо правильно настроить NetworkPolicy.
 
 
 ### 13Итоги
