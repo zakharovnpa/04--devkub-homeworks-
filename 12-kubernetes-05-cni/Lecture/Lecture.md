@@ -57,6 +57,120 @@ namespace);
 - можно использовать с другими решениями
 (ﬂannel/calico).
 
+## Практическая часть лекции     - 00:36:40
+- 00:36:50 - показан файл /etc/kubernetes/manifest/kube-controller-manager.yml
+- показаны настройки claster-cidr=10.244.0.0/16
+- 00:40:50 - kube-sheduller.yml
+- 00:41:55 - подсети для нод, настройки интерфейса
+- 00:42:55  -kubectl get pods -o wide -A | grep node1
+Видно, что адрес сети для всех контейнеров пода одинаковый
+- 00:46:10 - kube-proxy по умолчению на ноде создает правила iptables
+- 00:47:50 - про кол-во подов в ноде. Натсраивается в куберспрее
+- 00:40:10 - о плагинах и что они делают
+- 00:50:10 - настройки iptables на нодах. iptables -vnL | less
+- 00:51:35 - iptables -t nat -vnL | less
+- 00:51:35 - на ноде смотрим роуты `route -n`
+- 00:56:00 - показаны роуты с calico
+### Про плагины       - 01:05:30
+- Если для нашей сети кластера нужно что-то особенное, то надо выбрать правильный плагин
+### Бонусный материал   NetworkPolicy   - 00:06:50
+- Объект NetworkPolicy служит для разграничения доступа между подами.
+- Для исследования работы принципов Network Policy рекомендую использовать ящик с инструментами [Network-MultiTool](https://github.com/Praqma/Network-MultiTool).
+- Docker-образы из этого репозитория содержит все необходимые для этого инструменты.
+- 01:10:30 - пример сетевой политики
+
+## Настройка NetworkPolicy
+Вот пример желаемого поведения:
+![network-poplicy](/12-kubernetes-05-cni/Files/network-poplicy.png)
+В нашем приложении реализовано 3 сервиса:
+- frontend; 
+- backend; 
+- cache.
+
+Откуда берутся данные в cache оставим за скобками данного упражнения.
+ 
+Выглядит разумным обеспечить доступ:
+- frontend -> backend;
+- backend -> cache.
+
+Остальные возможные взаимодействия должны быть запрещены. 
+- 01:12:35 
+- Проверка доступности между подами с flannel
+Сначала развертываем в кластере с установленным CNI плагином flannel.
+В этом плагине не реализована работа с NetworkPolicy. 
+Поэтому указание NetworkPolicy никак не повлияет на сетевую доступность между подами.
+
+Выдвинем две гипотезы:
+1. Без настройки NetworkPolicy все поды будут доступны между собой.
+1. После настройки NetworkPolicy все поды будут все еще доступны между собой.
+
+### Развертывание   - 01:13:46 - 
+Для начала необходимо развернуть объекты из подготовленных манифестов.
+```shell script
+# Развертывание
+kubectl apply -f ./templates/main/
+```
+- манифест выглядит так:
+/root/learning-kubernetis/kubernetes-for-beginners/16-networking/20-network-policy/templates/main/10-frontend.yml
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - image: praqma/network-multitool:alpine-extra
+          imagePullPolicy: IfNotPresent
+          name: network-multitool
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  ports:
+    - name: web
+      port: 80
+  selector:
+    app: frontend
+
+```
+- 01:15:05 - `kubectl apply -f ./templates/main/` и результат применения манифеста (перед этим был очищеныот подов неймспейс)
+- Создаются три новые поды (фронтэнд, бэкэнд, кэш)
+
+# Проверка созданных подов
+kubectl get po
+``` 
+
+### Проверка доступности между подами
+```shell script
+kubectl exec backend-7b4877445f-kgvnr -- curl -s -m 1 frontend
+kubectl exec backend-7b4877445f-kgvnr -- curl -s -m 1 cache
+kubectl exec backend-7b4877445f-kgvnr -- curl -s -m 1 backend
+```
+В случае отсутствия запретов все поды будут доступны. 
+Подобный эксперимент можно провести из любого из созданных подов.
+
+Гипотеза подтвердилась.
+
+
+
 ### 13Итоги
 Сегодня мы изучили:
 - зачем нужен CNI и как он устроен;
