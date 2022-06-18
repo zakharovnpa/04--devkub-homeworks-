@@ -154,9 +154,8 @@ spec:
 - 01:15:05 - `kubectl apply -f ./templates/main/` и результат применения манифеста (перед этим был очищеныот подов неймспейс)
 - Создаются три новые поды (фронтэнд, бэкэнд, кэш)
 
-# Проверка созданных подов
+### Проверка созданных подов
 kubectl get po
-``` 
 
 ### Проверка доступности между подами
 ```shell script
@@ -168,6 +167,44 @@ kubectl exec backend-7b4877445f-kgvnr -- curl -s -m 1 backend
 Подобный эксперимент можно провести из любого из созданных подов.
 
 Гипотеза подтвердилась.
+
+### Применение политик   - 01:18:20 
+- Применение NetworkPolicy
+```shell script
+kubectl apply -f ./templates/network-policy
+
+kubectl get networkpolicies
+```
+- 01:19:10- удаление нетворкполиси `kubectl delete networkpolicies --all`
+- 01:19:40 - /root/learning-kubernetis/kubernetes-for-beginners/16-networking/20-network-policy/templates/network-policy/00-default.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}   # Здесь описываем разрешающие правила
+  policyTypes:
+    - Ingress
+
+```
+
+### Проверка доступности между подами после применения NetworkPolicy    - 01:20:00
+Выполняем те же самые команды. Результат ожидаемо такой же.
+А именно все поды доступны со всех подов.
+
+Вторая гипотеза тоже подтвердилась.
+
+- Из этого можно сделать вывод, что Flanel сетевые политики не поддерживает и для работы NetworkPolicy необходим CNI плагин с поддержкой NetworkPolicy.
+  - Одним из таких плагинов является calico.
+### Про Calico      - 01:21:00 - 
+- Конфигурирование ./kube/config для создания новго контекста
+- Нам нужен еще один кластер, на котором установлен Calico
+- 01:21:55 
+  - kubectl get networkpolicies
+  - kubectl delete networkpolicies
+- 01:22:40 - Устанавливаем в новом кластере поды: kubectl apply -f ./manifest/main
+
 
 
 
