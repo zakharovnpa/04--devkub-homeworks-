@@ -25,9 +25,11 @@
 ### - 01:18:50 - про ДЗ. Надо найти ключик для подключения домашнего ПК к kubectl
 
 ### Ход решения 1:
-#### Создание ВМ в Яндекс Облаке
-1. Директория выполнения ДЗ - /root/learning-kubernetis/Alfa
-2. Создаем три скрипта для управления ВМ на облаке
+
+#### Директория выполнения ДЗ - `/root/learning-kubernetis/Alfa`
+
+#### 1. Создание ВМ в Яндекс Облаке
+1. Создаем три скрипта для управления ВМ на облаке
 ```
 (venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# chmod 777 ./list-vms.sh 
 (venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# chmod 777 ./create-vms.sh 
@@ -37,8 +39,6 @@
 
 3. Запускаем скрипт, устанавливающий 2 ВМ
 ```
-#!/bin/bash
-
 #!/bin/bash
 
 set -e
@@ -158,7 +158,494 @@ placement_policy: {}
 (venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# 
 
 ```
-5. Устанавливаем зависимости
+5. Устанавливаем в следующий сеанс 5 ВМ
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# ./create-vms.sh
+done (25s)
+id: fhm5a1ss72jisu8ljq9c
+folder_id: b1gd3hm4niaifoa8dahm
+created_at: "2022-06-19T04:56:24Z"
+name: cp1
+zone_id: ru-central1-a
+platform_id: standard-v2
+resources:
+  memory: "2147483648"
+  cores: "2"
+  core_fraction: "100"
+status: RUNNING
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhm1j2lvsq2d3lhu7fsn
+  auto_delete: true
+  disk_id: fhm1j2lvsq2d3lhu7fsn
+network_interfaces:
+- index: "0"
+  mac_address: d0:0d:55:07:9c:38
+  subnet_id: e9bi82druit5rcjcbn14
+  primary_v4_address:
+    address: 10.128.0.30
+    one_to_one_nat:
+      address: 51.250.72.250
+      ip_version: IPV4
+fqdn: cp1.ru-central1.internal
+scheduling_policy: {}
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+There is a new yc version '0.91.0' available. Current version: '0.85.0'.
+See release notes at https://cloud.yandex.ru/docs/cli/release-notes
+You can install it by running the following command in your shell:
+        $ yc components update
+
+done (21s)
+id: fhmiop06ucrc0qdp9vr2
+folder_id: b1gd3hm4niaifoa8dahm
+created_at: "2022-06-19T04:56:51Z"
+name: node1
+zone_id: ru-central1-a
+platform_id: standard-v2
+resources:
+  memory: "2147483648"
+  cores: "2"
+  core_fraction: "100"
+status: RUNNING
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhm7ask25784bqssbp3f
+  auto_delete: true
+  disk_id: fhm7ask25784bqssbp3f
+network_interfaces:
+- index: "0"
+  mac_address: d0:0d:12:c6:40:6f
+  subnet_id: e9bi82druit5rcjcbn14
+  primary_v4_address:
+    address: 10.128.0.14
+    one_to_one_nat:
+      address: 51.250.89.112
+      ip_version: IPV4
+fqdn: node1.ru-central1.internal
+scheduling_policy: {}
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+done (17s)
+id: fhmujb14gvm050vcuv17
+folder_id: b1gd3hm4niaifoa8dahm
+created_at: "2022-06-19T04:57:13Z"
+name: node2
+zone_id: ru-central1-a
+platform_id: standard-v2
+resources:
+  memory: "2147483648"
+  cores: "2"
+  core_fraction: "100"
+status: RUNNING
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhmof9h89flnefo036oj
+  auto_delete: true
+  disk_id: fhmof9h89flnefo036oj
+network_interfaces:
+- index: "0"
+  mac_address: d0:0d:1e:9a:c2:48
+  subnet_id: e9bi82druit5rcjcbn14
+  primary_v4_address:
+    address: 10.128.0.22
+    one_to_one_nat:
+      address: 51.250.90.116
+      ip_version: IPV4
+fqdn: node2.ru-central1.internal
+scheduling_policy: {}
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+done (21s)
+id: fhm8nr00jlpoi9q15js5
+folder_id: b1gd3hm4niaifoa8dahm
+created_at: "2022-06-19T04:57:32Z"
+name: node3
+zone_id: ru-central1-a
+platform_id: standard-v2
+resources:
+  memory: "2147483648"
+  cores: "2"
+  core_fraction: "100"
+status: RUNNING
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhmiii8vnr8qnl7no4b7
+  auto_delete: true
+  disk_id: fhmiii8vnr8qnl7no4b7
+network_interfaces:
+- index: "0"
+  mac_address: d0:0d:8b:ec:00:9d
+  subnet_id: e9bi82druit5rcjcbn14
+  primary_v4_address:
+    address: 10.128.0.34
+    one_to_one_nat:
+      address: 51.250.11.207
+      ip_version: IPV4
+fqdn: node3.ru-central1.internal
+scheduling_policy: {}
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+done (19s)
+id: fhm1u661me90nn9fp76i
+folder_id: b1gd3hm4niaifoa8dahm
+created_at: "2022-06-19T04:57:55Z"
+name: node4
+zone_id: ru-central1-a
+platform_id: standard-v2
+resources:
+  memory: "2147483648"
+  cores: "2"
+  core_fraction: "100"
+status: RUNNING
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhmh4vgge1is5ue70al8
+  auto_delete: true
+  disk_id: fhmh4vgge1is5ue70al8
+network_interfaces:
+- index: "0"
+  mac_address: d0:0d:1f:18:c1:b3
+  subnet_id: e9bi82druit5rcjcbn14
+  primary_v4_address:
+    address: 10.128.0.29
+    one_to_one_nat:
+      address: 51.250.80.140
+      ip_version: IPV4
+fqdn: node4.ru-central1.internal
+scheduling_policy: {}
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+```
+**Ответ:**
+
+Создано 4 ВМ:
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# ./list-vms.sh 
++----------------------+-------+---------------+---------+---------------+-------------+
+|          ID          | NAME  |    ZONE ID    | STATUS  |  EXTERNAL IP  | INTERNAL IP |
++----------------------+-------+---------------+---------+---------------+-------------+
+| fhm1u661me90nn9fp76i | node4 | ru-central1-a | RUNNING | 51.250.80.140 | 10.128.0.29 |
+| fhm5a1ss72jisu8ljq9c | cp1   | ru-central1-a | RUNNING | 51.250.72.250 | 10.128.0.30 |
+| fhm8nr00jlpoi9q15js5 | node3 | ru-central1-a | RUNNING | 51.250.11.207 | 10.128.0.34 |
+| fhmiop06ucrc0qdp9vr2 | node1 | ru-central1-a | RUNNING | 51.250.89.112 | 10.128.0.14 |
+| fhmujb14gvm050vcuv17 | node2 | ru-central1-a | RUNNING | 51.250.90.116 | 10.128.0.22 |
++----------------------+-------+---------------+---------+---------------+-------------+
+```
+#### 2. Подготовка файлов инвентори для kubespray
+
+* Пояснение:
+1. Согласно задания необходимо создать два кластера
+  * тестовый
+  * продуктовый
+2. Необходимо автоматизировать процесс развертывания кластеров
+
+**Ход решения:**
+
+1. Установка Kubernetes на созданные ВМ будем производить с помощью kubespray на основании ролей Ansible
+2. Ansible роли для kubespray копируем из репозитория [kubespray](https://github.com/kubernetes-sigs/kubespray)
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# git clone git@github.com:kubernetes-sigs/kubespray.git
+Клонирование в «kubespray»…
+remote: Enumerating objects: 62348, done.
+remote: Counting objects: 100% (66/66), done.
+remote: Compressing objects: 100% (45/45), done.
+remote: Total 62348 (delta 21), reused 53 (delta 16), pack-reused 62282
+Получение объектов: 100% (62348/62348), 18.33 МиБ | 2.73 МиБ/с, готово.
+Определение изменений: 100% (35049/35049), готово.
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# 
+```
+
+3. Создаем две новые локальные директории для настройки кластеров
+
+* `cp -rfp inventory/sample inventory/netology-test`
+* `cp -rfp inventory/sample inventory/netology-prod`
+4. Заходим в директорию со скачанным Kuberspray. 
+5. Заносим в этот файл IP адреса наших ВМ из облака
+* `/root/learning-kubernetis/Alfa/kubespray/inventory/netology-test/inventory.ini`
+
+6. Идем вариантом создания файла `hosts.yaml` с помощью билдера
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# declare -a IPS=(51.250.93.145 51.250.89.48 51.250.91.220 51.250.82.4 51.250.93.74)
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# CONFIG_FILE=inventory/unknow-cluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
+Traceback (most recent call last):
+  File "contrib/inventory_builder/inventory.py", line 40, in <module>
+    from ruamel.yaml import YAML
+ModuleNotFoundError: No module named 'ruamel'
+
+```
+* Ошибка. Нет устновленного модуля 'ruamel'
+7. Устанавливаем модуль 'ruamel'
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# pip install ruamel.yaml
+Collecting ruamel.yaml
+  Using cached ruamel.yaml-0.17.21-py3-none-any.whl (109 kB)
+Collecting ruamel.yaml.clib>=0.2.6
+  Using cached ruamel.yaml.clib-0.2.6-cp38-cp38-manylinux1_x86_64.whl (570 kB)
+Installing collected packages: ruamel.yaml.clib, ruamel.yaml
+Successfully installed ruamel.yaml-0.17.21 ruamel.yaml.clib-0.2.6
+WARNING: You are using pip version 21.3.1; however, version 22.1.2 is available.
+You should consider upgrading via the '/root/learning-kubernetis/Alfa/venv/bin/python -m pip install --upgrade pip' command.
+
+```
+8. Необходимо обновить пакет pip
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# /root/learning-kubernetis/Alfa/venv/bin/python -m pip install --upgrade pip
+Requirement already satisfied: pip in /root/learning-kubernetis/Alfa/venv/lib/python3.8/site-packages (21.3.1)
+Collecting pip
+  Downloading pip-22.1.2-py3-none-any.whl (2.1 MB)
+     |████████████████████████████████| 2.1 MB 1.4 MB/s            
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 21.3.1
+    Uninstalling pip-21.3.1:
+      Successfully uninstalled pip-21.3.1
+Successfully installed pip-22.1.2
+
+```
+9.  Вторая попытка обновления модуля 'ruamel'
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# pip install ruamel.yaml
+Requirement already satisfied: ruamel.yaml in /root/learning-kubernetis/Alfa/venv/lib/python3.8/site-packages (0.17.21)
+Requirement already satisfied: ruamel.yaml.clib>=0.2.6 in /root/learning-kubernetis/Alfa/venv/lib/python3.8/site-packages (from ruamel.yaml) (0.2.6)
+```
+10. Вторая попытка создания файла `hosts.yaml` с помощью билдера
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# declare -a IPS=(51.250.93.145 51.250.89.48 51.250.91.220 51.250.82.4 51.250.93.74)
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# echo ${IPS[@]}
+51.250.93.145 51.250.89.48 51.250.91.220 51.250.82.4 51.250.93.74
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# 
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa/kubespray# CONFIG_FILE=inventory/unknow-cluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
+DEBUG: Adding group all
+DEBUG: Adding group kube_control_plane
+DEBUG: Adding group kube_node
+DEBUG: Adding group etcd
+DEBUG: Adding group k8s_cluster
+DEBUG: Adding group calico_rr
+DEBUG: adding host node1 to group all
+DEBUG: adding host node2 to group all
+DEBUG: adding host node3 to group all
+DEBUG: adding host node4 to group all
+DEBUG: adding host node5 to group all
+DEBUG: adding host node1 to group etcd
+DEBUG: adding host node2 to group etcd
+DEBUG: adding host node3 to group etcd
+DEBUG: adding host node1 to group kube_control_plane
+DEBUG: adding host node2 to group kube_control_plane
+DEBUG: adding host node1 to group kube_node
+DEBUG: adding host node2 to group kube_node
+DEBUG: adding host node3 to group kube_node
+DEBUG: adding host node4 to group kube_node
+DEBUG: adding host node5 to group kube_node
+```
+11. Создался файл `/root/learning-kubernetis/Alfa/kubespray/inventory/unknow-cluster/hosts.yaml`
+12. Копируем этот файл в директорию кластера `netology-test`
+13. Редактируем файл. !!! Копию в ответ на ДЗ
+```yml
+all:
+  hosts:
+    cp1:
+      ansible_host: 51.250.93.145
+      ansible_user: yc-user
+    node1:
+      ansible_host: 51.250.89.48
+      ansible_user: yc-user
+    node2:
+      ansible_host: 51.250.91.220
+      ansible_user: yc-user
+    node3:
+      ansible_host: 51.250.82.4
+      ansible_user: yc-user
+    node4:
+      ansible_host: 51.250.93.74
+      ansible_user: yc-user
+  children:
+    kube_control_plane:
+      hosts:
+        cp1:
+    kube_node:
+      hosts:
+        node1:
+        node2:
+        node3:
+        node4:
+    etcd:
+      hosts:
+        cp1:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
+```
+14. Далее смторим на параметры в файлах
+
+`/root/learning-kubernetis/Alfa/kubespray/inventory/netology-test/group_vars/all/all.yml`
+
+`/root/learning-kubernetis/Alfa/kubespray/inventory/netology-test/group_vars/k8s_cluster/k8s-cluster.yml`
+
+15. Поочередно заходим на подготовленные ВМ по ssh для установления соединения с ними
+16. Запускаем установку кластера
+
+`ansible-playbook -i inventory/netology-test/hosts.yaml  --become --become-user=root cluster.yml`
+
+17. В результате получена ошибка `Ошибка сегментирования (стек памяти сброшен на диск)`
+
+```
+TASK [download : download_file | Create dest directory on node] *******************************************************************************************************************************************************************
+ok: [cp1]
+ok: [node1]
+ok: [node2]
+ok: [node3]
+ok: [node4]
+Воскресенье 19 июня 2022  13:11:15 +0400 (0:00:01.789)       0:08:50.462 ****** 
+Воскресенье 19 июня 2022  13:11:15 +0400 (0:00:00.059)       0:08:50.522 ****** 
+Воскресенье 19 июня 2022  13:11:15 +0400 (0:00:00.074)       0:08:50.597 ****** 
+FAILED - RETRYING: [node1]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [cp1]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [node3]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [node4]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [node2]: download_file | Validate mirrors (4 retries left).
+FAILED - RETRYING: [node3]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [cp1]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [node1]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [node2]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [node4]: download_file | Validate mirrors (3 retries left).
+FAILED - RETRYING: [node1]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [cp1]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [node2]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [node3]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [node4]: download_file | Validate mirrors (2 retries left).
+FAILED - RETRYING: [node1]: download_file | Validate mirrors (1 retries left).
+FAILED - RETRYING: [cp1]: download_file | Validate mirrors (1 retries left).
+FAILED - RETRYING: [node2]: download_file | Validate mirrors (1 retries left).
+FAILED - RETRYING: [node3]: download_file | Validate mirrors (1 retries left).
+FAILED - RETRYING: [node4]: download_file | Validate mirrors (1 retries left).
+
+TASK [download : download_file | Validate mirrors] ********************************************************************************************************************************************************************************
+failed: [node1] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+failed: [cp1] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+failed: [node2] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+failed: [node3] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+failed: [node4] (item=None) => {"attempts": 4, "censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+ok: [node1] => (item=None)
+fatal: [node1 -> {{ download_delegate if download_force_cache else inventory_hostname }}]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+...ignoring
+ok: [node2] => (item=None)
+fatal: [node2 -> {{ download_delegate if download_force_cache else inventory_hostname }}]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+...ignoring
+ok: [cp1] => (item=None)
+ok: [node4] => (item=None)
+fatal: [cp1 -> {{ download_delegate if download_force_cache else inventory_hostname }}]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+...ignoring
+fatal: [node4 -> {{ download_delegate if download_force_cache else inventory_hostname }}]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+...ignoring
+ok: [node3] => (item=None)
+fatal: [node3 -> {{ download_delegate if download_force_cache else inventory_hostname }}]: FAILED! => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result", "changed": false}
+...ignoring
+Воскресенье 19 июня 2022  13:11:47 +0400 (0:00:31.207)       0:09:21.804 ****** 
+
+
+```
+
+18. Еще ошибки
+```
+
+```
+19. Результат: установлен на ВМ Kubernetes 
+```
+PLAY RECAP ************************************************************************************************************************************************************************************************************************
+cp1                        : ok=730  changed=79   unreachable=0    failed=0    skipped=1232 rescued=0    ignored=9   
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node1                      : ok=483  changed=41   unreachable=0    failed=0    skipped=721  rescued=0    ignored=2   
+node2                      : ok=483  changed=41   unreachable=0    failed=0    skipped=720  rescued=0    ignored=2   
+node3                      : ok=483  changed=41   unreachable=0    failed=0    skipped=720  rescued=0    ignored=2   
+node4                      : ok=483  changed=41   unreachable=0    failed=0    skipped=720  rescued=0    ignored=2   
+
+Воскресенье 19 июня 2022  13:53:54 +0400 (0:00:00.154)       0:24:04.932 ****** 
+=============================================================================== 
+network_plugin/calico : Wait for calico kubeconfig to be created ---------------------------------------------------------------------------------------------------------------------------------------------------------- 48.83s
+kubernetes/control-plane : kubeadm | Initialize first master -------------------------------------------------------------------------------------------------------------------------------------------------------------- 34.32s
+kubernetes-apps/ansible : Kubernetes Apps | Lay Down CoreDNS templates ---------------------------------------------------------------------------------------------------------------------------------------------------- 31.18s
+download : download_file | Validate mirrors ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 31.13s
+kubernetes-apps/ansible : Kubernetes Apps | Start Resources --------------------------------------------------------------------------------------------------------------------------------------------------------------- 30.43s
+kubernetes/kubeadm : Join to cluster -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 22.72s
+network_plugin/calico : Calico | Create calico manifests ------------------------------------------------------------------------------------------------------------------------------------------------------------------ 18.45s
+network_plugin/calico : Calico | Copy calicoctl binary from download dir -------------------------------------------------------------------------------------------------------------------------------------------------- 16.20s
+network_plugin/calico : Start Calico resources ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 15.24s
+container-engine/containerd : containerd | Unpack containerd archive ------------------------------------------------------------------------------------------------------------------------------------------------------ 12.98s
+kubernetes/preinstall : Preinstall | wait for the apiserver to be running ------------------------------------------------------------------------------------------------------------------------------------------------- 11.13s
+kubernetes/preinstall : Ensure kube-bench parameters are set -------------------------------------------------------------------------------------------------------------------------------------------------------------- 10.40s
+kubernetes/node : install | Copy kubelet binary from download dir ---------------------------------------------------------------------------------------------------------------------------------------------------------- 9.97s
+kubernetes-apps/ansible : Kubernetes Apps | Lay Down nodelocaldns Template ------------------------------------------------------------------------------------------------------------------------------------------------- 8.66s
+etcd : Check certs | Register ca and etcd admin/member certs on etcd hosts ------------------------------------------------------------------------------------------------------------------------------------------------- 8.21s
+kubernetes/preinstall : Create kubernetes directories ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- 8.10s
+container-engine/containerd : containerd | Remove orphaned binary ---------------------------------------------------------------------------------------------------------------------------------------------------------- 7.97s
+etcd : Check certs | Register ca and etcd admin/member certs on etcd hosts ------------------------------------------------------------------------------------------------------------------------------------------------- 7.86s
+network_plugin/calico : Get current calico cluster version ----------------------------------------------------------------------------------------------------------------------------------------------------------------- 7.79s
+container-engine/crictl : extract_file | Unpacking archive ----------------------------------------------------------------------------------------------------------------------------------------------------------------- 7.74s
+
+```
+20. Заходим на ноду cp1. 
+
+```
+(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# ssh yc-user@51.250.93.145
+Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-117-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+Last login: Sun Jun 19 09:53:47 2022 from 128.69.71.165
+yc-user@cp1:~$ 
+yc-user@cp1:~$ kubectl get no
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+```
+
+
+
+
+##### Примеры файлов инфентори
+* inventory.ini 
+```
+# ## Configure 'ip' variable to bind kubernetes services on a
+# ## different ip than the default iface
+# ## We should set etcd_member_name for etcd cluster. The node that is not a etcd member do not need to set the value, or can set the empty string value.
+[all]
+# node1 ansible_host=95.54.0.12  # ip=10.3.0.1 etcd_member_name=etcd1
+# node2 ansible_host=95.54.0.13  # ip=10.3.0.2 etcd_member_name=etcd2
+
+
+
+[kube_control_plane]
+cp1
+
+[etcd]
+cp1
+
+[kube_node]
+node1
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+
+
+```
+
+#### 5. Подотовка локального ПК для взаимодействия с кластером Kubrneets
+5. Устанавливаем на локальный ПК зависимости
 ```
 (venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# sudo pip3 install -r requirements.txt
 Collecting ansible==5.7.1
@@ -233,47 +720,6 @@ Installing collected packages: pycparser, cffi, cryptography, MarkupSafe, jinja2
     Uninstalling ruamel.yaml-0.17.21:
       Successfully uninstalled ruamel.yaml-0.17.21
 Successfully installed MarkupSafe-1.1.1 ansible-5.7.1 ansible-core-2.12.5 cffi-1.15.0 cryptography-3.4.8 jinja2-2.11.3 jmespath-0.9.5 pbr-5.4.4 pycparser-2.21 ruamel.yaml-0.16.10
-
-```
-6. Создаем локальную директорию для настройки кластера
-```
-(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# cp -rfp inventory/sample inventory/mycluster
-(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# 
-(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# cd inventory/mycluster/
-(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray/inventory/mycluster# 
-(venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray/inventory/mycluster# ls -lha
-итого 16K
-drwxr-xr-x 3 root root 4,0K июн 13 22:10 .
-drwxr-xr-x 5 root root 4,0K июн 17 10:41 ..
-drwxr-xr-x 4 root root 4,0K июн 13 22:10 group_vars
--rw-r--r-- 1 root root 1,1K июн 13 22:10 inventory.ini
-```
-7. Подготавливаем файлы инвентори
-
-* inventory.ini 
-```
-# ## Configure 'ip' variable to bind kubernetes services on a
-# ## different ip than the default iface
-# ## We should set etcd_member_name for etcd cluster. The node that is not a etcd member do not need to set the value, or can set the empty string value.
-[all]
-# node1 ansible_host=95.54.0.12  # ip=10.3.0.1 etcd_member_name=etcd1
-# node2 ansible_host=95.54.0.13  # ip=10.3.0.2 etcd_member_name=etcd2
-
-
-
-[kube_control_plane]
-cp1
-
-[etcd]
-cp1
-
-[kube_node]
-node1
-
-[k8s_cluster:children]
-kube_control_plane
-kube_node
-
 
 ```
 
