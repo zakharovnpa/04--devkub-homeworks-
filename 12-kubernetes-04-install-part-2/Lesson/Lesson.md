@@ -612,8 +612,25 @@ yc-user@cp1:~$ kubectl get no
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 
 ```
+21. Копируем конфиг в домашнюю папку пользователя для управления кластером 
+```
+{
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+}
+``` 
+22. Результат: проверяем ноды на кластере:
+```
+yc-user@cp1:~$ kubectl get no
+NAME    STATUS   ROLES           AGE    VERSION
+cp1     Ready    control-plane   116m   v1.24.2
+node1   Ready    <none>          114m   v1.24.2
+node2   Ready    <none>          114m   v1.24.2
+node3   Ready    <none>          114m   v1.24.2
+node4   Ready    <none>          114m   v1.24.2
 
-
+```
 
 
 ##### Примеры файлов инфентори
