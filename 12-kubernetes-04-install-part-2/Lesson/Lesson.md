@@ -496,11 +496,13 @@ all:
 `/root/learning-kubernetis/Alfa/kubespray/inventory/netology-test/group_vars/k8s_cluster/k8s-cluster.yml`
 
 15. Поочередно заходим на подготовленные ВМ по ssh для установления соединения с ними
-16. Запускаем установку кластера
 
+### 3. Запускаем установку кластера
+
+1. Стартуем запуск командой:
 `ansible-playbook -i inventory/netology-test/hosts.yaml  --become --become-user=root cluster.yml`
 
-17. В результате получена ошибка `Ошибка сегментирования (стек памяти сброшен на диск)`
+2. В результате получена ошибка `Ошибка сегментирования (стек памяти сброшен на диск)`
 
 ```
 TASK [download : download_file | Create dest directory on node] *******************************************************************************************************************************************************************
@@ -559,11 +561,11 @@ fatal: [node3 -> {{ download_delegate if download_force_cache else inventory_hos
 
 ```
 
-18. Еще ошибки
+3. Еще ошибки
 ```
 
 ```
-19. Результат: установлен на ВМ Kubernetes 
+4. Результат: установлен на ВМ Kubernetes 
 ```
 PLAY RECAP ************************************************************************************************************************************************************************************************************************
 cp1                        : ok=730  changed=79   unreachable=0    failed=0    skipped=1232 rescued=0    ignored=9   
@@ -597,7 +599,7 @@ network_plugin/calico : Get current calico cluster version ---------------------
 container-engine/crictl : extract_file | Unpacking archive ----------------------------------------------------------------------------------------------------------------------------------------------------------------- 7.74s
 
 ```
-20. Заходим на ноду cp1. 
+5. Заходим на ноду cp1. 
 
 ```
 (venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# ssh yc-user@51.250.93.145
@@ -607,12 +609,14 @@ Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-117-generic x86_64)
  * Management:     https://landscape.canonical.com
  * Support:        https://ubuntu.com/advantage
 Last login: Sun Jun 19 09:53:47 2022 from 128.69.71.165
-yc-user@cp1:~$ 
+```
+6. Проверяем ноды кластера. Результат: нет подключения, т.к. нет прав доступа пользователя к кластеру
+```
 yc-user@cp1:~$ kubectl get no
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 
 ```
-21. Копируем конфиг в домашнюю папку пользователя для управления кластером 
+7. Копируем конфиг в домашнюю папку пользователя для управления кластером 
 ```
 {
     mkdir -p $HOME/.kube
@@ -620,7 +624,7 @@ The connection to the server localhost:8080 was refused - did you specify the ri
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
 }
 ``` 
-22. Результат: проверяем ноды на кластере:
+8. Результат: проверяем ноды на кластере:
 ```
 yc-user@cp1:~$ kubectl get no
 NAME    STATUS   ROLES           AGE    VERSION
@@ -631,6 +635,20 @@ node3   Ready    <none>          114m   v1.24.2
 node4   Ready    <none>          114m   v1.24.2
 
 ```
+### 4. Настройка доступа к ластеру с локального ПК
+
+1. На ВМ cp1 откроем файл `./kube/config`
+2. Скопируем из него 
+3. И внесем изменения в файл /home/maestro/.kube/config
+4. Добавим ключи и сертификаты пользователя, скопированные с ВМ
+5. После добавления ключей проверяем команду
+```
+maestro@PC-Ubuntu:~$ kubectl get nodes
+Please enter Username: yc-user
+Please enter Password: Unable to connect to the server: x509: certificate is valid for 10.233.0.1, 10.128.0.30, 127.0.0.1, not 51.250.93.145
+
+```
+
 
 
 ##### Примеры файлов инфентори
