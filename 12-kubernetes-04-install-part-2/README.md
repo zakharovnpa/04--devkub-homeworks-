@@ -171,7 +171,7 @@ network_plugin/calico : Get current calico cluster version ---------------------
 container-engine/crictl : extract_file | Unpacking archive --------------------------------- 7.74s
 ```
 
-10. Подготваливаем локальный ПК. Устанавливаем зависимости из директории /kubespray
+10. Подготавливаем локальный ПК. Устанавливаем зависимости из директории /kubespray
 
 ```
 sudo pip3 install -r requirements.txt
