@@ -6,6 +6,11 @@
 * установка производится через ansible/kubespray;
 * после применения следует настроить политику доступа к hello-world извне. Инструкции [kubernetes.io](https://kubernetes.io/docs/concepts/services-networking/network-policies/), [Calico](https://docs.projectcalico.org/about/about-network-policy)
 
+### Ход решения.
+
+1. Установить в кластер приложение hello-world
+2. Предостаить к нему доступ извне
+
 ## Задание 2: изучить, что запущено по умолчанию
 Самый простой способ — проверить командой calicoctl get <type>. Для проверки стоит получить список нод, ipPool и profile.
 Требования: 
