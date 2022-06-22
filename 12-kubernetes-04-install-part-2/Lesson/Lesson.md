@@ -680,7 +680,7 @@ kube_node
 ```
 
 #### 5. Подотовка локального ПК для взаимодействия с кластером Kubrneets
-5. Устанавливаем на локальный ПК зависимости
+1. Устанавливаем на локальный ПК зависимости
 ```
 (venv) root@PC-Ubuntu:~/learning-kubernetis/kubespray# sudo pip3 install -r requirements.txt
 Collecting ansible==5.7.1
@@ -757,8 +757,44 @@ Installing collected packages: pycparser, cffi, cryptography, MarkupSafe, jinja2
 Successfully installed MarkupSafe-1.1.1 ansible-5.7.1 ansible-core-2.12.5 cffi-1.15.0 cryptography-3.4.8 jinja2-2.11.3 jmespath-0.9.5 pbr-5.4.4 pycparser-2.21 ruamel.yaml-0.16.10
 
 ```
+2. Для удаленного подключения к класетру выполним настройку доступа обычного пользователя на локальной ОС
+  - Узнать внешний ip адрес управляющей ноды для вставки его в будущий конфиг на локальной ОС
+  - На управляющей ноде кластера скопировать файл `/home/yc-user/.kube.config` в такую же директорию на локальной ОС
+  - Заменить адрес 127.0.0.1 на внешний адрес управляющей ноды 51.250.93.145
+```
+yc-user@cp1:~$ cat .kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJ------------tLS0tCg==       # сокращенный вывод
+    server: https://127.0.0.1:6443                                      # заменить на внешний адрес управляющей ноды
+  name: cluster.local
+contexts:
+- context:
+    cluster: cluster.local
+    user: kubernetes-admin
+  name: kubernetes-admin@cluster.local
+current-context: kubernetes-admin@cluster.local
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUd---------URS0tLS0tCg==         # сокращенный вывод
+    client-key-data: LS0tLS1CRUdJT---------------tFWS0tLS0tCg==        # сокращенный вывод
+```
+3. Результат подключения к кластеру из УЗ обычного пользователя с локальной ОС
 
+```
+maestro@PC-Ubuntu:~/.kube$ kubectl get nodes
+NAME    STATUS   ROLES           AGE     VERSION
+cp1     Ready    control-plane   2d16h   v1.24.2
+node1   Ready    <none>          2d16h   v1.24.2
+node2   Ready    <none>          2d16h   v1.24.2
+node3   Ready    <none>          2d16h   v1.24.2
+node4   Ready    <none>          2d16h   v1.24.2
 
+```
 
 ## Задание 2 (*): подготовить и проверить инвентарь для кластера в AWS
 Часть новых проектов хотят запускать на мощностях AWS. Требования похожи:
