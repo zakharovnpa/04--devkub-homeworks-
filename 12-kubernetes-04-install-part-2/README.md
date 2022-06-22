@@ -11,7 +11,7 @@
 
 Приложены отредактированные файлы из kuberspray
   - [hosts.yaml](/12-kubernetes-04-install-part-2/Files/hosts.yml)
-  - [k8s-claster.yaml](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/a64fc3f0f4b35b5f6ba8f62d1e86ce3e82f7a6c1/12-kubernetes-04-install-part-2/Files/k8s-claster.yaml)
+  - [k8s-claster.yaml](/12-kubernetes-04-install-part-2/Files/k8s-claster.yaml)
 
 1. Для разворачивания кластера используется Kubespray и 5 ВМ в Яндекс Облаке
 
