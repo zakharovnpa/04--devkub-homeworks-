@@ -31,9 +31,100 @@
 #### 1. Создание ВМ в Яндекс Облаке
 1. Создаем три скрипта для управления ВМ на облаке
 ```
-(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# chmod 777 ./list-vms.sh 
-(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# chmod 777 ./create-vms.sh 
-(venv) root@PC-Ubuntu:~/learning-kubernetis/Alfa# chmod 777 ./delete-vms.sh 
+-rwxrwxrwx  1 root root  578 июн 19 08:55 create-vms.sh
+-rwxrwxrwx  1 root root  196 июн 19 09:06 delete-vms.sh
+-rwxrwxrwx  1 root root   57 июн 17 08:59 list-vms.sh
+-rwxr-xr-x  1 root root  203 июн 19 09:18 restart-vms.sh
+-rwxr-xr-x  1 root root  237 июн 19 09:53 start-vms.sh
+-rwxr-xr-x  1 root root  182 июн 19 09:15 stop-vms.sh
+
+```
+2. Скрипты:
+
+*  create-vms.sh
+```
+ 
+#!/bin/bash
+
+set -e
+
+function create_vm {
+  local NAME=$1
+
+  YC=$(cat <<END
+    yc compute instance create \
+      --name $NAME \
+      --hostname $NAME \
+      --zone ru-central1-a \
+      --network-interface subnet-name=default-ru-central1-a,nat-ip-version=ipv4 \
+      --memory 2 \
+      --cores 2 \
+      --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2004-lts,type=network-ssd,size=20 \
+      --ssh-key /root/.ssh/id_rsa.pub
+END
+)
+#  echo "$YC"
+  eval "$YC"
+}
+
+create_vm "cp1"
+create_vm "node1"
+create_vm "node2"
+create_vm "node3"
+create_vm "node4"
+
+```
+*  list-vms.sh 
+```
+#!/bin/bash
+
+yc compute instance list 
+```
+* restart-vms.sh 
+```
+#!/bin/bash
+
+set -e
+
+function restart_vm {
+  local NAME=$1
+  $(yc compute instance restart --name="$NAME")
+}
+
+restart_vm "cp1"
+restart_vm "node1"
+restart_vm "node2"
+restart_vm "node3"
+restart_vm "node4"
+
+```
+* start-vms.sh 
+```
+#!/bin/bash
+
+yc compute instance start --name="cp1" && \
+yc compute instance start --name="node1" && \
+yc compute instance start --name="node2" && \
+yc compute instance start --name="node3" && \
+yc compute instance start --name="node4"
+
+```
+* stop-vms.sh 
+```
+#!/bin/bash
+
+set -e
+
+function stop_vm {
+  local NAME=$1
+  $(yc compute instance stop --name="$NAME")
+}
+
+stop_vm "cp1"
+stop_vm "node1"
+stop_vm "node2"
+stop_vm "node3"
+stop_vm "node4"
 
 ```
 
@@ -793,6 +884,12 @@ node1   Ready    <none>          2d16h   v1.24.2
 node2   Ready    <none>          2d16h   v1.24.2
 node3   Ready    <none>          2d16h   v1.24.2
 node4   Ready    <none>          2d16h   v1.24.2
+
+```
+```
+maestro@PC-Ubuntu:~/.kube$ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.233.0.1   <none>        443/TCP   2d17h
 
 ```
 
