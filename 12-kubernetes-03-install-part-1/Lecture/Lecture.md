@@ -286,13 +286,57 @@ serviceaccount/flannel created
 configmap/kube-flannel-cfg created
 daemonset.apps/kube-flannel-ds created
 ```
-- Результат выполненя: Status Ready
+- Результат выполненя: Status Ready. Control Plane установлена.
 ```
 yc-user@cp1:~$ kubectl get nodes
 NAME   STATUS   ROLES           AGE   VERSION
 cp1    Ready    control-plane   33m   v1.24.2
 
 ```
+#### Установка минимального ПО на рабоче ноды - 00:53:10
+- 00:54:00 - запускаем 
+```
+{
+    sudo apt-get update
+    sudo apt-get install -y apt-transport-https ca-certificates curl
+    sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl containerd
+    sudo apt-mark hold kubelet kubeadm kubectl
+}
+```
+- Поправляем настройки нода во избежание ошибки
+```
+modprobe br_netfilter 
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+echo "net.bridge.bridge-nf-call-iptables=1" >> /etc/sysctl.conf
+echo "net.bridge.bridge-nf-call-arptables=1" >> /etc/sysctl.conf
+echo "net.bridge.bridge-nf-call-ip6tables=1" >> /etc/sysctl.conf
+```
+#### Присоединение рабочих нод к кластеру - 00:55:40
+- На каждой рабочей ноде выполнить подсоединение к кластеру`
+```
+kubeadm join 10.128.0.30:6443 --token prrf8x.l3hg5d6vo06c3y56 \
+	--discovery-token-ca-cert-hash sha256:c39159ad4513b4455bb8fc75b10ed8a1ef7cab3a4823f4fde3e7ba439712dd58
+```
+
+- Ноды подключились к кластеру. Проверяем на ноде cp1
+```
+yc-user@cp1:~$ kubectl get nodes
+NAME    STATUS   ROLES           AGE    VERSION
+cp1     Ready    control-plane   73m    v1.24.2
+node1   Ready    <none>          3m8s   v1.24.2
+node2   Ready    <none>          48s    v1.24.2
+
+```
+#### Получение удаленного доступа к кластеру  - 00:59:55
+
+#### Настройка файла .kube/config
+- Добавление нового кластера в файл
+
+
 
 
 ### 14Домашнее задание
