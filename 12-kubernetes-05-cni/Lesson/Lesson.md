@@ -6,7 +6,7 @@
 * установка производится через ansible/kubespray;
 * после применения следует настроить политику доступа к hello-world извне. Инструкции [kubernetes.io](https://kubernetes.io/docs/concepts/services-networking/network-policies/), [Calico](https://docs.projectcalico.org/about/about-network-policy)
 
-### Ход решения.
+### Подготовка к решению.
 
 Условие:
  - сейчас установен Flannel
@@ -20,6 +20,156 @@
 
 1. Установить в кластер приложение hello-world
 2. Предостаить к нему доступ извне
+
+### Ход решения.
+
+##### Подготовка кластера к выполнению ДЗ
+1. Создан кластер на ЯО:
+  1. 1 управляющая нода cp1
+  2. 2 рабочие ноды node1, node2
+```
++----------------------+-------+---------------+---------+---------------+-------------+
+|          ID          | NAME  |    ZONE ID    | STATUS  |  EXTERNAL IP  | INTERNAL IP |
++----------------------+-------+---------------+---------+---------------+-------------+
+| fhm6kdtgn7a54j3gmfbe | node1 | ru-central1-a | RUNNING | 51.250.86.192 | 10.128.0.34 |
+| fhmpr3ehr27lhjbngras | node2 | ru-central1-a | RUNNING | 51.250.91.26  | 10.128.0.17 |
+| fhmtrqairbmsnvmuolat | cp1   | ru-central1-a | RUNNING | 51.250.95.178 | 10.128.0.33 |
++----------------------+-------+---------------+---------+---------------+-------------+
+
+```
+2. Установлен CNI Flanel
+3. На каждой ноде работает kube-proxy, iptables
+4. 
+
+#### Установка Calico 
+
+#### Развертывание приложений Frontend, Backend, Cash
+1. Подготовка манифестов для создания деплойментов
+* Manifest Frontend
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - image: praqma/network-multitool:alpine-extra
+          imagePullPolicy: IfNotPresent
+          name: network-multitool
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  ports:
+    - name: web
+      port: 80
+  selector:
+    app: frontend
+
+
+```
+
+* Manifest Backend
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - image: praqma/network-multitool:alpine-extra
+          imagePullPolicy: IfNotPresent
+          name: network-multitool
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: default
+spec:
+  ports:
+    - name: web
+      port: 80
+  selector:
+    app: backend
+
+```
+
+* Manifest Cash
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cache
+  name: cache
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache
+  template:
+    metadata:
+      labels:
+        app: cache
+    spec:
+      containers:
+        - image: praqma/network-multitool:alpine-extra
+          imagePullPolicy: IfNotPresent
+          name: network-multitool
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache
+  namespace: default
+spec:
+  ports:
+    - name: web
+      port: 80
+  selector:
+    app: cache
+
+```
+
+
 
 ## Задание 2: изучить, что запущено по умолчанию
 Самый простой способ — проверить командой calicoctl get <type>. Для проверки стоит получить список нод, ipPool и profile.
