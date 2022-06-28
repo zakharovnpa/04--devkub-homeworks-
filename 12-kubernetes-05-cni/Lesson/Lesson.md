@@ -64,7 +64,7 @@ spec:
     metadata:
       labels:
         app: frontend
-    spec:
+    spec:                  # Описание пода
       containers:
         - image: praqma/network-multitool:alpine-extra
           imagePullPolicy: IfNotPresent
@@ -106,7 +106,7 @@ spec:
     metadata:
       labels:
         app: backend
-    spec:
+    spec:                  # Описание пода
       containers:
         - image: praqma/network-multitool:alpine-extra
           imagePullPolicy: IfNotPresent
@@ -147,7 +147,7 @@ spec:
     metadata:
       labels:
         app: cache
-    spec:
+    spec:                  # Описание пода
       containers:
         - image: praqma/network-multitool:alpine-extra
           imagePullPolicy: IfNotPresent
@@ -168,8 +168,34 @@ spec:
     app: cache
 
 ```
+2. Развертывание 
 
+Для начала необходимо развернуть объекты из подготовленных манифестов.
+```shell script
+# Развертывание
+kubectl apply -f ./templates/main/
 
+# Проверка созданных подов
+kubectl get po
+``` 
+1. Проверка подов в неймспейс default
+```
+maestro@PC-Ubuntu:~$ kubectl get ns
+NAME              STATUS   AGE
+default           Active   20h
+kube-node-lease   Active   20h
+kube-public       Active   20h
+kube-system       Active   20h
+```
+* Подов никаких нет в неймспейс default
+```
+maestro@PC-Ubuntu:~$ kubectl -n default get po
+No resources found in default namespace.
+```
+* Если поды есть, то очищаем ноду от ранее созданных деплойментов
+```
+kubectl -n default delete deployment --all
+```
 
 ## Задание 2: изучить, что запущено по умолчанию
 Самый простой способ — проверить командой calicoctl get <type>. Для проверки стоит получить список нод, ipPool и profile.
