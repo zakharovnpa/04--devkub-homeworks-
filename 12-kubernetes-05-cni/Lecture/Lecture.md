@@ -169,7 +169,7 @@ kubectl exec backend-7b4877445f-kgvnr -- curl -s -m 1 backend
 В случае отсутствия запретов все поды будут доступны. 
 Подобный эксперимент можно провести из любого из созданных подов.
 
-Гипотеза подтвердилась.
+- 00:16:00 - Гипотеза подтвердилась.
 
 ### Применение политик   - 01:18:20 
 - Применение NetworkPolicy
@@ -264,24 +264,44 @@ kind: NetworkPolicy
 metadata:
   name: backend
   namespace: default
-spec:
-  podSelector:
+spec:     # Описание политики
+  podSelector:      # Фильтр, выбирающий данные из общего потока для пода, указанного в следующей строке
     matchLabels:
       app: backend   # Политика распространяется на поды, имена app которых содержат  backend
   policyTypes:
     - Ingress       # Входящий тип сетевой политики
-  ingress:
-    - from:        # Откуда
-      - podSelector:
-          matchLabels:
+  ingress:    # Начинаем описывать политику входящую
+    - from:        # Откуда будем разрешать принимать данные
+      - podSelector:  # Фильтр, выбирающий данные из общего потока для пода, указанного в следующей строке
+          matchLabels:  # Если совпадает с Labels, обозначенном в следующей строке
             app: frontend    # С пода, имя app которого содержит frontend
-      ports:                 # для портов. Перечислить столько сколько надо
+      ports:                 # для входящих портов backend. Перечислить столько сколько надо
         - protocol: TCP
           port: 80
         - protocol: TCP
           port: 443
 
 ```
+- 01:25:55 - распространение сетевой политики на поды, указанные в `podSelector`
+- 01:26:30 - какой тип политики `policyTypes`  Ingress - Входящий тип сетевой политики
+- 01:28:00 - применение политики `20-backend.yaml`
+- 01:30:25 - про сервис `ifconfig.me`
+- 01:30:40 - про политику исходящуу `Egress`
+
+* 99-egress.yml
+```yml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+```
+
+
+
 * cashe.yml
 ```yml
 apiVersion: networking.k8s.io/v1
@@ -319,8 +339,8 @@ spec:
 Вторая гипотеза подтвердилась полностью.
 
 - 01:37:45 - удаление политики
-- `kubectl apply -f templates/network-policy/00-default.yml`
-- 00:38:50 - как сделать Egress доступный для Backend
+- `kubectl delete -f templates/network-policy/00-default.yml`
+- 01:38:50 - как сделать Egress доступный для Backend
 - 
 - 99-egress-backend.yml Не факт, что работает.
 ```yml
