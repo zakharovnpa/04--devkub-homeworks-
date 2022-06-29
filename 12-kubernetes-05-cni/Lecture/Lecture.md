@@ -180,7 +180,7 @@ kubectl get networkpolicies
 ```
 - 01:19:10- удаление нетворкполиси `kubectl delete networkpolicies --all`
 - 01:19:40 - /root/learning-kubernetis/kubernetes-for-beginners/16-networking/20-network-policy/templates/network-policy/00-default.yaml
-```
+```yml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -214,7 +214,7 @@ spec:
 kubectl apply -f templates/network-policy/00-default.yaml
 ```
 - 00-default.yaml
-```
+```yml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -258,15 +258,15 @@ spec:
 
 ```
 * 20-backend.yaml
-```
+```yml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: backend
   namespace: default
 spec:     # Описание политики
-  podSelector:      # Фильтр, выбирающий данные из общего потока для пода, указанного в следующей строке
-    matchLabels:
+  podSelector:      # Выбираем по отношению к каклму поду применяется политика
+    matchLabels:   # По совпадению 
       app: backend   # Политика распространяется на поды, имена app которых содержат  backend
   policyTypes:
     - Ingress       # Входящий тип сетевой политики
@@ -341,8 +341,8 @@ spec:
 - 01:37:45 - удаление политики
 - `kubectl delete -f templates/network-policy/00-default.yml`
 - 01:38:50 - как сделать Egress доступный для Backend
-- 
-- 99-egress-backend.yml Не факт, что работает.
+
+* 99-egress-backend.yml Не факт, что работает.
 ```yml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
