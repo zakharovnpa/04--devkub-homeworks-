@@ -43,7 +43,7 @@
 
 #### Установка Calico 
 
-#### Развертывание приложений Frontend, Backend, Cash
+#### Развертывание приложений Frontend, Backend, Cache
 1. Подготовка манифестов для создания деплойментов
 * Manifest Frontend
 ```yml
@@ -128,7 +128,7 @@ spec:
 
 ```
 
-* Manifest Cash
+* Manifest cache
 ```yml
 ---
 apiVersion: apps/v1
@@ -178,7 +178,7 @@ kubectl apply -f ./templates/main/
 # Проверка созданных подов
 kubectl get po
 ``` 
-1. Проверка подов в неймспейс default
+  1. Проверка подов в неймспейс default
 ```
 maestro@PC-Ubuntu:~$ kubectl get ns
 NAME              STATUS   AGE
@@ -187,15 +187,213 @@ kube-node-lease   Active   20h
 kube-public       Active   20h
 kube-system       Active   20h
 ```
-* Подов никаких нет в неймспейс default
+  * Подов никаких нет в неймспейс default
 ```
 maestro@PC-Ubuntu:~$ kubectl -n default get po
 No resources found in default namespace.
 ```
-* Если поды есть, то очищаем ноду от ранее созданных деплойментов
+  * Если поды есть, то очищаем ноду от ранее созданных деплойментов
 ```
 kubectl -n default delete deployment --all
 ```
+3. Запуск развертывания подов `kubectl apply -f tamplates/main/`
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl apply -f tamplates/main/
+deployment.apps/backend created
+service/backend created
+deployment.apps/cache created
+service/cache created
+deployment.apps/frontend created
+service/frontend created
+```
+
+  * Првоерка статуса подов
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl -n default get po
+NAME                       READY   STATUS    RESTARTS   AGE
+backend-869fd89bdc-5rb7v   1/1     Running   0          14s
+cache-b7cbd9f8f-8z4vj      1/1     Running   0          14s
+frontend-c74c5646c-m9k8c   1/1     Running   0          14s
+```
+
+4. Проверка доступности каждого пода из пода Backend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-5rb7v -- curl -s -m 1 frontend
+Praqma Network MultiTool (with NGINX) - frontend-c74c5646c-m9k8c - 10.244.2.3
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-5rb7v -- curl -s -m 1 backend
+Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-5rb7v - 10.244.1.2
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-5rb7v -- curl -s -m 1 cache
+Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-8z4vj - 10.244.2.2
+
+```
+5. Проверка доступности каждого пода из пода frontend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-m9k8c -- curl -s -m 1 frontend
+Praqma Network MultiTool (with NGINX) - frontend-c74c5646c-m9k8c - 10.244.2.3
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-m9k8c -- curl -s -m 1 backend
+Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-5rb7v - 10.244.1.2
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-m9k8c -- curl -s -m 1 cache
+Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-8z4vj - 10.244.2.2
+```
+6. Проверка доступности каждого пода из пода cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-8z4vj -- curl -s -m 1 frontend
+Praqma Network MultiTool (with NGINX) - frontend-c74c5646c-m9k8c - 10.244.2.3
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-8z4vj -- curl -s -m 1 backend
+Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-5rb7v - 10.244.1.2
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-8z4vj -- curl -s -m 1 cache
+Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-8z4vj - 10.244.2.2
+
+```
+
+#### Применение сетевых политик и проверка доступности подов
+1. Применяем политику, которая запрещает все сетевые взамиодействия
+
+  * default.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}   # Здесь не указан ни один под, поэтому мы все взаимодействия запретили
+  policyTypes:
+    - Ingress
+
+```
+  * Взаимодействия между подами сохранились, т.к. наш плагин CNI Flanel не поддерживает сетевые политики
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io 
+NAME                   POD-SELECTOR   AGE
+default-deny-ingress   <none>         9m30s
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-5rb7v -- curl -s -m 1 frontend
+Praqma Network MultiTool (with NGINX) - frontend-c74c5646c-m9k8c - 10.244.2.3
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-8z4vj -- curl -s -m 1 backend
+Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-5rb7v - 10.244.1.2
+
+```
+  * Endpoint
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get ep
+NAME         ENDPOINTS          AGE
+backend      10.244.1.2:80      52m
+cache        10.244.2.2:80      52m
+frontend     10.244.2.3:80      52m
+kubernetes   10.128.0.33:6443   24h
+
+```
+
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ mkdir -p network-policy
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ cd network-policy/
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ vim default.yaml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ vim frontend.yaml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ vim frontend.yaml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ vim backend.yaml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ vim cache.yaml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/network-policy$ ls -lha
+итого 24K
+drwxrwxr-x 2 maestro maestro 4,0K июн 28 10:47 .
+drwxrwxr-x 4 maestro maestro 4,0K июн 28 10:45 ..
+-rw-rw-r-- 1 maestro maestro  383 июн 28 10:47 backend.yaml
+-rw-rw-r-- 1 maestro maestro  391 июн 28 10:47 cache.yaml
+-rw-rw-r-- 1 maestro maestro  150 июн 28 10:45 default.yaml
+-rw-rw-r-- 1 maestro maestro  193 июн 28 10:46 frontend.yaml
+
+```
+* Применяем политику `default.yaml`
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl apply -f network-policy/default.yaml 
+networkpolicy.networking.k8s.io/default-deny-ingress created
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io 
+NAME                   POD-SELECTOR   AGE
+default-deny-ingress   <none>         9m30s
+
+```
+#### Установка Calico для политики
+1. Убедиться, что  в диспетчере контроллеров Kubernetes установлены следующие флаги:
+```
+--cluster-cidr=<your-pod-cidr>
+--allocate-node-cidrs=true
+```
+2. Загрузите Flanel сетевой манифест для хранилища данных Kubernetes API.
+```
+curl https://projectcalico.docs.tigera.io/manifests/canal.yaml -O
+```
+3. Процесс скачивания 
+```
+yc-user@cp1:~$ curl https://projectcalico.docs.tigera.io/manifests/canal.yaml -O
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  223k  100  223k    0     0   682k      0 --:--:-- --:--:-- --:--:--  680k
+yc-user@cp1:~$ 
+```
+4. Если вы используете модуль CIDR 10.244.0.0/16, перейдите к следующему шагу. 
+5. Введите следующую команду, чтобы установить Calico
+```
+kubectl apply -f canal.yaml
+```
+
+
+6. Результат установки
+```
+yc-user@cp1:~$ kubectl apply -f canal.yaml
+configmap/canal-config created
+customresourcedefinition.apiextensions.k8s.io/bgpconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/blockaffinities.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/caliconodestatuses.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/clusterinformations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/felixconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/hostendpoints.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamblocks.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamconfigs.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamhandles.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ippools.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipreservations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/kubecontrollersconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networksets.crd.projectcalico.org created
+clusterrole.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrolebinding.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrole.rbac.authorization.k8s.io/calico-node created
+clusterrole.rbac.authorization.k8s.io/flannel configured
+clusterrolebinding.rbac.authorization.k8s.io/canal-flannel created
+clusterrolebinding.rbac.authorization.k8s.io/canal-calico created
+daemonset.apps/canal created
+serviceaccount/canal created
+deployment.apps/calico-kube-controllers created
+serviceaccount/calico-kube-controllers created
+poddisruptionbudget.policy/calico-kube-controllers created
+
+```
+
+
+
 
 ## Задание 2: изучить, что запущено по умолчанию
 Самый простой способ — проверить командой calicoctl get <type>. Для проверки стоит получить список нод, ipPool и profile.
