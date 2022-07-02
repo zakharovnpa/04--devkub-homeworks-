@@ -42,6 +42,80 @@
 4. 
 
 #### Установка Calico 
+1. Установка производилась при развертывании кластера с помощью Kubespray
+2. 
+```
+yc-user@cp1-cl2:~$ calicoctl version
+Client Version:    v3.23.1
+Git commit:        967e24543
+Cluster Version:   v3.23.1
+Cluster Type:      kubespray,kubeadm,kdd
+```
+```
+yc-user@cp1-cl2:~$ calicoctl get nodes -o wide
+NAME        ASN       IPV4             IPV6   
+cp1-cl2     (64512)   10.128.0.21/24          
+node1-cl2   (64512)   10.128.0.36/24          
+node2-cl2   (64512)   10.128.0.7/24   
+```
+```
+yc-user@cp1-cl2:~$ calicoctl get ipPool
+NAME           CIDR             SELECTOR   
+default-pool   10.233.64.0/18   all()  
+```
+```
+yc-user@cp1-cl2:~$ calicoctl get profile
+NAME                                                 
+projectcalico-default-allow                          
+kns.default                                          
+kns.kube-node-lease                                  
+kns.kube-public                                      
+kns.kube-system                                      
+ksa.default.default                                  
+ksa.kube-node-lease.default                          
+ksa.kube-public.default                              
+ksa.kube-system.attachdetach-controller              
+ksa.kube-system.bootstrap-signer                     
+ksa.kube-system.calico-node                          
+ksa.kube-system.certificate-controller               
+ksa.kube-system.clusterrole-aggregation-controller   
+ksa.kube-system.coredns                              
+ksa.kube-system.cronjob-controller                   
+ksa.kube-system.daemon-set-controller                
+ksa.kube-system.default                              
+ksa.kube-system.deployment-controller                
+ksa.kube-system.disruption-controller                
+ksa.kube-system.dns-autoscaler                       
+ksa.kube-system.endpoint-controller                  
+ksa.kube-system.endpointslice-controller             
+ksa.kube-system.endpointslicemirroring-controller    
+ksa.kube-system.ephemeral-volume-controller          
+ksa.kube-system.expand-controller                    
+ksa.kube-system.generic-garbage-collector            
+ksa.kube-system.horizontal-pod-autoscaler            
+ksa.kube-system.job-controller                       
+ksa.kube-system.kube-proxy                           
+ksa.kube-system.namespace-controller                 
+ksa.kube-system.node-controller                      
+ksa.kube-system.nodelocaldns                         
+ksa.kube-system.persistent-volume-binder             
+ksa.kube-system.pod-garbage-collector                
+ksa.kube-system.pv-protection-controller             
+ksa.kube-system.pvc-protection-controller            
+ksa.kube-system.replicaset-controller                
+ksa.kube-system.replication-controller               
+ksa.kube-system.resourcequota-controller             
+ksa.kube-system.root-ca-cert-publisher               
+ksa.kube-system.service-account-controller           
+ksa.kube-system.service-controller                   
+ksa.kube-system.statefulset-controller               
+ksa.kube-system.token-cleaner                        
+ksa.kube-system.ttl-after-finished-controller        
+ksa.kube-system.ttl-controller                       
+```
+
+
+
 
 #### Развертывание приложений Frontend, Backend, Cache
 1. Подготовка манифестов для создания деплойментов
