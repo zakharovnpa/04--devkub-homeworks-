@@ -72,6 +72,32 @@ etcd : reload etcd -------------------------------------------------------- 7.39
 container-engine/containerd : containerd | Unpack containerd archive ------ 6.92s
 
 ```
+5. После развертывания кластера, ноебходимо зайти на Control Plane и настроить доступ к кластеру обычного пользователя. 
+  * Запустить команду:
+```
+{
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+}
+```
+6. Доступ к кластеру появился
+```
+yc-user@cp1-cl2:~$ {
+>     mkdir -p $HOME/.kube
+>     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+>     sudo chown $(id -u):$(id -g) $HOME/.kube/config
+> }
+yc-user@cp1-cl2:~$ 
+yc-user@cp1-cl2:~$ kubectl get nodes
+NAME        STATUS   ROLES           AGE    VERSION
+cp1-cl2     Ready    control-plane   10m    v1.24.2
+node1-cl2   Ready    <none>          9m5s   v1.24.2
+node2-cl2   Ready    <none>          9m5s   v1.24.2
+
+```
+7. Для удаленного пользователя необходимо установить на ОС kubectl и скопировать файл с сервера Control Plane `~./kube/config` в домашнюю директорию удаленного пользователя, изменив адрес сервера с локальнго на внешний адрес.
+
 
 #### Установка Calico 
 1. Установка производилась при развертывании кластера с помощью Kubespray
@@ -376,16 +402,31 @@ Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-8z4vj - 10.244.2.2
 
 #### Применение сетевых политик и проверка доступности подов
 
-Согласно комментария преподавателя к выполнению этого задания, необходтимо так настроить сетевые политики, как указана на этой схеме:
+1. Согласно комментария преподавателя к выполнению этого задания, необходтимо так настроить сетевые политики, как указана на этой схеме:
 
 ![network-policy](/12-kubernetes-05-cni/Files/network-poplicy.png)
 
-1. Првоеряем какие политики настроены к этому времени. Никакие не настроены.
+* Открыть доступ:
+- frontend -> backend
+- backend -> cache
+
+2. Остальные возможные взаимодействия должны быть запрещены. 
+* Закрыть доступ:
+- backend  -> frontend
+- cache  -> backend
+- cache  -> frontend
+- frontend -> cache
+
+
+
+1. Проверяем какие политики настроены к этому времени. Никакие не настроены.
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io
 No resources found in default namespace.
 
 ```
+
+
 
 2. Применяем политику, которая запрещает все сетевые взамиодействия
 
@@ -402,16 +443,17 @@ spec:
 
 ```
  
-  * Endpoint
+  * Какие сейчас в кластере есть Endpoint. На каждом поде 
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get ep
 NAME         ENDPOINTS          AGE
-backend      10.244.1.2:80      52m
-cache        10.244.2.2:80      52m
-frontend     10.244.2.3:80      52m
-kubernetes   10.128.0.33:6443   24h
+backend      10.233.111.1:80    21h
+cache        10.233.119.2:80    21h
+frontend     10.233.111.2:80    21h
+kubernetes   10.128.0.21:6443   22h
 
 ```
+
 
 * Применяем политику `default.yaml`
 ```
