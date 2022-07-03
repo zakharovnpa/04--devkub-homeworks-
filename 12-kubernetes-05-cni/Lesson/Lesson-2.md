@@ -426,9 +426,191 @@ No resources found in default namespace.
 
 ```
 
+#### Создаем файлы политик доступа
+1. Создаем основное правило доступа - никому нельзя ни скем соединяться.
+  * default.yaml
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}   # Здесь не указан ни один под, поэтому мы все взаимодействия запретили
+  policyTypes:
+    - Ingress
+
+```
+
+2. Разрешение доступа frontend -> backend. Доступ будем разрешать
+```yml
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend        # Название политики
+  namespace: default    # Используется только в namespace default
+spec:                   # Описание политики 
+  podSelector:          # По отношению к какому поду применяется политика
+    matchLabels:        # Условие - по совпадению Labels, указанного на следующей строке
+      app: frontend     # Условие для совпадения - название пода содержит слово frontend
+  policyTypes:          # Какой будет тип сетевой политики
+    - Ingress           # Входящий тип, т.е. контролруются входящие соединения
+
+```
+* Описание политики: если к поду frontend будет попытка сетевого подключения с самого себя, то соединение запретить
+
+2. Политика Cache
+```yml
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cache
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: cache
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: backend
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+```
+3. Политика Backend
+```yml
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: frontend
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+```
+4. Политика Fronend
+```yml
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+
+```
 
 
-2. Применяем политику, которая запрещает все сетевые взамиодействия
+
+#### Применение политик доступа
+1. Применяем политику cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl apply -f network-policy/cache.yaml 
+networkpolicy.networking.k8s.io/cache created
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io
+NAME    POD-SELECTOR   AGE
+cache   app=cache      27s
+```
+* Результат применения политики:
+  * Есть доступ backend -> cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-rwrkw -- curl -s -m 1 cache
+Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-ls8rm - 10.233.119.2
+
+```
+ 
+ * Нет доступа frontend -> cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-cxlvz -- curl -s -m 1 cache
+command terminated with exit code 28
+
+```
+ * Нет доступа cache  -> backend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-ls8rm -- curl -s -m 1 backend
+command terminated with exit code 28
+```
+ * Нет доступа cache  -> frontend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-ls8rm -- curl -s -m 1 frontend
+command terminated with exit code 28
+
+```
+2. Применяем политику backend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl apply -f network-policy/backend.yaml 
+networkpolicy.networking.k8s.io/backend created
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io
+NAME      POD-SELECTOR   AGE
+backend   app=backend    11s
+cache     app=cache      39m
+```
+* Результат применения политики:
+  * Есть доступ backend -> cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-rwrkw -- curl -s -m 1 cache
+Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-ls8rm - 10.233.119.2
+```
+  * Есть доступ frontend -> backaend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-cxlvz -- curl -s -m 1 backend
+Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-rwrkw - 10.233.111.1
+```
+ * Нет доступа backaend -> frontend
+```
+
+```
+
+  * Нет доступа cache -> backaend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-ls8rm -- curl -s -m 1 backend
+command terminated with exit code 28
+```
+ * Нет доступа cache -> frontend
+```
+
+```
+
+
+
+3. Применяем политику frontend
+
+
+
+4. Применяем политику, которая запрещает все сетевые взамиодействия
 
   * default.yaml
 ```
