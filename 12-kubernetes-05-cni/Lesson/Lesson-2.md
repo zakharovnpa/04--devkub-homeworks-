@@ -589,9 +589,10 @@ Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-ls8rm - 10.233.119.2
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-cxlvz -- curl -s -m 1 backend
 Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-rwrkw - 10.233.111.1
 ```
- * Нет доступа backaend -> frontend
+ * Есть доступ backaend -> frontend
 ```
-
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-rwrkw -- curl -s -m 1 frontend
+Praqma Network MultiTool (with NGINX) - frontend-c74c5646c-cxlvz - 10.233.111.2
 ```
 
   * Нет доступа cache -> backaend
@@ -599,59 +600,54 @@ Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-rwrkw - 10.233.111.1
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-ls8rm -- curl -s -m 1 backend
 command terminated with exit code 28
 ```
- * Нет доступа cache -> frontend
-```
-
-```
-
-
 
 3. Применяем политику frontend
 
-
-
-4. Применяем политику, которая запрещает все сетевые взамиодействия
-
-  * default.yaml
 ```
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-ingress
-spec:
-  podSelector: {}   # Здесь не указан ни один под, поэтому мы все взаимодействия запретили
-  policyTypes:
-    - Ingress
-
-```
- 
-  * Какие сейчас в кластере есть Endpoint. На каждом поде 
-```
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get ep
-NAME         ENDPOINTS          AGE
-backend      10.233.111.1:80    21h
-cache        10.233.119.2:80    21h
-frontend     10.233.111.2:80    21h
-kubernetes   10.128.0.21:6443   22h
-
-```
-
-
-* Применяем политику `default.yaml`
-```
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl apply -f network-policy/default.yaml 
-networkpolicy.networking.k8s.io/default-deny-ingress created
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl apply -f network-policy/frontend.yaml 
+networkpolicy.networking.k8s.io/frontend created
 ```
 ```
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io 
-NAME                   POD-SELECTOR   AGE
-default-deny-ingress   <none>         9m30s
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get networkpolicies.networking.k8s.io
+NAME       POD-SELECTOR   AGE
+backend    app=backend    54m
+cache      app=cache      93m
+frontend   app=frontend   21s
 
 ```
+4. Результаты прменения политик
 
-
-
-
+* Есть доступ frontend -> backend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-cxlvz -- curl -s -m 1 backend
+Praqma Network MultiTool (with NGINX) - backend-869fd89bdc-rwrkw - 10.233.111.1
+```
+* Нет доступа backend -> frontend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-rwrkw -- curl -s -m 1 frontend
+command terminated with exit code 28
+```
+* Есть доступ backend -> cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec backend-869fd89bdc-rwrkw -- curl -s -m 1 cache
+Praqma Network MultiTool (with NGINX) - cache-b7cbd9f8f-ls8rm - 10.233.119.2
+```
+* Нет доступа cache -> backend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-ls8rm -- curl -s -m 1 backend
+command terminated with exit code 28
+```
+* Нет доступа frontend -> cache
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec frontend-c74c5646c-cxlvz -- curl -s -m 1 cache
+command terminated with exit code 28
+```
+* Нет доступа cache -> frontend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl exec cache-b7cbd9f8f-ls8rm -- curl -s -m 1 frontend
+command terminated with exit code 28
+```
+Условие задачи выполнено.
 
 ## Задание 2: изучить, что запущено по умолчанию
 
