@@ -82,7 +82,91 @@ e6fd4ebbaaab: Mounted from library/python
   * селекторы мы должны указать в сервисе, который будет обращаться к подам
 
 #### 3. Создаем манифесты для разворачивания приложений
-1. Deployment для Frontend и Backend
+
+
+1. Для создания файла-манифеста для создания деплоймента воспользуемся помощью утилиты kubectl
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl create deployment k8s-frontend --image=zakharovnpa/k8s-frontend:05.07.22
+deployment.apps/k8s-frontend created
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+k8s-frontend   1/1     1            1           26s
+```
+
+```yml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment -o yaml
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: "2022-07-04T19:51:47Z"
+    generation: 1
+    labels:
+      app: k8s-frontend
+    name: k8s-frontend
+    namespace: default
+    resourceVersion: "81654"
+    uid: c4e0c5f7-ed0f-4f2a-a1cf-4dd759986d22
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: k8s-frontend
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: k8s-frontend
+      spec:
+        containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: k8s-frontend
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2022-07-04T19:52:00Z"
+      lastUpdateTime: "2022-07-04T19:52:00Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2022-07-04T19:51:47Z"
+      lastUpdateTime: "2022-07-04T19:52:00Z"
+      message: ReplicaSet "k8s-frontend-7d4b4986f5" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+kind: List
+metadata:
+  resourceVersion: ""
+
+```
+
+2. Готовим Deployment для Frontend и Backend
 
 ```yml
 apiVersion: apps/v1
