@@ -43,6 +43,7 @@
 4. Стартуем запуск кластера Kubernetes командой:
 
 `ansible-playbook -i inventory/netology-test-cl2/hosts.yaml  --become --become-user=root cluster.yml`
+
 5. С помощью Kubespray развернут кластер 
 
 ```
