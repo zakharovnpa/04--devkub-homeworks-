@@ -360,3 +360,128 @@ fb15dec28c02   13-kubernetes-config_backend    "/bin/sh -c 'pipenv …"   17 sec
 c63c6599c926   postgres:13-alpine              "docker-entrypoint.s…"   17 seconds ago   Up 16 seconds   5432/tcp                                    13-kubernetes-config-db-1
 eea4effe3b25   13-kubernetes-config_frontend   "/docker-entrypoint.…"   3 minutes ago    Up 16 seconds   0.0.0.0:8000->80/tcp, :::8000->80/tcp       13-kubernetes-config-frontend-1
 ```
+#### 6. Создаем образы по отдельности на основани своих Dockerfile
+1. Dockerfile длля Frontend
+```
+FROM node:lts-buster as builder
+
+RUN mkdir /app
+
+WORKDIR /app
+
+ADD package.json /app/package.json
+ADD package-lock.json /app/package-lock.json
+
+RUN npm i
+
+ADD . /app
+
+RUN npm run build && rm -rf /app/node_modules
+
+FROM nginx:latest
+
+RUN mkdir /app
+WORKDIR /app
+COPY --from=builder /app/ /app
+
+RUN mv /app/markup/* /app && rm -rf /app/markup
+
+ADD demo.conf /etc/nginx/conf.d/default.conf
+
+```
+* Создание образа из ранее приготовленного отбраза. Процесс очяень быстрый
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/frontend# docker build -t zakharovnpa/k8s-frontend:05.07.22 .
+Sending build context to Docker daemon  430.6kB
+Step 1/14 : FROM node:lts-buster as builder
+ ---> b9f398d30e45
+Step 2/14 : RUN mkdir /app
+ ---> Using cache
+ ---> f16fcbd21ee6
+Step 3/14 : WORKDIR /app
+ ---> Using cache
+ ---> 6812598cb3ad
+Step 4/14 : ADD package.json /app/package.json
+ ---> Using cache
+ ---> 6e4c1b5ae040
+Step 5/14 : ADD package-lock.json /app/package-lock.json
+ ---> Using cache
+ ---> ecef30491f9a
+Step 6/14 : RUN npm i
+ ---> Using cache
+ ---> a154e3d6e8c3
+Step 7/14 : ADD . /app
+ ---> Using cache
+ ---> d34cfbeb458c
+Step 8/14 : RUN npm run build && rm -rf /app/node_modules
+ ---> Using cache
+ ---> d173cf56ce49
+Step 9/14 : FROM nginx:latest
+ ---> 55f4b40fe486
+Step 10/14 : RUN mkdir /app
+ ---> Using cache
+ ---> eb2495b33cd2
+Step 11/14 : WORKDIR /app
+ ---> Using cache
+ ---> dd332f3a8cec
+Step 12/14 : COPY --from=builder /app/ /app
+ ---> Using cache
+ ---> 08637bdea5b3
+Step 13/14 : RUN mv /app/markup/* /app && rm -rf /app/markup
+ ---> Using cache
+ ---> 9b657fa64ab2
+Step 14/14 : ADD demo.conf /etc/nginx/conf.d/default.conf
+ ---> Using cache
+ ---> 5438a0c5806b
+Successfully built 5438a0c5806b
+Successfully tagged zakharovnpa/k8s-frontend:05.07.22
+
+```
+2. Dockerfile длля Backend
+```
+FROM python:3.9-buster
+
+RUN mkdir /app && python -m pip install pipenv
+
+WORKDIR /app
+
+ADD Pipfile /app/Pipfile
+ADD Pipfile.lock /app/Pipfile.lock
+
+RUN pipenv install
+
+ADD main.py /app/main.py
+
+CMD pipenv run uvicorn main:app --reload --host 0.0.0.0 --port 9000
+
+```
+* Создание образа из ранее приготовленного отбраза. Процесс очяень быстрый
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/backend# docker build -t zakharovnpa/k8s-backend:05.07.22 .
+Sending build context to Docker daemon  20.48kB
+Step 1/8 : FROM python:3.9-buster
+ ---> 999912f2c071
+Step 2/8 : RUN mkdir /app && python -m pip install pipenv
+ ---> Using cache
+ ---> 9d2f43cfe6c6
+Step 3/8 : WORKDIR /app
+ ---> Using cache
+ ---> c32c3aa2b2f7
+Step 4/8 : ADD Pipfile /app/Pipfile
+ ---> Using cache
+ ---> b7ea0062acb5
+Step 5/8 : ADD Pipfile.lock /app/Pipfile.lock
+ ---> Using cache
+ ---> ff051eb06a75
+Step 6/8 : RUN pipenv install
+ ---> Using cache
+ ---> d8b4b490bb86
+Step 7/8 : ADD main.py /app/main.py
+ ---> Using cache
+ ---> 82eab8a2296b
+Step 8/8 : CMD pipenv run uvicorn main:app --reload --host 0.0.0.0 --port 9000
+ ---> Using cache
+ ---> bf58e470d5a5
+Successfully built bf58e470d5a5
+Successfully tagged zakharovnpa/k8s-backend:05.07.22
+```
