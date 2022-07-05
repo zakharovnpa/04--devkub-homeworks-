@@ -328,11 +328,25 @@ spec:
 #### 5. Готовим StatefulSet для создания БД. БД будет распологаться в кластере Kubernetes.
 
 * Порядок подготовки:
-  * Подготовить образ для развертывания контейнера
+  * Подготовить Dockerfile для создания образа
   * Подготовить файл .env с указанием переменных окружения
   * Подготовить манифест для сервиса с указанием протоколов и портов для подключений
 
-* Подготовка образа для БД
+* Dockerfile
+```
+FROM postgres:13-alpine
+```
+* Файл `.env` с переменными окружения
+```
+POSTGRES_PASSWORD=postgres
+POSTGRES_USER=postgres
+POSTGRES_DB=news
+
+```
+
+* Подготовка образа для БД. Находясь в директории, где расположены Dockerfile и файл с переменными `.env` запускаем команду. Не забываем про точку в конце - указание контекста сборки - директории где мы запускаемся.
+`docker build -t zakharovnpa/k8s-database:05.07.22 .`
+
 ```
 root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker build -t zakharovnpa/k8s-database:05.07.22 .
 Sending build context to Docker daemon  3.072kB
