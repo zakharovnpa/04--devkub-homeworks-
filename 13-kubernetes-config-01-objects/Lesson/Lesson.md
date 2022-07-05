@@ -83,8 +83,8 @@ e6fd4ebbaaab: Mounted from library/python
 
 #### 3. Создаем манифесты для разворачивания приложений
 
-
-1. При создании файла-манифеста, на основании которого создается деплоймент, воспользуемся утилитой kubectl.
+##### 3.1 Deployment для Frontend
+1. При создании файла-манифеста, на основании которого создается Deployment для frontend, воспользуемся утилитой kubectl.
 * Команда `kubectl create deployment k8s-frontend --image=zakharovnpa/k8s-frontend:05.07.22` запускаетсоздание деплоймента на основе образа для Frontend
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl create deployment k8s-frontend --image=zakharovnpa/k8s-frontend:05.07.22
@@ -96,7 +96,7 @@ maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment
 NAME           READY   UP-TO-DATE   AVAILABLE   AGE
 k8s-frontend   1/1     1            1           26s
 ```
-* Полученный при создании файл-манифест Deployment
+* Полученный при создании файл-манифест Deployment для frontend
 ```yml
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment -o yaml
 apiVersion: v1
@@ -168,8 +168,116 @@ metadata:
   resourceVersion: ""
 
 ```
+##### 3.2 Deployment для Backend
+1. При создании файла-манифеста, на основании которого создается Deployment для Backend, воспользуемся утилитой kubectl.
+* Команда `kubectl create deployment k8s-backend --image=zakharovnpa/k8s-backend:05.07.22` запускаетсоздание деплоймента на основе образа для Backend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl create deployment k8s-backend --image=zakharovnpa/k8s-backend:05.07.22
+deployment.apps/k8s-backend created
+```
+* Dеployment создан
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deploy
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+k8s-backend    0/1     1            0           7s
+k8s-frontend   5/5     5            5           9h
+```
+* Полученный при создании файл-манифест Deployment для frontend
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment k8s-backend -o yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2022-07-05T04:58:29Z"
+  generation: 1
+  labels:
+    app: k8s-backend
+  name: k8s-backend
+  namespace: default
+  resourceVersion: "137025"
+  uid: 9a93f04d-8960-4cad-a9a0-de57f423895a
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: k8s-backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: k8s-backend
+    spec:
+      containers:
+      - image: zakharovnpa/k8s-backend:05.07.22
+        imagePullPolicy: IfNotPresent
+        name: k8s-backend
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-07-05T04:58:59Z"
+    lastUpdateTime: "2022-07-05T04:58:59Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-07-05T04:58:29Z"
+    lastUpdateTime: "2022-07-05T04:58:59Z"
+    message: ReplicaSet "k8s-backend-95b5f4f77" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
 
-2. Готовим Deployment для Frontend и Backend
+```
+
+
+#### 4. Готовим манифесты для Deployment Frontend и Backend. В этих же файлах будут описаны манифесты для создания сервисов. Данные для создания сервисов берем из файла `docker-compose.yml`
+
+* Файл `docker-compose.yml`
+```yml
+version: "3.7"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - 8000:80
+
+  backend:
+    build: ./backend
+    links:
+      - db
+    ports:
+      - 9000:9000
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: news
+```
+
 
 ```yml
 apiVersion: apps/v1
@@ -199,12 +307,336 @@ spec:
         env:
           - name: HTTP_PORT
             value: "8080"
+# Далле идет описание сервиса, с помощью которого можно будет подключаться к вышеописанному поду        
+---
+# Config PostgreSQL StatefulSet Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db-lb
+spec:
+  selector:
+    app: postgres-db
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+```
+
+
+#### 5. Готовим StatefulSet для создания БД. БД будет распологаться в кластере Kubernetes
+* Работающий StatefulSet `k8s-database.yml`, примененный в кластере для создания БД
+```
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: k8s-database
+spec:
+  serviceName: k8s-database-svc
+  selector:
+    matchLabels:
+      app: k8s-database
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: k8s-database
+    spec:
+      containers:
+        - name: k8s-database
+          image: postgres:13-alpine
+          env:
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: news    
+              
+---
+# Config PostgreSQL StatefulSet Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-database-svc
+spec:
+  selector:
+    app: k8s-database
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+```
+* Запуск создания БД на основе StatefulSet
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ vim k8s-database.yml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ kubectl apply -f k8s-database.yml 
+statefulset.apps/k8s-database created
+service/k8s-database-svc created
+```
+* Поды, запущенные на нодах кластера
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ kubectl get po -o wide
+NAME                            READY   STATUS    RESTARTS   AGE     IP            NODE    NOMINATED NODE   READINESS GATES
+k8s-backend-95b5f4f77-98fd2     1/1     Running   0          3h57m   10.233.90.4   node1   <none>           <none>
+k8s-database-0                  1/1     Running   0          66m     10.233.96.6   node2   <none>           <none>
+k8s-frontend-7d4b4986f5-7bl5n   1/1     Running   0          4h20m   10.233.90.3   node1   <none>           <none>
+k8s-frontend-7d4b4986f5-dk928   1/1     Running   0          13h     10.233.96.1   node2   <none>           <none>
+k8s-frontend-7d4b4986f5-gdnqd   1/1     Running   0          4h20m   10.233.90.2   node1   <none>           <none>
+k8s-frontend-7d4b4986f5-lwrgw   1/1     Running   0          4h20m   10.233.96.3   node2   <none>           <none>
+k8s-frontend-7d4b4986f5-xjvks   1/1     Running   0          4h20m   10.233.96.2   node2   <none>           <none>
+```
+* Логи пода с БД
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ kubectl logs k8s-database-0
+The files belonging to this database system will be owned by user "postgres".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "en_US.utf8".
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+fixing permissions on existing directory /var/lib/postgresql/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... UTC
+creating configuration files ... ok
+running bootstrap script ... ok
+sh: locale: not found
+2022-07-05 07:49:06.512 UTC [30] WARNING:  no usable system locales were found
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+
+Success. You can now start the database server using:
+
+    pg_ctl -D /var/lib/postgresql/data -l logfile start
+
+initdb: warning: enabling "trust" authentication for local connections
+You can change this by editing pg_hba.conf or using the option -A, or
+--auth-local and --auth-host, the next time you run initdb.
+waiting for server to start....2022-07-05 07:49:07.846 UTC [36] LOG:  starting PostgreSQL 13.7 on x86_64-pc-linux-musl, compiled by gcc (Alpine 11.2.1_git20220219) 11.2.1 20220219, 64-bit
+2022-07-05 07:49:07.851 UTC [36] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2022-07-05 07:49:07.879 UTC [37] LOG:  database system was shut down at 2022-07-05 07:49:07 UTC
+2022-07-05 07:49:07.892 UTC [36] LOG:  database system is ready to accept connections
+ done
+server started
+CREATE DATABASE
+
+
+/usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+
+waiting for server to shut down....2022-07-05 07:49:08.233 UTC [36] LOG:  received fast shutdown request
+2022-07-05 07:49:08.247 UTC [36] LOG:  aborting any active transactions
+2022-07-05 07:49:08.249 UTC [36] LOG:  background worker "logical replication launcher" (PID 43) exited with exit code 1
+2022-07-05 07:49:08.249 UTC [38] LOG:  shutting down
+2022-07-05 07:49:08.324 UTC [36] LOG:  database system is shut down
+ done
+server stopped
+
+PostgreSQL init process complete; ready for start up.
+
+2022-07-05 07:49:08.368 UTC [1] LOG:  starting PostgreSQL 13.7 on x86_64-pc-linux-musl, compiled by gcc (Alpine 11.2.1_git20220219) 11.2.1 20220219, 64-bit
+2022-07-05 07:49:08.369 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2022-07-05 07:49:08.369 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2022-07-05 07:49:08.378 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2022-07-05 07:49:08.407 UTC [50] LOG:  database system was shut down at 2022-07-05 07:49:08 UTC
+2022-07-05 07:49:08.418 UTC [1] LOG:  database system is ready to accept connections
+
 ```
 
 
 
+* StatefulSet
+```yml
+# Config PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-db
+spec:
+  serviceName: postgres-db-svc
+  selector:
+    matchLabels:
+      app: postgres-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres-db
+    spec:
+      containers:
+        - name: postgres-sdb
+          image: postgres:latest
+          volumeMounts:
+            - name: postgres-db-disk
+              mountPath: /data
+          env:
+            - name: POSTGRES_PASSWORD
+              value: testpassword
+            - name: PGDATA
+              value: /data/pgdata
+  # Config Volume Claim
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-db-disk
+      spec:
+        accessModes: ["ReadWriteMany"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+# Config PostgreSQL StatefulSet Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db-lb
+spec:
+  selector:
+    app: postgres-db
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432
+# Config PersistentVolume (pv)
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: 10.0.2.15
+    path: /home/nfs
+
+```
 
 
+
+* Пример файла-манифеста для StatefulSet
+
+```yml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus 
+  namespace: monitoring
+  labels:
+    k8s-app: prometheus
+spec:
+  serviceName: "prometheus"
+  replicas: 1
+  podManagementPolicy: "Parallel"
+  updateStrategy:
+    type: "RollingUpdate"
+  selector:
+    matchLabels:
+      k8s-app: prometheus
+  template:
+    metadata:
+      labels:
+        k8s-app: prometheus
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      serviceAccountName: prometheus
+      initContainers:
+      - name: "init-chown-data"
+        image: "busybox:latest"
+        imagePullPolicy: "IfNotPresent"
+        command: ["chown", "-R", "65534:65534", "/data"]
+        volumeMounts:
+        - name: prometheus-data
+          mountPath: /data
+          subPath: ""
+      containers:
+        - name: prometheus-server-configmap-reload
+          image: "jimmidyson/configmap-reload:v0.1"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --volume-dir=/etc/config
+            - --webhook-url=http://localhost:9090/-/reload
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+              readOnly: true
+          resources:
+            limits:
+              cpu: 10m
+              memory: 10Mi
+            requests:
+              cpu: 10m
+              memory: 10Mi
+
+        - name: prometheus-server
+          image: "prom/prometheus:v2.8.0"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --config.file=/etc/config/prometheus.yml
+            - --storage.tsdb.path=/data
+            - --storage.tsdb.retention.time=75d
+            - --web.console.libraries=/etc/prometheus/console_libraries
+            - --web.console.templates=/etc/prometheus/consoles
+            - --web.enable-lifecycle
+          ports:
+            - containerPort: 9090
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 1000Mi
+            
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+            - name: prometheus-data
+              mountPath: /data
+              subPath: ""
+      terminationGracePeriodSeconds: 300
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prometheus-config
+  volumeClaimTemplates:
+  - metadata:
+      name: prometheus-data
+    spec:
+      storageClassName: rbd
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: "100Gi"
+```
 
 ## Задание 2: подготовить конфиг для production окружения
 Следующим шагом будет запуск приложения в production окружении. Требования сложнее:
