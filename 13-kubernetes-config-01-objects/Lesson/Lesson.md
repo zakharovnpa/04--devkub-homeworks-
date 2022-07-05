@@ -507,7 +507,7 @@ Error: Database is uninitialized and superuser password is not specified.
 ```
 
 
-* StatefulSet
+* Пример манифеста StatefulSet для БД
 ```yml
 # Config PostgreSQL StatefulSet
 apiVersion: apps/v1
