@@ -84,16 +84,19 @@ e6fd4ebbaaab: Mounted from library/python
 #### 3. Создаем манифесты для разворачивания приложений
 
 
-1. Для создания файла-манифеста для создания деплоймента воспользуемся помощью утилиты kubectl
+1. При создании файла-манифеста, на основании которого создается деплоймент, воспользуемся утилитой kubectl.
+* Команда `kubectl create deployment k8s-frontend --image=zakharovnpa/k8s-frontend:05.07.22` запускаетсоздание деплоймента на основе образа для Frontend
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl create deployment k8s-frontend --image=zakharovnpa/k8s-frontend:05.07.22
 deployment.apps/k8s-frontend created
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ 
+```
+* Dеployment создан
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment
 NAME           READY   UP-TO-DATE   AVAILABLE   AGE
 k8s-frontend   1/1     1            1           26s
 ```
-
+* Полученный при создании файл-манифест Deployment
 ```yml
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta$ kubectl get deployment -o yaml
 apiVersion: v1
