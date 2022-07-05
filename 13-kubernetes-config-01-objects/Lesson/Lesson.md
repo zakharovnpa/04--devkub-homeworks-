@@ -325,7 +325,47 @@ spec:
 ```
 
 
-#### 5. Готовим StatefulSet для создания БД. БД будет распологаться в кластере Kubernetes
+#### 5. Готовим StatefulSet для создания БД. БД будет распологаться в кластере Kubernetes.
+
+* Порядок подготовки:
+  * Подготовить образ для развертывания контейнера
+  * Подготовить файл .env с указанием переменных окружения
+  * Подготовить манифест для сервиса с указанием протоколов и портов для подключений
+
+* Подготовка образа для БД
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker build -t zakharovnpa/k8s-database:05.07.22 .
+Sending build context to Docker daemon  3.072kB
+Step 1/1 : FROM postgres:13-alpine
+ ---> 2bb8cea1e0bb
+Successfully built 2bb8cea1e0bb
+Successfully tagged zakharovnpa/k8s-database:05.07.22
+```
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker image list
+REPOSITORY                                                          TAG               IMAGE ID       CREATED         SIZE
+zakharovnpa/k8s-backend                                             05.07.22          bf58e470d5a5   19 hours ago    1.07GB
+zakharovnpa/k8s-frontend                                            05.07.22          5438a0c5806b   19 hours ago    142MB
+zakharovnpa/k8s-database                                            05.07.22          2bb8cea1e0bb   13 days ago     213MB
+
+```
+* Пушим образ в репозиторий zakharovnpa на Dockerhub
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker push zakharovnpa/k8s-database:05.07.22
+The push refers to repository [docker.io/zakharovnpa/k8s-database]
+0bc5f2edb483: Mounted from library/postgres 
+c703c3dc0dd0: Mounted from library/postgres 
+16da13de1326: Mounted from library/postgres 
+adc529f3f318: Mounted from library/postgres 
+ffa3969dfaf6: Mounted from library/postgres 
+14f83c4d2ba1: Mounted from library/postgres 
+2acf3ef23fe4: Mounted from library/postgres 
+24302eb7d908: Mounted from library/postgres 
+05.07.22: digest: sha256:f58e501e198aed05774e84dc82048c61b48039afa69e73bc614ee66628a916b5 size: 1985
+```
+
+
+
 * Работающий StatefulSet `k8s-database.yml`, примененный в кластере для создания БД
 ```
 apiVersion: apps/v1
@@ -451,7 +491,20 @@ PostgreSQL init process complete; ready for start up.
 2022-07-05 07:49:08.418 UTC [1] LOG:  database system is ready to accept connections
 
 ```
+* Без парметров `env` в файле-манифесте для БД, под не запускался. Были ошибки
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ kubectl logs k8s-database-0
+Error: Database is uninitialized and superuser password is not specified.
+       You must specify POSTGRES_PASSWORD to a non-empty value for the
+       superuser. For example, "-e POSTGRES_PASSWORD=password" on "docker run".
 
+       You may also use "POSTGRES_HOST_AUTH_METHOD=trust" to allow all
+       connections without a password. This is *not* recommended.
+
+       See PostgreSQL documentation about "trust":
+       https://www.postgresql.org/docs/current/auth-trust.html
+
+```
 
 
 * StatefulSet
