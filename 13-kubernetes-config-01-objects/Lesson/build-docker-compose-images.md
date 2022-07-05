@@ -485,3 +485,40 @@ Step 8/8 : CMD pipenv run uvicorn main:app --reload --host 0.0.0.0 --port 9000
 Successfully built bf58e470d5a5
 Successfully tagged zakharovnpa/k8s-backend:05.07.22
 ```
+* Подготовка образа для БД
+* Dockerfile для БД
+```
+FROM postgres:13-alpine
+```
+* Собираем образ для дальнейшего размещения в репозитории zakharovnpa
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker build -t zakharovnpa/k8s-database:05.07.22 .
+Sending build context to Docker daemon  3.072kB
+Step 1/1 : FROM postgres:13-alpine
+ ---> 2bb8cea1e0bb
+Successfully built 2bb8cea1e0bb
+Successfully tagged zakharovnpa/k8s-database:05.07.22
+```
+* Подготовленные образы приложений
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker image list
+REPOSITORY                                                          TAG               IMAGE ID       CREATED         SIZE
+zakharovnpa/k8s-backend                                             05.07.22          bf58e470d5a5   19 hours ago    1.07GB
+zakharovnpa/k8s-frontend                                            05.07.22          5438a0c5806b   19 hours ago    142MB
+zakharovnpa/k8s-database                                            05.07.22          2bb8cea1e0bb   13 days ago     213MB
+
+```
+* Пушим образ в репозиторий zakharovnpa на Dockerhub
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/database# docker push zakharovnpa/k8s-database:05.07.22
+The push refers to repository [docker.io/zakharovnpa/k8s-database]
+0bc5f2edb483: Mounted from library/postgres 
+c703c3dc0dd0: Mounted from library/postgres 
+16da13de1326: Mounted from library/postgres 
+adc529f3f318: Mounted from library/postgres 
+ffa3969dfaf6: Mounted from library/postgres 
+14f83c4d2ba1: Mounted from library/postgres 
+2acf3ef23fe4: Mounted from library/postgres 
+24302eb7d908: Mounted from library/postgres 
+05.07.22: digest: sha256:f58e501e198aed05774e84dc82048c61b48039afa69e73bc614ee66628a916b5 size: 1985
+```
