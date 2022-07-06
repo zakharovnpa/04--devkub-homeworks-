@@ -81,7 +81,7 @@ e6fd4ebbaaab: Mounted from library/python
 * Необходимо создать сервис для обращения к БД
   * селекторы мы должны указать в сервисе, который будет обращаться к подам
 
-#### 3. Создаем манифесты для разворачивания приложений
+#### 3. Создаем манифесты для разворачивания приложений на основе созданых подов с помощью Kubectl
 
 ##### 3.1 Deployment для Frontend
 1. При создании файла-манифеста, на основании которого создается Deployment для frontend, воспользуемся утилитой kubectl.
@@ -278,7 +278,7 @@ services:
       POSTGRES_DB: news
 ```
 
-
+* Deployment froontend
 ```yml
 apiVersion: apps/v1
 kind: Deployment
@@ -525,6 +525,23 @@ Error: Database is uninitialized and superuser password is not specified.
 
 * Пример файла-манифеста для StatefulSet для приложения [Prometheus](/13-kubernetes-config-01-objects/Files/statefulset-for-prometheus.yml)
 
+
+#### 6. Тестирование доступности приложений м БД, работа сервисов
+
+* Запущенные сервисы
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ kubectl get svc -o wide
+NAME               TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE    SELECTOR
+k8s-database-svc   LoadBalancer   10.233.43.231   <pending>     5432:30352/TCP   174m   app=k8s-database
+kubernetes         ClusterIP      10.233.0.1      <none>        443/TCP          28h    <none>
+```
+* Запущенные Endpoints
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/main$ kubectl get ep -o wide
+NAME               ENDPOINTS          AGE
+k8s-database-svc   10.233.96.6:5432   175m
+kubernetes         10.128.0.18:6443   28h
+```
 
 
 
