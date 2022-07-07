@@ -278,7 +278,7 @@ services:
       POSTGRES_DB: news
 ```
 
-* Deployment froontend
+* Deployment frontend
 ```yml
 apiVersion: apps/v1
 kind: Deployment
