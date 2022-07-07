@@ -7444,6 +7444,10 @@ NAME         ENDPOINTS          AGE
 db-svc       10.233.90.1:5432   18s
 kubernetes   10.128.0.11:6443   29m
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+### Логи контейнера с БД
+
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl logs db-0 
 The files belonging to this database system will be owned by user "postgres".
 This user must also own the server process.
@@ -7503,6 +7507,9 @@ PostgreSQL init process complete; ready for start up.
 2022-07-07 02:14:53.341 UTC [50] LOG:  database system was shut down at 2022-07-07 02:14:53 UTC
 2022-07-07 02:14:53.347 UTC [1] LOG:  database system is ready to accept connections
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+### Подключение к БД в нутри контейнера с БД
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl exec db-0 -c db -i -t -- bash -il
 db-0:/# 
 db-0:/# psql 127.1
@@ -7518,11 +7525,16 @@ db-0:/# exit
 logout
 command terminated with exit code 2
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+* Endpoints, работающие в кластере
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl get ep
 NAME         ENDPOINTS          AGE
 db-svc       10.233.90.1:5432   4m32s
 kubernetes   10.128.0.11:6443   34m
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+* Endpoints describe
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl describe ep db-svc 
 Name:         db-svc
 Namespace:    default
@@ -7537,7 +7549,9 @@ Subsets:
     <unset>  5432  TCP
 
 Events:  <none>
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+### Подключение к БД из контейнера с БД.
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl exec db-0 -c db -i -t -- bash -il
 db-0:/# 
 db-0:/# psql -h 10.233.90.1:5432 -U postgres
@@ -7553,10 +7567,14 @@ news=# exit
 db-0:/# 
 db-0:/# exit
 logout
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+### Запуск создания deployments для подя с контейнерами Frontend, Backend
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl apply -f web-app.yaml 
 deployment.apps/fb-pod created
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+```
+### Запуск создания сервиса для 
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl apply -f fb-svc.yaml 
 service/fb-svc created
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
