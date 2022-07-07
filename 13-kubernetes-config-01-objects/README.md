@@ -111,10 +111,26 @@ spec:
 ```
 #### 3. Скриншоты вывода команды kubectl со списком запущенных объектов каждого типа
   * pods
+![kubectl-get-pod-stage](/13-kubernetes-config-01-objects/Files/kubectl-get-pod-stage.png)
+ 
   * deployments
+  
+![kubectl-get-deploy-stage](/13-kubernetes-config-01-objects/Files/kubectl-get-deploy-stage.png)
   * statefulset
+   
+![kubectl-get-statefulset-stage](/13-kubernetes-config-01-objects/Files/kubectl-get-statefulset-stage.png)
   * service 
+
+![kubectl-get-service-stage](/13-kubernetes-config-01-objects/Files/kubectl-get-service-stage.png)
   * или скриншот из самого Kubernetes, что сервисы подняты и работают.
+
+![kubectl-logs-backend-stage](/13-kubernetes-config-01-objects/Files/kubectl-logs-backend-stage.png)
+
+![curl-db-stage](/13-kubernetes-config-01-objects/Files/curl-db-stage.png)
+
+![kubectl-logs-db-stage](/13-kubernetes-config-01-objects/Files/kubectl-logs-db-stage.png)
+
+![curl-db-stage](/13-kubernetes-config-01-objects/Files/curl-db-stage.png)
 
 ## Задание 2: подготовить конфиг для production окружения
 
