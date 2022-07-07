@@ -109,6 +109,38 @@ news=#
 При работе с приложением иногда может потребоваться вручную добавить пару копий. Используя команду kubectl scale, попробуйте увеличить количество бекенда и фронта до 3. Проверьте, на каких нодах оказались копии после каждого действия (kubectl describe, kubectl get pods -o wide). После уменьшите количество копий до 1.
 
 ### Ответ:
+
+* После автоскейлинга до 3 реплик поды деплоя оказались на рзличных нодах
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl scale --replicas=3 deployment fb-pod 
+deployment.apps/fb-pod scaled
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ 
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+db-0                      1/1     Running   0          5h7m
+fb-pod-65b9777746-54942   2/2     Running   0          5s
+fb-pod-65b9777746-b2sl2   2/2     Running   0          3h31m
+fb-pod-65b9777746-w7pmd   2/2     Running   0          5s
+```
+* На какие ноды попали новые поды
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl get pod -o wide
+NAME                      READY   STATUS    RESTARTS   AGE    IP            NODE    NOMINATED NODE   READINESS GATES
+db-0                      1/1     Running   0          6h6m   10.233.90.1   node1   <none>           <none>
+fb-pod-65b9777746-54942   2/2     Running   0          59m    10.233.90.3   node1   <none>           <none>
+fb-pod-65b9777746-jm7r4   2/2     Running   0          5s     10.233.96.6   node2   <none>           <none>
+fb-pod-65b9777746-mzcsg   2/2     Running   0          5s     10.233.96.5   node2   <none>           <none>
+```
+* После автоскейлинга до 1 реплики поды всех приложений оказались на одной ноде
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres$ kubectl get pod -o wide
+NAME                      READY   STATUS    RESTARTS   AGE     IP            NODE    NOMINATED NODE   READINESS GATES
+db-0                      1/1     Running   0          6h11m   10.233.90.1   node1   <none>           <none>
+fb-pod-65b9777746-54942   2/2     Running   0          64m     10.233.90.3   node1   <none>           <none>
+
+```
+
+
 ---
 
 ### Как оформить ДЗ?
