@@ -127,8 +127,6 @@ spec:
 
 ![kubectl-logs-backend-stage](/13-kubernetes-config-01-objects/Files/kubectl-logs-backend-stage.png)
 
-![curl-db-stage](/13-kubernetes-config-01-objects/Files/curl-db-stage.png)
-
 ![kubectl-logs-db-stage](/13-kubernetes-config-01-objects/Files/kubectl-logs-db-stage.png)
 
 ![curl-db-stage](/13-kubernetes-config-01-objects/Files/curl-db-stage.png)
