@@ -111,6 +111,7 @@ spec:
 ```
 #### 3. Скриншоты вывода команды kubectl со списком запущенных объектов каждого типа
   * pods
+  
 ![kubectl-get-pod-stage](/13-kubernetes-config-01-objects/Files/kubectl-get-pod-stage.png)
  
   * deployments
