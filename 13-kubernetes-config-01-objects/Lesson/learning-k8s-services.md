@@ -31,7 +31,7 @@ node2   Ready    <none>          9m16s   v1.24.2
 ### 1. Тестирование нового кластера
 
 #### 1. Какие в кластере namespace
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get namespaces 
 NAME              STATUS   AGE
 default           Active   76m
@@ -46,7 +46,7 @@ maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kube
 No resources found in default namespace.
 ```
 #### 3. Какие в кластере pods в namespace "kube-system"
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get pod -n kube-system
 NAME                              READY   STATUS    RESTARTS   AGE
 calico-node-bmgmz                 1/1     Running   0          77m
@@ -70,7 +70,7 @@ nodelocaldns-xxk2l                1/1     Running   0          75m
 ```
 #### 4. Какие в кластере nodes в namespace "default"
 
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get nodes -o wide
 NAME    STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
 cp1     Ready    control-plane   82m   v1.24.2   10.128.0.7    <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
@@ -182,27 +182,27 @@ spec:
 ```
 #### 2. Создание деплойментов приложений и сетевых служб.
 
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl apply -f .
 statefulset.apps/db created
 service/db created
 deployment.apps/fb-pod created
 service/fb-svc created
 ```
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get pod -o wide
 NAME                      READY   STATUS              RESTARTS   AGE   IP            NODE    NOMINATED NODE   READINESS GATES
 db-0                      1/1     Running             0          33s   10.233.90.1   node1   <none>           <none>
 fb-pod-65b9777746-mtgh5   0/2     ContainerCreating   0          33s   <none>        node2   <none>           <none>
 ```
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get pod -o wide
 NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE    NOMINATED NODE   READINESS GATES
 db-0                      1/1     Running   0          47s   10.233.90.1   node1   <none>           <none>
 fb-pod-65b9777746-mtgh5   2/2     Running   0          47s   10.233.96.2   node2   <none>           <none>
 
 ```
-```py
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get service -o wide
 NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE     SELECTOR
 db           NodePort    10.233.38.124   <none>        5432:32285/TCP   2m11s   app=db
@@ -217,7 +217,9 @@ fb-svc       <none>             2m27s
 kubernetes   10.128.0.7:6443    88m
 
 ```
-```go
+
+* Заходим в контейнер Backup. Контейнер "db" с БД пингуется. Curl тоже отвечает.
+```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl exec fb-pod-65b9777746-mtgh5 -c backend -it bash
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 root@fb-pod-65b9777746-mtgh5:/app# 
@@ -236,5 +238,108 @@ root@fb-pod-65b9777746-mtgh5:~#
 root@fb-pod-65b9777746-mtgh5:~# curl db:5432
 curl: (52) Empty reply from server
 root@fb-pod-65b9777746-mtgh5:~# 
+
+```
+* Свойства сервиса Endpoint
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl get endpoints -o yaml
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Endpoints
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2022-07-09T10:29:56Z"
+    creationTimestamp: "2022-07-09T10:29:44Z"
+    name: db
+    namespace: default
+    resourceVersion: "9659"
+    uid: a6cf1804-e53c-4ad1-93fa-c216c5108c0a
+  subsets:
+  - addresses:
+    - ip: 10.233.90.1
+      nodeName: node1
+      targetRef:
+        kind: Pod
+        name: db-0
+        namespace: default
+        uid: 5bd01f9b-cad2-4d87-8a8b-43df87f65edd
+    ports:
+    - port: 5432
+      protocol: TCP
+- apiVersion: v1
+  kind: Endpoints
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2022-07-09T10:29:44Z"
+    creationTimestamp: "2022-07-09T10:29:44Z"
+    labels:
+      app: fb
+    name: fb-svc
+    namespace: default
+    resourceVersion: "9619"
+    uid: 3d4bda46-a056-4c00-b3a0-15b48b573943
+- apiVersion: v1
+  kind: Endpoints
+  metadata:
+    creationTimestamp: "2022-07-09T09:03:23Z"
+    labels:
+      endpointslice.kubernetes.io/skip-mirror: "true"
+    name: kubernetes
+    namespace: default
+    resourceVersion: "202"
+    uid: 2be23faa-c8e8-4a89-bec1-b5308ebaa32c
+  subsets:
+  - addresses:
+    - ip: 10.128.0.7
+    ports:
+    - name: https
+      port: 6443
+      protocol: TCP
+kind: List
+metadata:
+  resourceVersion: ""
+
+```
+
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl describe svc db
+Name:                     db
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=db
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.233.38.124
+IPs:                      10.233.38.124
+Port:                     <unset>  5432/TCP
+TargetPort:               5432/TCP
+NodePort:                 <unset>  32285/TCP
+Endpoints:                10.233.90.1:5432
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl describe svc fb-svc
+Name:                     fb-svc
+Namespace:                default
+Labels:                   app=fb
+Annotations:              <none>
+Selector:                 app=fb-pod
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.233.30.110
+IPs:                      10.233.30.110
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  30080/TCP
+Endpoints:                <none>
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
 
 ```
