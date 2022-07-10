@@ -27,7 +27,4 @@ services:
 ```
 ### 2. Запуск сборки образов и запуска контейнеров
 
-```
-
-
-```
+[Логи этапа сборки контейнеров](/13-kubernetes-config-01-objects/Logs/log-docker-compose-build.md)
