@@ -170,7 +170,18 @@ curl: (7) Failed to connect to 10.128.0.8 port 5432: Connection refused
 
 
 ##### 4.3.1 Исправления
-* Для окрытия порта 5432 для доступа к контейнеру с БД персобран docker-compose-yaml
+* Для окрытия порта 5432 для доступа к контейнеру с БД персобран `docker-compose-yaml`
+
+```yml
+  db:
+    image: zakharovnpa/k8s-database:05.07.22
+    ports:              # Добавлены настройки
+      - 5432:5432       # Добавлены настройки
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: news
+```
 
 * Результат: открыт на внешнй доступ порт 5432
 ```
