@@ -575,11 +575,149 @@ kubernetes         10.128.0.18:6443   28h
 #### 2.2 Service Backend
 
 ### 3. Создаем БД за пределами кластера k8s
+
+#### План создания
+* На отдельной ноде устанавливается docker, docker-compose
+* На основе файла docker-compose.yaml запускается три контейнера, в т.ч. с БД
+* При этом с другой ноды по адресу ноды будут доступны порты 8000, 9000, 5432
+
+
 #### 3.1 Service для доступа к БД от Backend
 
+* На других нодах разорачивается кластер K8S
+* На одном из подов ставится приложение multitool
+* Также добавляются сервисы для доступа к БД, расположенной на отельной ноде.
 
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl -n default get svc,ep,po -o wide
+NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE     SELECTOR
+service/kubernetes   ClusterIP   10.233.0.1     <none>        443/TCP    5h41m   <none>
+service/multitool    ClusterIP   10.233.58.43   <none>        5432/TCP   18m     app=multitool
 
+NAME                   ENDPOINTS          AGE
+endpoints/kubernetes   10.128.0.20:6443   5h41m
+endpoints/multitool    10.233.96.1:5432   17m
 
+NAME                             READY   STATUS    RESTARTS   AGE     IP            NODE    NOMINATED NODE   READINESS GATES
+pod/db-0                         1/1     Running   0          28s     10.233.90.3   node1   <none>           <none>
+pod/multitool-86dd874c4c-9snbd   2/2     Running   0          5h18m   10.233.96.1   node2   <none>           <none>
+
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main$ kubectl -n default get svc,ep,po -o wide
+NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE     SELECTOR
+service/kubernetes   ClusterIP   10.233.0.1     <none>        443/TCP    5h41m   <none>
+service/multitool    ClusterIP   10.233.58.43   <none>        5432/TCP   18m     app=multitool
+
+NAME                   ENDPOINTS          AGE
+endpoints/kubernetes   10.128.0.20:6443   5h41m
+endpoints/multitool    10.233.96.1:5432   17m
+
+NAME                             READY   STATUS    RESTARTS   AGE     IP            NODE    NOMINATED NODE   READINESS GATES
+pod/db-0                         1/1     Running   0          28s     10.233.90.3   node1   <none>           <none>
+pod/multitool-86dd874c4c-9snbd   2/2     Running   0          5h18m   10.233.96.1   node2   <none>           <none>
+```
+* Сервис доступа к БД
+```yml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-01$ kubectl get svc multitool -o yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"multitool"},"name":"multitool","namespace":"default"},"spec":{"ports":[{"name":"5432","port":5432,"targetPort":5432}],"selector":{"app":"multitool"}}}
+  creationTimestamp: "2022-07-10T14:13:23Z"
+  labels:
+    app: multitool
+  name: multitool
+  namespace: default
+  resourceVersion: "33684"
+  uid: 7f2ee0f3-a8ad-4bfe-b986-743123c84c1f
+spec:
+  clusterIP: 10.233.58.43
+  clusterIPs:
+  - 10.233.58.43
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: "5432"
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: multitool
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+```
+* Сервис Endpoint
+
+```yml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-01$ kubectl get ep multitool -o yaml
+apiVersion: v1
+kind: Endpoints
+metadata:
+  annotations:
+    endpoints.kubernetes.io/last-change-trigger-time: "2022-07-10T14:13:23Z"
+  creationTimestamp: "2022-07-10T14:14:05Z"
+  labels:
+    app: multitool
+  name: multitool
+  namespace: default
+  resourceVersion: "33685"
+  uid: 58dac7ca-d6e0-4355-bd1c-ea461dfc7fde
+subsets:
+- addresses:
+  - ip: 10.233.96.1
+    nodeName: node2
+    targetRef:
+      kind: Pod
+      name: multitool-86dd874c4c-9snbd
+      namespace: default
+      uid: faf97b11-7e1f-4851-8ed7-b3f5187657ad
+  ports:
+  - name: "5432"
+    port: 5432
+    protocol: TCP
+
+```
+* Файлы, с которыми работает доступ к порту БД на удаленной ноде с приложением multitool
+
+```yml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/multitool$ cat clasterip-db.yaml 
+---
+# Config PostgreSQL StatefulSet Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: multitool
+  namespace: default
+spec:
+  ports:
+    - name: db      
+      port: 5432
+      targetPort: 5432
+```
+
+```yml
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/multitool$ cat endpoint-db.yml 
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: multitool 
+  namespace: default
+subsets:
+  - addresses:
+      - ip: 10.128.0.10
+    ports:
+      - port: 5432
+
+```
 
 
 
