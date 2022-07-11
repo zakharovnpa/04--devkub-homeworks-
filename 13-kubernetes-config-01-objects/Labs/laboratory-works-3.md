@@ -206,6 +206,8 @@ echo 'export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS="1"' >> ~/.bashrc
 ```
 ```
 echo 'export BASE_URL="http://localhost:9000" >> ~/.bashrc
+```
+```
 source .bashrc
 ```
 
@@ -213,7 +215,8 @@ source .bashrc
 
 ```
 echo 'export DATABASE_URL="postgres://postgres:postgres@db:5432/news" >> ~/.bashrc
-
+```
+```
 source .bashrc
 ```
 
