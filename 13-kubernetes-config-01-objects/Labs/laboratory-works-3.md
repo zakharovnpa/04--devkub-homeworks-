@@ -7,6 +7,7 @@
 4. В кластере Kubernetes развернуть приложения Frontend, Backend 
 5. Связать приложение Backend с БД, расположенной на node2. Проверить доступность
   * Вручную добавить переменную окружения для доступа к БД
+  * Запустить сервисы ClasterIP, EndPoint
 6. Связать приложение Frontend с Backend. Проверить доступность
   * Вручную добавить переменную окружения для доступа к Backend
 7. Предоставить доступ к Frontend из Интерента для доступа ко всем приложениям
@@ -156,5 +157,68 @@ NAME    STATUS   ROLES           AGE   VERSION
 cp1     Ready    control-plane   33m   v1.24.2
 node1   Ready    <none>          32m   v1.24.2
 ```
-#### 5. В кластере Kubernetes развернуть приложения Frontend, Backend
+#### 6. В кластере Kubernetes развернуть приложения Frontend, Backend
+
+1. Целевая нода  - `node1`
+2. Используемая конфигурация расположена в директории 
+
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$
+```
+3. Вид развертывания - Deployment
+
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ kubectl apply -f web-fb-app.yaml 
+deployment.apps/fb-pod created
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ kubectl get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6fdbd9c5f6-dsw2c   2/2     Running   0          88
+```
+4. Логи с конейнера Backend. Нет доступа к БД по имени `db`, т.к. не настроены сервисы
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ kubectl logs fb-pod-6fdbd9c5f6-dsw2c -c backend
+INFO:     Uvicorn running on http://0.0.0.0:9000 (Press CTRL+C to quit)
+INFO:     Started reloader process [7] using statreload
+Process SpawnProcess-1:
+Traceback (most recent call last):
+psycopg2.OperationalError: could not translate host name "db" to address: Name or service not known
+
+
+The above exception was the direct cause of the following exception:
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: Name or service not known
+
+(Background on this error at: http://sqlalche.me/e/13/e3q8)
+
+```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ kubectl logs fb-pod-6fdbd9c5f6-dsw2c -c backend | grep known
+psycopg2.OperationalError: could not translate host name "db" to address: Name or service not known
+sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: Name or service not known
+
+```
+5. Добавление в контейнер Frontend переменной окружения с портом сервера Backend
+
+```
+# Приведен пример команды
+echo 'export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS="1"' >> ~/.bashrc
+```
+```
+echo 'export BASE_URL="http://localhost:9000" >> ~/.bashrc
+source .bashrc
+```
+
+6. Добавление в контейнер Backend переменной окружения с портом сервера с БД
+
+```
+echo 'export DATABASE_URL="postgres://postgres:postgres@db:5432/news" >> ~/.bashrc
+
+source .bashrc
+```
+
+7. 
+8. Проерка доступности порта БД
+9. 
+
 
