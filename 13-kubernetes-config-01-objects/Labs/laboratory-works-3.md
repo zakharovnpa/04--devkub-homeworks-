@@ -334,9 +334,10 @@ yc-user@node1:~$ curl 10.233.90.3:80
 </html>
 ```
 
-9. Настройка доступа к кластеру из Интернет
+#### 7. Предоставить доступ к Frontend из Интерента для доступа ко всем приложениям
 
-* Необходимо создать сервис типа NodePort, направляющий трафик на порт 80 пода `fb`
+1. Необходимо создать сервис типа NodePort, направляющий трафик на порт 80 пода `fb`
+
 * Файл `nodeport-svc-front.yaml `
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ cat nodeport-svc-front.yaml 
@@ -357,7 +358,7 @@ spec:
     nodePort: 30080
 ```
 
-10. Доступ из Интернет появился
+2. Доступ из Интернет появился
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ curl 51.250.92.215:30080
 <!DOCTYPE html>
@@ -380,3 +381,44 @@ maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v
 * На странице Браузера:
 
 ![screen-pages-frontend](/13-kubernetes-config-01-objects/Files/screen-pages-frontend.png)
+
+##### Решение: результат не совсем верный:
+1. Доступ из Интернет к Frontend есть, 
+2. доступ от Backend к БД вне кластера тоже есть. 
+3. Но нет связки между Frontend, Backend. 
+4. Не правильно собраны образы приложений, т.к. Docker не собрал в образ переменные
+
+#### 8.  Проверка функционала
+
+* Подключаемся к контейнеру с БД
+
+```
+root@node2:~# docker exec -it root-db-1 bash
+bash-5.1# 
+bash-5.1# psql -h db -U postgres
+Password for user postgres: 
+psql (13.7)
+Type "help" for help.
+
+postgres=# 
+
+```
+* Смотрим таблицы
+
+```
+postgres-# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+-----------+----------+----------+------------+------------+-----------------------
+ news      | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(4 rows)
+
+```
+
+### Задача дополнительная
+1. Пересобрать образы приложений Frontend, Backend так, чтобы переменные окружения были добавлены в новый образ
