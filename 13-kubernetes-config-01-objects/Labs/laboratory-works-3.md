@@ -113,4 +113,48 @@ curl: (52) Empty reply from server
 ```
 ##### Решено: разворачивание в Docker-Compose приложение для БД Postgres SQL выполнено
 
-#### 5. Разворачивание а кластере Kubernetes приложений Frontend, Backend 
+
+
+#### 5. Подготоваливаем удаленное подключение к кластеру с локальной ОС
+
+1. Заходим на cp1 по ssh и выполняем команду, которая позволяет получить доступ к кластеру сначала на сервере cp1
+
+```
+{
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+}
+```
+* Ввод команды
+```
+yc-user@cp1:~$ {
+>     mkdir -p $HOME/.kube
+>     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+>     sudo chown $(id -u):$(id -g) $HOME/.kube/config
+> }
+```
+* Проверяем доступ к кластеру
+```
+yc-user@cp1:~$ kubectl get nodes
+NAME    STATUS   ROLES           AGE   VERSION
+cp1     Ready    control-plane   29m   v1.24.2
+node1   Ready    <none>          27m   v1.24.2
+```
+2. Считываем файл 
+```
+root@cp1:~# cat .kube/config 
+```
+3. Переносим содержимое на локальную ОС, меняя ip адрес сервера `server: https://127.0.0.1:6443` на внешний адрес сервера cp1
+```
+maestro@PC-Ubuntu:~$ vim .kube/config 
+```
+4. Проверяем управление удаленным кластером
+```
+maestro@PC-Ubuntu:~$ kubectl get nodes
+NAME    STATUS   ROLES           AGE   VERSION
+cp1     Ready    control-plane   33m   v1.24.2
+node1   Ready    <none>          32m   v1.24.2
+```
+#### 5. В кластере Kubernetes развернуть приложения Frontend, Backend
+
