@@ -285,7 +285,75 @@ subsets:
         name: db
 ```
 
-8. Проерка доступности порта БД
-9. 
+8. Проерка доступности порта БД 5432 с сервера Backend
 
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711/12-48$ kubectl exec fb-pod-6fdbd9c5f6-dsw2c -c backend -it -- bash
+root@fb-pod-6fdbd9c5f6-dsw2c:/app# 
+root@fb-pod-6fdbd9c5f6-dsw2c:/app# curl db:5432
+curl: (52) Empty reply from server
+root@fb-pod-6fdbd9c5f6-dsw2c:/app# 
+```
+* После перезапуска пода доступность БД сохранилась:
+
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711/12-48$ kubectl exec fb-pod-6fdbd9c5f6-7ls58 -c backend -- curl db:5432
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+curl: (52) Empty reply from server
+command terminated with exit code 52
+
+```
+* Проверка доступности контейнера с Frontend с ноды node1
+  *  Узнаес адрес пода
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711/12-48$ kubectl get pod -o wide
+NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE    NOMINATED NODE   READINESS GATES
+fb-pod-6fdbd9c5f6-7ls58   2/2     Running   0          30m   10.233.90.3   node1   <none>           <none>
+
+```
+  * Доступность контейнера с Frontend по порту 80
+```
+yc-user@node1:~$ curl 10.233.90.3:80
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Список</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/build/main.css" rel="stylesheet">
+</head>
+<body>
+    <main class="b-page">
+        <h1 class="b-page__title">Список</h1>
+        <div class="b-page__content b-items js-list"></div>
+    </main>
+    <script src="/build/main.js"></script>
+</body>
+</html>
+```
+
+9. Настройка доступа к кластеру из Интернет
+
+* Необходимо создать сервис типа NodePort, направляющий трафик на порт 80 пода `fb`
+* Файл `nodeport-svc-front.yaml `
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ cat nodeport-svc-front.yaml 
+```
+
+```yml
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+```
 
