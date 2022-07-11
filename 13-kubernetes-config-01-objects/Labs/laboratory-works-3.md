@@ -357,3 +357,26 @@ spec:
     nodePort: 30080
 ```
 
+10. Доступ из Интернет появился
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ curl 51.250.92.215:30080
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Список</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/build/main.css" rel="stylesheet">
+</head>
+<body>
+    <main class="b-page">
+        <h1 class="b-page__title">Список</h1>
+        <div class="b-page__content b-items js-list"></div>
+    </main>
+    <script src="/build/main.js"></script>
+</body>
+</html>
+```
+* На странице Браузера:
+
+![screen-pages-frontend](/13-kubernetes-config-01-objects/Files/screen-pages-frontend.png)
