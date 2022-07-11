@@ -205,7 +205,7 @@ sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate
 echo 'export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS="1"' >> ~/.bashrc
 ```
 ```
-echo 'export BASE_URL="http://localhost:9000" >> ~/.bashrc
+echo 'export BASE_URL="http://localhost:9000"' >> ~/.bashrc
 ```
 ```
 source .bashrc
@@ -214,7 +214,7 @@ source .bashrc
 6. Добавление в контейнер Backend переменной окружения с портом сервера с БД
 
 ```
-echo 'export DATABASE_URL="postgres://postgres:postgres@db:5432/news" >> ~/.bashrc
+echo 'export DATABASE_URL="postgres://postgres:postgres@db:5432/news"' >> ~/.bashrc
 ```
 ```
 source .bashrc
