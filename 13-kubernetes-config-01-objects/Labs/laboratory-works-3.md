@@ -382,11 +382,39 @@ maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v
 
 ![screen-pages-frontend](/13-kubernetes-config-01-objects/Files/screen-pages-frontend.png)
 
+3. Набор сервисов при котором работает доступ извне и к удаленной БД
+
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/main/v-220707$ kubectl get deploy,svc,ep,po,nodes -o wide
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS         IMAGES                                                               SELECTOR
+deployment.apps/fb-pod   1/1     1            1           3h21m   frontend,backend   zakharovnpa/k8s-frontend:05.07.22,zakharovnpa/k8s-backend:05.07.22   app=fb-app
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE     SELECTOR
+service/db           ClusterIP   10.233.30.149   <none>        5432/TCP       3h21m   <none>
+service/fb-svc       NodePort    10.233.38.223   <none>        80:30080/TCP   83m     app=fb-app
+service/kubernetes   ClusterIP   10.233.0.1      <none>        443/TCP        14h     <none>
+
+NAME                   ENDPOINTS          AGE
+endpoints/db           10.128.0.14:5432   3h21m
+endpoints/fb-svc       10.233.90.5:80     8m30s
+endpoints/kubernetes   10.128.0.28:6443   14h
+
+NAME                          READY   STATUS    RESTARTS   AGE     IP            NODE    NOMINATED NODE   READINESS GATES
+pod/fb-pod-6fdbd9c5f6-vtv26   2/2     Running   0          3h12m   10.233.90.5   node1   <none>           <none>
+
+NAME         STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+node/cp1     Ready    control-plane   14h   v1.24.2   10.128.0.28   <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
+node/node1   Ready    <none>          14h   v1.24.2   10.128.0.16   <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
+
+```
+
 ##### Решение: результат не совсем верный:
 1. Доступ из Интернет к Frontend есть, 
 2. доступ от Backend к БД вне кластера тоже есть. 
 3. Но нет связки между Frontend, Backend. 
 4. Не правильно собраны образы приложений, т.к. Docker не собрал в образ переменные
+
+
 
 #### 8.  Проверка функционала
 
@@ -422,8 +450,35 @@ postgres-# \l
 
 ### Задача дополнительная
 1. Пересобрать образы приложений Frontend, Backend так, чтобы переменные окружения были добавлены в новый образ
+  * Выпонлена попытка прописать переменных окружения через файл конфигурации  
+
+```yml
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: BASE_URL
+            value: "http://localhost:9000"
+          name: frontend
+          ports:
+          - containerPort: 80
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: DATABASE_URL
+            value: "postgres://postgres:postgres@db:5432/news"
+          name: backend
+          ports:
+          - containerPort: 9000
+
+```
+* Решение: поведение на странице фронтенда не изменилось. Там тольк олно слово Список
+
+![screen-pages-frontend](/13-kubernetes-config-01-objects/Files/screen-pages-frontend.png)
+
 2. На основе файлов Deployment, Servise собрать директорию для развертывания приложений
 
 ```
-
+/home/maestro/learning-kubernetes/Betta/manifest/postgres/stage/main/v-220707/fb-app.yaml
 ```
+3. Пересоздать образы с охранением переменных окружения в образе
