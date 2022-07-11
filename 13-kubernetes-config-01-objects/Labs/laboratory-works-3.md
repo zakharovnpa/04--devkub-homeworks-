@@ -106,6 +106,11 @@ rtt min/avg/max/mdev = 0.500/0.903/1.307/0.403 ms
 yc-user@cp1:~$ curl 10.128.0.14:5432
 curl: (52) Empty reply from server
 ```
+* Порт 5432 приложения БД с ноды node1 доступно.
+```
+yc-user@node1:~$ curl 10.128.0.14:5432
+curl: (52) Empty reply from server
+```
 ##### Решено: разворачивание в Docker-Compose приложение для БД Postgres SQL выполнено
 
 #### 5. Разворачивание а кластере Kubernetes приложений Frontend, Backend 
