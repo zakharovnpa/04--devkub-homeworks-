@@ -210,6 +210,19 @@ echo 'export BASE_URL="http://localhost:9000"' >> ~/.bashrc
 ```
 source .bashrc
 ```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ kubectl exec fb-pod-6fdbd9c5f6-dsw2c -c frontend -it -- bash
+root@fb-pod-6fdbd9c5f6-dsw2c:~# echo $BASE_URL
+
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# echo 'export BASE_URL="http://localhost:9000"' >> ~/.bashrc
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# source .bashrc
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# echo $BASE_URL
+http://localhost:9000
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+```
 
 6. Добавление в контейнер Backend переменной окружения с портом сервера с БД
 
@@ -219,8 +232,59 @@ echo 'export DATABASE_URL="postgres://postgres:postgres@db:5432/news"' >> ~/.bas
 ```
 source .bashrc
 ```
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711$ kubectl exec fb-pod-6fdbd9c5f6-dsw2c -c backend -it -- bash
+root@fb-pod-6fdbd9c5f6-dsw2c:~# echo $DATABASE_URL
 
-7. 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# echo 'export DATABASE_URL="postgres://postgres:postgres@db:5432/news"' >> ~/.bashrc
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# source .bashrc
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# echo $DATABASE_URL
+postgres://postgres:postgres@db:5432/news
+root@fb-pod-6fdbd9c5f6-dsw2c:~# 
+root@fb-pod-6fdbd9c5f6-dsw2c:~# exit
+```
+
+
+7. Запустить сервисы ClasterIP, EndPoint
+* Файл `clasterip-db.yaml`
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711/12-48$ cat clasterip-db.yaml
+```
+```yml
+---
+# Config PostgreSQL StatefulSet Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: default
+spec:
+  ports:
+    - name: db      
+      port: 5432
+      targetPort: 5432
+```
+* Файл `endpoint-db.yml`
+```
+maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/stage/training/v-220711/12-48$ cat endpoint-db.yml 
+```
+```yml
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: db  
+  namespace: default
+subsets:
+  - addresses:
+      - ip: 10.128.0.14
+    ports:
+      - port: 5432
+        name: db
+```
+
 8. Проерка доступности порта БД
 9. 
 
