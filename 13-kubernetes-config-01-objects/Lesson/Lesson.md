@@ -548,13 +548,13 @@ kubernetes         10.128.0.18:6443   28h
 
 ## Задание 2: подготовить конфиг для production окружения
 Следующим шагом будет запуск приложения в production окружении. Требования сложнее:
-* каждый компонент (база, бекенд, фронтенд) запускаются в своем поде, регулируются отдельными deployment’ами;
+* каждый компонент (база, бекенд, фронтенд) запускаются в своем поде, регулируются отдельными StatefulSet (ранее говорилось что deployment’ами);
 * для связи используются service (у каждого компонента свой);
 * в окружении фронта прописан адрес сервиса бекенда;
 * в окружении бекенда прописан адрес сервиса базы данных.
 
 #### Пояснение     -01:12:35
-  * Сервисы для каждого компонента свой отдельный
+  * Сервисы для каждого компонента свой отдельный 
   * в окружении фронта (Environment) нужно  прописан адрес сервиса бекенда 
   * в окружении бекенда прописан адрес сервиса базы данных.
   * БД запускать не в Кубере, а отдельно.
@@ -563,24 +563,135 @@ kubernetes         10.128.0.18:6443   28h
 ## Ответ:
 Согласно пояснению преподавателя необходимо сделать так, чтобы приложения фронта и бекаенда запускалиьс каждый в своем поде, а БД запускалась вне
 кластера Kubernetes.
-
-### 1. Создаем два файла с Deployments. Так каждое приложение будет запущено в своем поде.
-#### 1.1 Deployments Frontend
+### 1. Создаем namespace
+```
+controlplane $ kubectl create namespace stage
+namespace/stage created
+controlplane $ 
+controlplane $ kubectl create namespace prod
+namespace/prod created
+controlplane $ 
+controlplane $ kubectl create namespace test
+namespace/test created
+controlplane $ 
+```
+```
+controlplane $ kubectl get ns
+NAME              STATUS   AGE
+default           Active   64d
+kube-node-lease   Active   64d
+kube-public       Active   64d
+kube-system       Active   64d
+prod              Active   90s
+stage             Active   95s
+test              Active   86s
+```
+### 1. Создаем два файла с StatefulSet. Так каждое приложение будет запущено в своем поде.
+#### 1.1 StatefulSet Frontend
 * в окружении фронта прописать адрес сервиса бекенда
-#### 1.2 Deployments Backend
+
+```
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: BASE_URL
+            value: "http://localhost:9000"
+          name: frontend
+          ports:
+          - containerPort: 80
+```
+*
+
+
+
+
+#### 1.2 StatefulSet Backend
 * в окружении бекенда прописать адрес сервиса базы данных
+```
+      containers:
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: DATABASE_URL
+            value: "postgres://postgres:postgres@db:5432/news"
+          name: backend
+          ports:
+          - containerPort: 9000
+```
+* StatefulSet для создания отдельного пода с контейнером Frontend
+* Service ClasterIP и Endpoint для возможности соединения Frontend с удаленной БД
+```yml
+# Config PostgresSQL Deployment & Services
+# home/maestro/learning-kubernetes/Betta/manifest/postgres/prod/training/v-220712/v-11-20/StatefulSet-backend.yaml
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: b-app
+  name: b-pod
+  namespace: stage
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: b-app
+  template:
+    metadata:
+      labels:
+        app: b-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: DATABASE_URL
+            value: "postgres://postgres:postgres@db:5432/news"
+          name: backend
+          ports:
+          - containerPort: 9000
+      terminationGracePeriodSeconds: 30
+---
+
+```
+* Развертывание пода и сервисов
+```
+controlplane $ kubectl apply -f StatefulSet-backend.yaml 
+statefulset.apps/b-pod created
+service/db created
+endpoints/db created
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get -n stage po,svc,ep -o wide
+NAME          READY   STATUS    RESTARTS   AGE    IP            NODE     NOMINATED NODE   READINESS GATES
+pod/b-pod-0   1/1     Running   0          3m3s   192.168.1.4   node01   <none>           <none>
+
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE    SELECTOR
+service/db   ClusterIP   10.99.4.64   <none>        5432/TCP   3m4s   <none>
+
+NAME           ENDPOINTS          AGE
+endpoints/db   10.128.0.14:5432   3m4s
+```
+
+
 
 ### 2. Создаем два файла с Service
-#### 2.1 Service Frontend
-#### 2.2 Service Backend
+#### 2.1 Service NodePort для доступа к Frontend из Интернета
+
+
+
+#### 2.2 Service EndPoint для доступа Backend к удаленной БД
 
 ### 3. Создаем БД за пределами кластера k8s
 
 #### План создания
 * На отдельной ноде устанавливается docker, docker-compose
-* На основе файла docker-compose.yaml запускается три контейнера, в т.ч. с БД
-* При этом с другой ноды по адресу ноды будут доступны порты 8000, 9000, 5432
+* На основе файла docker-compose.yaml запускается  контейнер с БД
+* При этом с другой ноды по адресу ноды будут доступны порт 5432
 
+#### Решение: ход создания описан в [файле](/13-kubernetes-config-01-objects/Lesson/works-in-docker-2.md)
 
 #### 3.1 Service для доступа к БД от Backend
 
