@@ -226,11 +226,11 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: f-app
+    app: f-app         # Селектор соответствует лейблу пода Frontend
   ports:
-  - port: 80
-    targetPort: 80
-    nodePort: 30080
+  - port: 80           # Порт пода для подключения к Frontend
+    targetPort: 80     # Порт конейннера для подключения к Frontend
+    nodePort: 30080    # Порт пода для подключения к Frontend из Интернет
 
 ```
 
@@ -246,11 +246,11 @@ metadata:
   namespace: prod
 spec:
   selector:
-    app: b-app   
+    app: b-app              # Селектор соответствует лейблу пода Backend
   ports:
     - name: b-pod
-      port: 9000
-      targetPort: 9000
+      port: 9000            # Порт подключения к Backend
+      targetPort: 9000      # Порт подключения к Backend
 
 ```
 
@@ -268,8 +268,8 @@ metadata:
 spec:
   ports:
     - name: db      
-      port: 5432
-      targetPort: 5432
+      port: 5432              # Порт подключения к БД
+      targetPort: 5432        # Порт подключения к БД
 ```
 ```yml
 # Config Service EndPoint    
@@ -281,9 +281,9 @@ metadata:
   namespace: prod
 subsets:
   - addresses:
-      - ip: 10.128.0.23
+      - ip: 10.128.0.23   # Адрес ноды, на которой запущена БД
     ports:
-      - port: 5432
+      - port: 5432        # Порт подключения к БД
         name: db
 
 ```
