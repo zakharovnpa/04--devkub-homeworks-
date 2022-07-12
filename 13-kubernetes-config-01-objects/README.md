@@ -143,6 +143,9 @@ spec:
 * в окружении бекенда прописан адрес сервиса базы данных.
 
 ### Ответ: 
+
+[prod-frontend.yaml](/13-kubernetes-config-01-objects/Files/prod-frontend.yaml)
+
 #### 1. Для запуска каждого компонента в своем поде необходимо создать под черз StatefulSet
 
 * Statefulset для Frontend с прописанным через окружение адресом Backend
