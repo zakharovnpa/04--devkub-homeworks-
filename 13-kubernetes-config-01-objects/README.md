@@ -19,6 +19,8 @@
 
 [stage-front-back.yaml](/13-kubernetes-config-01-objects/Files/stage-front-back.yaml)
 
+[stage-statefulset-postgres.yaml](/13-kubernetes-config-01-objects/Files/stage-statefulset-postgres.yaml)
+
 
 
 #### 1. Файл для деплоя контейнеров с приложениями Frontend, Backend, а также создания сервиса, позволяющего подключаться к поду по порту 80.
