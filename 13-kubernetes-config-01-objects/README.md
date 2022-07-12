@@ -142,7 +142,110 @@ spec:
 * в окружении фронта прописан адрес сервиса бекенда;
 * в окружении бекенда прописан адрес сервиса базы данных.
 
+### Ответ: 
+#### 1. Для запуска каждого компонента в своем поде необходимо создать под черз StatefulSet
 
+* Statefulset для Frontend с прописанным через окружение адресом Backend
+
+```yaml
+# Config Frontend StatefulSet & Services
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: f-app
+  name: f-pod
+  namespace: prod
+spec:
+  replicas: 1
+  serviceName: b-pod
+  selector:
+    matchLabels:
+      app: f-app
+  template:
+    metadata:
+      labels:
+        app: f-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:12.07.22
+          imagePullPolicy: IfNotPresent
+          env: 
+            value: "http://b-pod:9000"      # адрес сервиса Backend
+          name: frontend
+          ports:
+          - containerPort: 80
+      terminationGracePeriodSeconds: 30
+```
+* Statefulset для Backend с прописанным через окружение адресом удаленной БД
+```yml
+# Config Backend StatefulSet & Services
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: b-app
+  name: b-pod
+  namespace: prod
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: b-app
+  template:
+    metadata:
+      labels:
+        app: b-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-backend:12.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: DATABASE_URL
+            value: "postgres://postgres:postgres@db:5432/news"    # Адрес удаленной БД
+          name: backend
+          ports:
+          - containerPort: 9000
+      terminationGracePeriodSeconds: 30
+
+```
+
+#### 2. Для доступа к Frontend из Интернет создан Service
+
+
+#### 3. Для доступа Frontend к Backend создан Service
+
+
+#### 4. Для доступа Backend к удаленной БД создан Service и Service
+
+
+#### 5. Компоненты кластера в работе
+```
+NAME          READY   STATUS    RESTARTS   AGE   IP             NODE    NOMINATED NODE   READINESS GATES
+pod/b-pod-0   1/1     Running   0          54s   10.233.90.14   node1   <none>           <none>
+pod/f-pod-0   1/1     Running   0          54s   10.233.90.15   node1   <none>           <none>
+
+NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE   SELECTOR
+service/b-pod   ClusterIP   10.233.52.86   <none>        9000/TCP       54s   app=b-app
+service/db      ClusterIP   10.233.14.62   <none>        5432/TCP       54s   <none>
+service/f-svc   NodePort    10.233.1.189   <none>        80:30080/TCP   54s   app=f-app
+
+NAME              ENDPOINTS           AGE
+endpoints/b-pod   10.233.90.14:9000   54s
+endpoints/db      10.128.0.23:5432    54s
+endpoints/f-svc   10.233.90.15:80     54s
+
+NAME                     READY   AGE   CONTAINERS   IMAGES
+statefulset.apps/b-pod   1/1     54s   backend      zakharovnpa/k8s-backend:12.07.22
+statefulset.apps/f-pod   1/1     54s   frontend     zakharovnpa/k8s-frontend:12.07.22
+
+NAME         STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+node/cp1     Ready    control-plane   4h37m   v1.24.2   10.128.0.8    <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
+node/node1   Ready    <none>          4h35m   v1.24.2   10.128.0.19   <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
+```
 
 
 
