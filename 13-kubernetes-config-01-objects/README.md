@@ -213,40 +213,109 @@ spec:
 
 ```
 
-#### 2. Для доступа к Frontend из Интернет создан Service
+#### 2. Для доступа к Frontend из Интернет создан Service типа NodePort. Порт 30080.
+
+```yml
+# Config Service NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: prod      
+  name: f-svc
+spec:
+  type: NodePort
+  selector:
+    app: f-app
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+
+```
+
+#### 3. Для доступа Frontend к Backend по порту 9000 создан Service типа ClasterIP
+
+```yml
+# Config Service ClasterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: b-pod
+  namespace: prod
+spec:
+  selector:
+    app: b-app   
+  ports:
+    - name: b-pod
+      port: 9000
+      targetPort: 9000
+
+```
+
+#### 4. Для доступа Backend к удаленной БД по порту 5432 созданы Service типа ClasterIP и EndPoint
 
 
-#### 3. Для доступа Frontend к Backend создан Service
+```yml
+# Config Service ClasterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: prod
+spec:
+  ports:
+    - name: db      
+      port: 5432
+      targetPort: 5432
+```
+```yml
+# Config Service EndPoint    
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: db  
+  namespace: prod
+subsets:
+  - addresses:
+      - ip: 10.128.0.23
+    ports:
+      - port: 5432
+        name: db
 
-
-#### 4. Для доступа Backend к удаленной БД создан Service и Service
-
+```
 
 #### 5. Компоненты кластера в работе
 ```
 NAME          READY   STATUS    RESTARTS   AGE   IP             NODE    NOMINATED NODE   READINESS GATES
-pod/b-pod-0   1/1     Running   0          54s   10.233.90.14   node1   <none>           <none>
-pod/f-pod-0   1/1     Running   0          54s   10.233.90.15   node1   <none>           <none>
+pod/b-pod-0   1/1     Running   0          94m   10.233.90.14   node1   <none>           <none>
+pod/f-pod-0   1/1     Running   0          94m   10.233.90.15   node1   <none>           <none>
 
 NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE   SELECTOR
-service/b-pod   ClusterIP   10.233.52.86   <none>        9000/TCP       54s   app=b-app
-service/db      ClusterIP   10.233.14.62   <none>        5432/TCP       54s   <none>
-service/f-svc   NodePort    10.233.1.189   <none>        80:30080/TCP   54s   app=f-app
+service/b-pod   ClusterIP   10.233.52.86   <none>        9000/TCP       94m   app=b-app
+service/db      ClusterIP   10.233.14.62   <none>        5432/TCP       94m   <none>
+service/f-svc   NodePort    10.233.1.189   <none>        80:30080/TCP   94m   app=f-app
 
 NAME              ENDPOINTS           AGE
-endpoints/b-pod   10.233.90.14:9000   54s
-endpoints/db      10.128.0.23:5432    54s
-endpoints/f-svc   10.233.90.15:80     54s
+endpoints/b-pod   10.233.90.14:9000   94m
+endpoints/db      10.128.0.23:5432    94m
+endpoints/f-svc   10.233.90.15:80     94m
 
 NAME                     READY   AGE   CONTAINERS   IMAGES
-statefulset.apps/b-pod   1/1     54s   backend      zakharovnpa/k8s-backend:12.07.22
-statefulset.apps/f-pod   1/1     54s   frontend     zakharovnpa/k8s-frontend:12.07.22
+statefulset.apps/b-pod   1/1     94m   backend      zakharovnpa/k8s-backend:12.07.22
+statefulset.apps/f-pod   1/1     94m   frontend     zakharovnpa/k8s-frontend:12.07.22
 
 NAME         STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
-node/cp1     Ready    control-plane   4h37m   v1.24.2   10.128.0.8    <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
-node/node1   Ready    <none>          4h35m   v1.24.2   10.128.0.19   <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
-```
+node/cp1     Ready    control-plane   6h10m   v1.24.2   10.128.0.8    <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
+node/node1   Ready    <none>          6h9m    v1.24.2   10.128.0.19   <none>        Ubuntu 20.04.4 LTS   5.4.0-121-generic   containerd://1.6.6
 
+```
+![kubectl-get-prod](/13-kubernetes-config-01-objects/Files/kubectl-get-prod.png)
+
+![screen-site-frontend](/13-kubernetes-config-01-objects/Files/screen-site-frontend.png)
 
 
 
