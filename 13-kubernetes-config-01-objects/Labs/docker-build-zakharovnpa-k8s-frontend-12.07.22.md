@@ -23,9 +23,10 @@ Step 6/15 : ADD package-lock.json /app/package-lock.json
  ---> c20e4a3bb838
 Step 7/15 : RUN npm i
  ---> Running in 3d7c54e02e81
- 
+ ```
  
 **Красным цветом ###################################################### Красным цветом**
+```
 npm WARN old lockfile 
 npm WARN old lockfile The package-lock.json file was created with an old version of npm,
 npm WARN old lockfile so supplemental metadata must be fetched from the registry.
@@ -44,9 +45,9 @@ npm WARN deprecated @babel/polyfill@7.12.1: 🚨 This package has been deprecate
 npm WARN deprecated chokidar@2.1.8: Chokidar 2 does not receive security updates since 2019. Upgrade to chokidar 3 with 15x fewer dependencies
 npm WARN deprecated chokidar@2.1.8: Chokidar 2 does not receive security updates since 2019. Upgrade to chokidar 3 with 15x fewer dependencies
 npm WARN deprecated core-js@2.6.12: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
-**Красным цветом ###################################################### Красным цветом**
 
-
+```
+```
 added 1013 packages, and audited 1014 packages in 1m
 
 64 packages are looking for funding
@@ -61,16 +62,18 @@ To address all issues (including breaking changes), run:
   npm audit fix --force
 
 Run `npm audit` for details.
+```
+
 
 **Красным цветом ###################################################### Красным цветом**
+```
 npm notice 
 npm notice New minor version of npm available! 8.11.0 -> 8.13.2
 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v8.13.2>
 npm notice Run `npm install -g npm@8.13.2` to update!
 npm notice 
-**Красным цветом ###################################################### Красным цветом**
-
-
+```
+```
 Removing intermediate container 3d7c54e02e81
  ---> 4ecb558b1ada
 Step 8/15 : ADD . /app
@@ -82,16 +85,17 @@ Step 9/15 : RUN npm run build && rm -rf /app/node_modules
 > cross-env NODE_ENV=production webpack --config webpack.config.js --mode production
 
 ℹ Compiling Production build progress
-
+```
 **Красным цветом ###################################################### Красным цветом**
+```
 Browserslist: caniuse-lite is outdated. Please run:
 npx browserslist@latest --update-db
 
 Why you should do it regularly:
 https://github.com/browserslist/browserslist#browsers-data-updating
 ✔ Production build progress: Compiled successfully in 2.55s
-**Красным цветом ###################################################### Красным цветом**
-
+```
+```
 Hash: ec3f8bf57db6746b49f5
 Version: webpack 4.46.0
 Time: 2554ms
@@ -163,15 +167,16 @@ Step 8/15 : RUN npm run build && rm -rf /app/node_modules
 > cross-env NODE_ENV=production webpack --config webpack.config.js --mode production
 
 ℹ Compiling Production build progress
-
+```
 **Красным цветом ###################################################### Красным цветом**
+```
 Browserslist: caniuse-lite is outdated. Please run:
 npx browserslist@latest --update-db
 
 Why you should do it regularly:
 https://github.com/browserslist/browserslist#browsers-data-updating
-**Красным цветом ###################################################### Красным цветом**
-
+```
+```
 ✔ Production build progress: Compiled successfully in 3.44s
 Hash: ec3f8bf57db6746b49f5
 Version: webpack 4.46.0
@@ -191,15 +196,16 @@ Child mini-css-extract-plugin node_modules/css-loader/dist/cjs.js!node_modules/p
     [1] ./node_modules/css-loader/dist/cjs.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/group-css-media-queries-loader/lib!./node_modules/less-loader/dist/cjs.js!./styles/index.less 1.3 KiB {0} [built]
     [2] ./node_modules/css-loader/dist/cjs.js!./styles/normalize.css 6.59 KiB {0} [built]
         + 1 hidden module
-        
+```
 **Красным цветом ###################################################### Красным цветом**
+```
 npm notice 
 npm notice New minor version of npm available! 8.11.0 -> 8.13.2
 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v8.13.2>
 npm notice Run `npm install -g npm@8.13.2` to update!
 npm notice 
-**Красным цветом ###################################################### Красным цветом**
-
+```
+```
 Removing intermediate container 613f2931f6fb
  ---> 9b9178191a65
 Step 9/15 : FROM nginx:latest
