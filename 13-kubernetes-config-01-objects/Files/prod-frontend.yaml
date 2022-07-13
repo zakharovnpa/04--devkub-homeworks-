@@ -21,6 +21,7 @@ spec:
       containers:
         - image: zakharovnpa/k8s-frontend:12.07.22
           imagePullPolicy: IfNotPresent
+          env:
             value: "http://b-pod:9000"
           name: frontend
           ports:
