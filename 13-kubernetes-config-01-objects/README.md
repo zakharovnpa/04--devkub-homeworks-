@@ -187,6 +187,7 @@ spec:
         - image: zakharovnpa/k8s-frontend:12.07.22
           imagePullPolicy: IfNotPresent
           env: 
+          - name: BASE_URL
             value: "http://b-pod:9000"      # адрес сервиса Backend
           name: frontend
           ports:
