@@ -152,11 +152,22 @@ spec:
 
 ### Ответ: 
 
-* Манифесты для деплоя приложений
+#### Подготовка
+
+* Манифесты для деплоя приложений сохранить в рабочей директории
 
 [prod-frontend.yaml](/13-kubernetes-config-01-objects/Files/prod-frontend.yaml)
 
 [prod-backend.yaml](/13-kubernetes-config-01-objects/Files/prod-backend.yaml)
+
+* В кластере создать namespace prod
+```
+kubectl create namespace prod
+```
+* Для развертывания приложений выполнить команду в рабочей директории
+```
+kubectl apply -f .
+```
 
 #### 1. Для запуска каждого компонента в своем поде необходимо создать под черз StatefulSet
 
