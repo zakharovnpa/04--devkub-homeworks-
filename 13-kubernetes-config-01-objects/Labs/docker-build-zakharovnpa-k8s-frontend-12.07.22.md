@@ -81,8 +81,9 @@ Step 9/15 : RUN npm run build && rm -rf /app/node_modules
 > devops-testapp@1.0.0 build
 > cross-env NODE_ENV=production webpack --config webpack.config.js --mode production
 
-**Красным цветом ###################################################### Красным цветом**
 ℹ Compiling Production build progress
+
+**Красным цветом ###################################################### Красным цветом**
 Browserslist: caniuse-lite is outdated. Please run:
 npx browserslist@latest --update-db
 
@@ -128,6 +129,102 @@ Removing intermediate container 5f4ef0f35921
 Step 15/15 : ADD demo.conf /etc/nginx/conf.d/default.conf
  ---> 6de187abe181
 Successfully built 6de187abe181
+Successfully tagged zakharovnpa/k8s-frontend:12.07.22
+
+```
+### Вторая попытка. В первой попытке ENV былпрописан для образа node:lts-buster, а надо для nginx:latest
+
+```
+root@PC-Ubuntu:~/netology-project/devkub-homeworks/13-kubernetes-config/frontend# docker build -t zakharovnpa/k8s-frontend:12.07.22 .
+Sending build context to Docker daemon  430.6kB
+Step 1/15 : FROM node:lts-buster as builder
+ ---> b9f398d30e45
+Step 2/15 : RUN mkdir /app
+ ---> Using cache
+ ---> f16fcbd21ee6
+Step 3/15 : WORKDIR /app
+ ---> Using cache
+ ---> 6812598cb3ad
+Step 4/15 : ADD package.json /app/package.json
+ ---> Using cache
+ ---> 6e4c1b5ae040
+Step 5/15 : ADD package-lock.json /app/package-lock.json
+ ---> Using cache
+ ---> ecef30491f9a
+Step 6/15 : RUN npm i
+ ---> Using cache
+ ---> a154e3d6e8c3
+Step 7/15 : ADD . /app
+ ---> 77bfd76ef3e7
+Step 8/15 : RUN npm run build && rm -rf /app/node_modules
+ ---> Running in 613f2931f6fb
+
+> devops-testapp@1.0.0 build
+> cross-env NODE_ENV=production webpack --config webpack.config.js --mode production
+
+ℹ Compiling Production build progress
+
+**Красным цветом ###################################################### Красным цветом**
+Browserslist: caniuse-lite is outdated. Please run:
+npx browserslist@latest --update-db
+
+Why you should do it regularly:
+https://github.com/browserslist/browserslist#browsers-data-updating
+**Красным цветом ###################################################### Красным цветом**
+
+✔ Production build progress: Compiled successfully in 3.44s
+Hash: ec3f8bf57db6746b49f5
+Version: webpack 4.46.0
+Time: 3445ms
+Built at: 07/12/2022 3:05:04 PM
+   Asset      Size  Chunks             Chunk Names
+main.css  2.46 KiB       0  [emitted]  main
+ main.js  3.16 KiB       0  [emitted]  main
+Entrypoint main = main.css main.js
+[0] ./styles/index.less 39 bytes {0} [built]
+[1] ./js/index.js + 1 modules 3.78 KiB {0} [built]
+    | ./js/index.js 3.73 KiB [built]
+    | ./js/config.js 43 bytes [built]
+    + 2 hidden modules
+Child mini-css-extract-plugin node_modules/css-loader/dist/cjs.js!node_modules/postcss-loader/src/index.js??ref--6-2!node_modules/group-css-media-queries-loader/lib/index.js!node_modules/less-loader/dist/cjs.js!styles/index.less:
+    Entrypoint mini-css-extract-plugin = *
+    [1] ./node_modules/css-loader/dist/cjs.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/group-css-media-queries-loader/lib!./node_modules/less-loader/dist/cjs.js!./styles/index.less 1.3 KiB {0} [built]
+    [2] ./node_modules/css-loader/dist/cjs.js!./styles/normalize.css 6.59 KiB {0} [built]
+        + 1 hidden module
+        
+**Красным цветом ###################################################### Красным цветом**
+npm notice 
+npm notice New minor version of npm available! 8.11.0 -> 8.13.2
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v8.13.2>
+npm notice Run `npm install -g npm@8.13.2` to update!
+npm notice 
+**Красным цветом ###################################################### Красным цветом**
+
+Removing intermediate container 613f2931f6fb
+ ---> 9b9178191a65
+Step 9/15 : FROM nginx:latest
+ ---> 55f4b40fe486
+Step 10/15 : ENV BASE_URL=http://b-pod:9000
+ ---> Running in a8d718889689
+Removing intermediate container a8d718889689
+ ---> e49e73744255
+Step 11/15 : RUN mkdir /app
+ ---> Running in 843abcb6c9cf
+Removing intermediate container 843abcb6c9cf
+ ---> a7d919ef6b97
+Step 12/15 : WORKDIR /app
+ ---> Running in 4e743f4ea007
+Removing intermediate container 4e743f4ea007
+ ---> 8cdb681962b4
+Step 13/15 : COPY --from=builder /app/ /app
+ ---> 4c633297da24
+Step 14/15 : RUN mv /app/markup/* /app && rm -rf /app/markup
+ ---> Running in a30040d3f1d6
+Removing intermediate container a30040d3f1d6
+ ---> 22e0130f4034
+Step 15/15 : ADD demo.conf /etc/nginx/conf.d/default.conf
+ ---> dc84bb688414
+Successfully built dc84bb688414
 Successfully tagged zakharovnpa/k8s-frontend:12.07.22
 
 ```
