@@ -1018,6 +1018,25 @@ controlplane $
 ```
 
 ### Terminal - 2
+
+* pod.yaml
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+```
 ```
 controlplane $ cd My-Project/
 controlplane $ 
