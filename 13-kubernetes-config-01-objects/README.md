@@ -21,9 +21,8 @@
 
 * Манифесты для деплоя приложения в различных подах для тестовой среды
 
-[stage-front-back.yaml](/13-kubernetes-config-01-objects/Files/stage-front-back.yaml)
-
-[stage-statefulset-postgres.yaml](/13-kubernetes-config-01-objects/Files/stage-statefulset-postgres.yaml)
+  * Frontend и Backend [stage-front-back.yaml](/13-kubernetes-config-01-objects/Files/stage-front-back.yaml)
+  * БД Postgres SQL [stage-statefulset-postgres.yaml](/13-kubernetes-config-01-objects/Files/stage-statefulset-postgres.yaml)
 
 * Для развертывания приложений выполнить команду в рабочей директории
 ```
@@ -167,9 +166,8 @@ kubectl create namespace prod
 ```
 * Манифесты для деплоя приложений сохранить в рабочей директории
 
-[prod-frontend.yaml](/13-kubernetes-config-01-objects/Files/prod-frontend.yaml)
-
-[prod-backend.yaml](/13-kubernetes-config-01-objects/Files/prod-backend.yaml)
+  * Frontend [prod-frontend.yaml](/13-kubernetes-config-01-objects/Files/prod-frontend.yaml)
+  * Backend [prod-backend.yaml](/13-kubernetes-config-01-objects/Files/prod-backend.yaml)
 
 * Для развертывания приложений выполнить команду в рабочей директории
 ```
