@@ -349,13 +349,15 @@ node/node1   Ready    <none>          6h9m    v1.24.2   10.128.0.19   <none>    
 ```
 ![kubectl-get-prod](/13-kubernetes-config-01-objects/Files/kubectl-get-prod.png)
 
-![screen-site-frontend](/13-kubernetes-config-01-objects/Files/screen-site-frontend.png)
 
-* Доступ к Backend с Frontend
+* Доступ Frontend к Backend по порту 9000
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/prod/training/v-220713/v-19-40$ kubectl -n prod exec f-pod-0 -c frontend -it bash -- curl b-pod:9000
 {"detail":"Not Found"}
 ```
+
+![curl-db-prod](/13-kubernetes-config-01-objects/Files/curl-db-prod.png)
+
 * Доступ Frontend к PostresSQL через сервис "db" по порту 5432
 ```
 maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/prod/training/v-220713/v-19-40$ kubectl -n prod exec f-pod-0 -c frontend -it bash -- curl db:5432
@@ -364,13 +366,9 @@ curl: (52) Empty reply from server
 ```
 ![curl-front-db-prod](/13-kubernetes-config-01-objects/Files/curl-front-db-prod.png)
 
-* Доступ 
-```
-maestro@PC-Ubuntu:~/learning-kubernetes/Betta/manifest/postgres/prod/training/v-220713/v-19-40$ kubectl -n prod exec f-pod-0 -c frontend -it bash -- curl b-pod:9000
-{"detail":"Not Found"}
-```
+* Что видит пользователь в браузере:
 
-![curl-db-prod](/13-kubernetes-config-01-objects/Files/curl-db-prod.png)
+![screen-site-frontend](/13-kubernetes-config-01-objects/Files/screen-site-frontend.png)
 
 
 
