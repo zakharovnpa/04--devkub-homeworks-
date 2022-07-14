@@ -376,7 +376,37 @@ curl: (52) Empty reply from server
 Приложению потребовалось внешнее api, и для его использования лучше добавить endpoint в кластер, направленный на это api. Требования:
 * добавлен endpoint до внешнего api (например, геокодер).
 
+### Ответ:
 
+1. Сервис с доступным API: https://yesno.wtf
+Сервис позволяет получить рандомную GIF с ответом "Да" или "Нет"
+
+2. Endpoints.yaml
+```yaml
+# Config Service EndPoint    
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: yesno.wtf  
+  namespace: prod
+subsets:
+  - addresses:
+      - ip: 188.166.14.102
+    ports:
+      - port: 443
+        name: yesno
+```
+3. Проверка доступности API
+
+```
+controlplane $ kubectl -n prod exec b-pod-0 -c backend -- curl https://yesno.wtf/api
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   109    0   109    0     0    381      0 --:--:-- --:--:-- --:--:--   379
+{"answer":"yes","forced":false,"image":"https://yesno.wtf/assets/yes/3-422e51268d64d78241720a7de52fe121.gif"}
+
+```
 ---
 
 ### Как оформить ДЗ?
