@@ -1020,46 +1020,129 @@ controlplane $
 ### Terminal - 2
 
 * pod.yaml
+
 ```yml
+---
 apiVersion: v1
 kind: Pod
 metadata:
   name: pod
 spec:
   containers:
-    - name: nginx
-      image: nginx
-      volumeMounts:
-        - mountPath: "/static"
-          name: my-volume
+  - name: nginx
+    image: nginx
+    volumeMounts:
+      - mountPath: "/data/pv"
+        name: my-volume
   volumes:
     - name: my-volume
       persistentVolumeClaim:
         claimName: pvc
 ```
+
+* pvc.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
 ```
-controlplane $ cd My-Project/
+```shell script
+kubectl apply -f pod.yaml
+kubectl apply -f pvc.yaml
+```
+* После этого:
+  * будет создан PersistentVolume
+  * создана связка PersistentVolumeClaim-PersistentVolume
+  * запущен Pod
+
+```
+controlplane $ kubectl apply -f pv.yaml 
+persistentvolume/pv created
+controlplane $ 
+controlplane $ kubectl get pv
+NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+pv     2Gi        RWO            Retain           Available                                   9s
+controlplane $ 
+controlplane $ kubectl get po
+No resources found in default namespace.
+controlplane $ 
+controlplane $ kubectl apply -f pvc.yaml
+persistentvolumeclaim/pvc created
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                  CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+persistentvolume/pv   2Gi        RWO            Retain           Bound    default/pvc                           116s
+
+NAME                        STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Bound    pv       2Gi        RWO                           9s
+controlplane $ 
+controlplane $ kubectl apply -f pod.yaml 
+error: error parsing pod.yaml: error converting YAML to JSON: yaml: line 11: did not find expected key
 controlplane $ 
 controlplane $ kubectl apply -f pod.yaml 
 pod/pod created
 controlplane $ 
 controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME      READY   STATUS    RESTARTS   AGE
+pod/pod   1/1     Running   0          4s
+
+NAME                  CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+persistentvolume/pv   2Gi        RWO            Retain           Bound    default/pvc                           7m24s
+
+NAME                        STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Bound    pv       2Gi        RWO                           5m37s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME      READY   STATUS    RESTARTS   AGE
+pod/pod   1/1     Running   0          12s
+
+NAME                  CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+persistentvolume/pv   2Gi        RWO            Retain           Bound    default/pvc                           7m31s
+
+NAME                        STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Bound    pv       2Gi        RWO                           5m44s
+controlplane $ 
+controlplane $ 
+```
+
+
+```
+controlplane $ cd My-Project/
+controlplane $ 
+controlplane $ kubectl apply -f pod.yaml 
+pod/pod created
+```
+```
 controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          20m
 pod                                   0/1     Pending   0          23s
-controlplane $ 
+```
+```
 controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          20m
-controlplane $ 
+```
+```
 controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 -o qide
 error: unable to match a printer suitable for the output format "qide", allowed formats are: custom-columns,custom-columns-file,go-template,go-template-file,json,jsonpath,jsonpath-as-json,jsonpath-file,name,template,templatefile,wide,yaml
-controlplane $ 
+```
+```
 controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 -o wide
 NAME                                  READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          20m   192.168.1.4   node01   <none>           <none>
-controlplane $ 
+```
+```
 controlplane $ kubectl describe po nfs-server-nfs-server-provisioner-0        
 Name:         nfs-server-nfs-server-provisioner-0
 Namespace:    default
@@ -1129,17 +1212,17 @@ Events:
   Normal  Pulled     20m   kubelet            Successfully pulled image "quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0" in 5.833050294s
   Normal  Created    20m   kubelet            Created container nfs-server-provisioner
   Normal  Started    20m   kubelet            Started container nfs-server-provisioner
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          21m
 pod                                   0/1     Pending   0          112s
-controlplane $ 
+```
+```
 controlplane $ kubectl get po -o wide
 NAME                                  READY   STATUS    RESTARTS   AGE    IP            NODE     NOMINATED NODE   READINESS GATES
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          21m    192.168.1.4   node01   <none>           <none>
 pod                                   0/1     Pending   0          118s   <none>        <none>   <none>           <none>
-controlplane $ 
-controlplane $ 
+
 ```
