@@ -17,7 +17,10 @@
 
 #### Подготовка Kubernetes перед деплоем
 
-* В кластере используемы namespace  - default
+* В кластере используемы namespace - stage
+```
+kubectl create namespace stage
+```
 
 * Манифесты для деплоя приложения в различных подах для тестовой среды
 
@@ -39,7 +42,7 @@ metadata:
   labels:
     app: fb-app
   name: fb-pod        # Имя пода
-  namespace: default
+  namespace: stage
 spec:
   replicas: 1
   selector:
@@ -67,6 +70,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: fb-pod
+  namespace: stage
   labels:
     app: fb
 spec:
@@ -86,6 +90,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: db
+  namespace: stage
 spec:
   serviceName: db-svc
   selector:
@@ -114,6 +119,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: db
+  namespace: stage
 spec:
   selector:
     app: db
