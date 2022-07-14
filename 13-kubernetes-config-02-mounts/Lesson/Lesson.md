@@ -1401,7 +1401,52 @@ NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-769d879c86-48lsz   0/1     Pending   0          114s
 controlplane $ 
 ```
-
+```
+controlplane $ kubectl -n stage describe pod fb-pod-769d879c86-48lsz 
+Name:           fb-pod-769d879c86-48lsz
+Namespace:      stage
+Priority:       0
+Node:           <none>
+Labels:         app=fb-app
+                pod-template-hash=769d879c86
+Annotations:    <none>
+Status:         Pending
+IP:             
+IPs:            <none>
+Controlled By:  ReplicaSet/fb-pod-769d879c86
+Containers:
+  frontend:
+    Image:        zakharovnpa/k8s-frontend:05.07.22
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  <none>
+    Mounts:
+      /data/pv from my-volume (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8dq9j (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False 
+Volumes:
+  my-volume:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  pvc
+    ReadOnly:   false
+  kube-api-access-8dq9j:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age    From               Message
+  ----     ------            ----   ----               -------
+  Warning  FailedScheduling  4m29s  default-scheduler  0/2 nodes are available: 2 persistentvolumeclaim "pvc" not found. preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.
+  Warning  FailedScheduling  4m4s   default-scheduler  0/2 nodes are available: 2 persistentvolumeclaim "pvc" not found. preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.
+```
 
 
 
