@@ -24,7 +24,58 @@
 
 ### Ход выполнения ДЗ вопрос №1
 
-1. Манифесты Stage-front-back.yaml
+1. Исходный манифест `Stage-front-back.yaml` для развертывания приложений на одной  тойже ноде
+
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod        # Имя пода
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+      terminationGracePeriodSeconds: 30
+
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+
+```
+
+1. Манифесты с добавлением возможности подключения Volume `Stage-front-back.yaml`
 
 ```
 # Config Deployment Frontend & Backend
@@ -53,23 +104,34 @@ spec:
           ports:
           - containerPort: 80
           volumeMounts:
-            - mountPath: "/data/pv"
+            - mountPath: "/static"
               name: my-volume
+      
       volumes:
         - name: my-volume
-          persistentVolumeClaim:
-            claimName: pvc
+          emptyDir: {}
+
+      
+#      volumes:
+#        - name: my-volume
+#          persistentVolumeClaim:
+#            claimName: pvc
 
         - image: zakharovnpa/k8s-backend:05.07.22
           imagePullPolicy: IfNotPresent
           name: backend
           volumeMounts:
-            - mountPath: "/data/pv"
+            - mountPath: "/157/cache"
               name: my-volume
       volumes:
         - name: my-volume
-          persistentVolumeClaim:
-            claimName: pvc
+          emptyDir: {}
+              
+              
+#     volumes:
+#        - name: my-volume
+#          persistentVolumeClaim:
+#            claimName: pvc
       terminationGracePeriodSeconds: 30
 
 ---
