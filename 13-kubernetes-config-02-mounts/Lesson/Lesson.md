@@ -77,8 +77,8 @@ spec:
 
 1. Манифесты с добавлением возможности подключения Volume `Stage-front-back.yaml`
 
-```
-# Config Deployment Frontend & Backend
+```yml
+# Config Deployment Frontend & Backend with Volume
 ---
 apiVersion: apps/v1
 kind: Deployment
