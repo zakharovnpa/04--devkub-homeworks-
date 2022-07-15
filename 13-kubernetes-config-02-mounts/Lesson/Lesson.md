@@ -510,17 +510,54 @@ node01 $
 1. Запустить контейнер с сервером NFS для создания общего сетевого ресурса в поде
 2. Подключить Backend-ы из Stage и Prod к одному и тому же PV в режиме ReadWriteMany
 3. Можно делать с помощью Storage Class и Persistent Volume Clame, который автоматически создастся
-4. Для Backend все описано в одном деплойменте
+4. Для Backend все описано в одном StatefuSset (деплойменте)
 
-1. Для Frontend создается другой деплоймент
-2. Этот деплоймент подключается  к тому же PV, к которому подключаются Backend также в режиме ReadWriteMany
+1. Для Frontend создается другой StatefuSet (деплоймент)
+2. Этот StatefuSset подключается  к тому же PV, к которому подключаются Backend также в режиме ReadWriteMany
 3. Файлы, созданные на Stage Backend должны быть доступны на Prod Backend и на Prod Frontend
 4. Показать, что файлы, записаные на Backend доступны на Frontend и наоборот
 
 
-2. Сервисы
+#### Ход выполнения заданя 2
 
-* pv.yaml
+##### 1. Запуск на ноде в отдельном поде сервера NFS
+
+1. Это будет аналог сетевой общей папки для подключения к ней наших пирложенй
+2. Сделать PV, который будет иметь доступ к серверу NFS
+3. 
+
+##### 2. Подключить Backend-ы из Stage и Prod к одному и тому же PV
+
+1. В манифесте StatefuSet Backend Stage
+  - Добавть монитроване к Volume
+  - Добавить Volume, StorageClass, ReadWriteMany, PVC
+  - в спецификации пода необходимо указать ссылку на PersistentVolumeClaim (запрос на том);
+  - в спецификации PersistentVolumeClaim указываются необходимые параметры тома: размер и режим доступа;
+
+
+2. В манифесте StatefuSet Backend Prod
+  - Добавть монитроване к Volume
+  - Добавить Volume, StorageClass, ReadWriteMany, PVC
+  - в спецификации пода необходимо указать ссылку на PersistentVolumeClaim (запрос на том);
+  - в спецификации PersistentVolumeClaim указываются необходимые параметры тома: размер и режим доступа;
+
+##### 3. Подключить Frontend из Prod к тому же PV с NFS, что Backend 
+
+1. В манифесте StatefuSet Frontend Prod
+  - Добавть монитроване к Volume
+  - Добавить Volume, StorageClass, ReadWriteMany, PVC
+  - в спецификации пода необходимо указать ссылку на PersistentVolumeClaim (запрос на том);
+  - в спецификации PersistentVolumeClaim указываются необходимые параметры тома: размер и режим доступа;
+
+##### 4. Порядок запуска
+
+1. PV
+2. PVC
+3. Pod
+
+##### 5. Примеры манифестов
+
+* Пример манифеста PersistentVolume `pv.yaml`
 ```yml
 ---
 apiVersion: v1
@@ -528,15 +565,15 @@ kind: PersistentVolume
 metadata:
   name: pv
 spec:
-  storageClassName: ""
+  storageClassName: ""      # сюда записать имя
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce       #режим подключения - чтать и записывать только одному
   capacity:
     storage: 2Gi
-  hostPath:
+  hostPath:           # тип хранилища
     path: /data/pv
 ```
-* pvc.yaml
+* Пример манифеста PersistentVolumeClaim `pvc.yaml`
 ```yml
 ---
 apiVersion: v1
@@ -551,7 +588,7 @@ spec:
     requests:
       storage: 2Gi
 ```
-* Пример манифеста с примонтированием PV `pod.yaml`
+* Пример манифеста пода с примонтированием PV `pod.yaml`
 ```yml
 ---
 apiVersion: v1
