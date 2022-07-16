@@ -355,16 +355,12 @@ sudo apt install nfs-common - для debian/ubuntu
 ``` 
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && /
 helm repo add stable https://charts.helm.sh/stable && helm repo update && /
-helm install nfs-server stable/nfs-server-provisioner && /
-apt install nfs-common -y 
-```
-```
-ssh node01 && apt install nfs-common -y && exit
+helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
 
 ```
 * на Worker Node
 ```
- apt install nfs-common - для debian/ubuntu
+ apt install nfs-common
 ``` 
 
 #### Манифесты для тестирования работы StorageClass, NFS
