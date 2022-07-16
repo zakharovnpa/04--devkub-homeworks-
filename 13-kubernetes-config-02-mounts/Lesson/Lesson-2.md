@@ -349,6 +349,696 @@ bad option; for several filesystems (e.g. nfs, cifs) you might need a /sbin/moun
 sudo apt install nfs-common - для debian/ubuntu
 ```
 
+#### Скрипт для установки Helm  NFS 
+
+* на ControlNode
+``` 
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && /
+helm repo add stable https://charts.helm.sh/stable && helm repo update && /
+helm install nfs-server stable/nfs-server-provisioner && /
+apt install nfs-common -y 
+```
+```
+ssh node01 && apt install nfs-common -y && exit
+
+```
+* на Worker Node
+```
+ apt install nfs-common - для debian/ubuntu
+``` 
+
+#### Манифесты для тестирования работы StorageClass, NFS
+
+* pod.yaml
+```yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+```
+* pvc.yaml
+
+```yml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+```
+* sc.yaml
+
+```yml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: my-nfs
+provisioner: example.com/external-nfs
+parameters:
+  server: nfs-server.example.com
+  path: /share
+  readOnly: "false"
+```
+
+#### Тестироване
+
+```shell script
+kubectl apply -f pod.yaml
+kubectl apply -f pvc.yaml
+```
+* После этого будет создан PersistentVolume.
+Создана связка PersistentVolumeClaim-PersistentVolume.
+И запущен Pod (какой з подов имеется ввиду). 
+
+* Ага, как бы не так. Смотри логи
+
+#### Логи ЛР по этой теме:
+
+1. Манифесты:
+
+* pod.yaml
+
+```yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+```
+* pvc.yaml
+```yml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  storageClassName: my-nfs
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+```
+* storageclass.yml
+```yml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: my-nfs
+provisioner: cluster.local/nfs-server-nfs-server-provisioner
+parameters:
+  server: nfs-server.example.com
+  path: /share
+  readOnly: "false"
+```
+* Logs -0
+
+```
+controlplane $ kubectl apply -f pod.yaml
+error: the path "pod.yaml" does not exist
+controlplane $ 
+controlplane $ cd My-Project/
+controlplane $ 
+controlplane $ kubectl apply -f pod.yaml
+pod/pod created
+controlplane $ kubectl apply -f pvc.yaml
+persistentvolumeclaim/pvc created
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          15m
+pod/pod                                   0/1     Pending   0          86s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     24s
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          15m
+pod/pod                                   0/1     Pending   0          105s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     43s
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          17m
+pod/pod                                   0/1     Pending   0          4m5s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     3m3s
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl apply -f sc.yaml 
+storageclass.storage.k8s.io/my-nfs created
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          18m
+pod/pod                                   0/1     Pending   0          4m30s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     3m28s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          18m
+pod/pod                                   0/1     Pending   0          4m36s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     3m34s
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          18m
+pod/pod                                   0/1     Pending   0          4m49s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     3m47s
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc,sc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          18m
+pod/pod                                   0/1     Pending   0          4m56s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     3m54s
+
+NAME                                 PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/my-nfs   example.com/external-nfs                          Delete          Immediate           false                  33s
+storageclass.storage.k8s.io/nfs      cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   18m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc,sc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          18m
+pod/pod                                   0/1     Pending   0          5m19s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                                     4m17s
+
+NAME                                 PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/my-nfs   example.com/external-nfs                          Delete          Immediate           false                  56s
+storageclass.storage.k8s.io/nfs      cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   18m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl apply -f pvc.yaml
+The PersistentVolumeClaim "pvc" is invalid: spec: Forbidden: spec is immutable after creation except resources.requests for bound claims
+  core.PersistentVolumeClaimSpec{
+        ... // 2 identical fields
+        Resources:        {Requests: {s"storage": {i: {...}, s: "2Gi", Format: "BinarySI"}}},
+        VolumeName:       "",
+-       StorageClassName: nil,
++       StorageClassName: &"my-nfs",
+        VolumeMode:       &"Filesystem",
+        DataSource:       nil,
+        DataSourceRef:    nil,
+  }
+
+controlplane $ kubectl delete -y .
+error: unknown shorthand flag: 'y' in -y
+See 'kubectl delete --help' for usage.
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl delete -f .
+pod "pod" deleted
+persistentvolumeclaim "pvc" deleted
+storageclass.storage.k8s.io "my-nfs" deleted
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl apply -f .
+pod/pod created
+persistentvolumeclaim/pvc created
+storageclass.storage.k8s.io/my-nfs created
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pvc   
+NAME   STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Pending                                      my-nfs         26m
+controlplane $ 
+controlplane $ kubectl describe pvc
+Name:          pvc
+Namespace:     default
+StorageClass:  my-nfs
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   volume.beta.kubernetes.io/storage-provisioner: example.com/external-nfs
+               volume.kubernetes.io/storage-provisioner: example.com/external-nfs
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Used By:       pod
+Events:
+  Type     Reason                Age                  From                         Message
+  ----     ------                ----                 ----                         -------
+  Warning  ProvisioningFailed    26m                  persistentvolume-controller  storageclass.storage.k8s.io "my-nfs" not found
+  Normal   ExternalProvisioning  87s (x101 over 26m)  persistentvolume-controller  waiting for a volume to be created, either by external provisioner "example.com/external-nfs" or manually created by system administrator
+controlplane $ 
+
+```
+* Logs - 1
+```
+Initialising Kubernetes... done
+
+controlplane $ 
+controlplane $ 
+controlplane $ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && /
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 11156  100 11156    0     0   157k      0 --:--:-- --:--:-- --:--:--  160k
+Downloading https://get.helm.sh/helm-v3.9.1-linux-amd64.tar.gz
+Verifying checksum... Done.
+Preparing to install helm into /usr/local/bin
+helm installed into /usr/local/bin/helm
+bash: /: Is a directory
+controlplane $ helm repo add stable https://charts.helm.sh/stable && helm repo update && /
+"stable" has been added to your repositories
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "stable" chart repository
+Update Complete. ⎈Happy Helming!⎈
+bash: /: Is a directory
+controlplane $ helm install nfs-server stable/nfs-server-provisioner && /
+WARNING: This chart is deprecated
+NAME: nfs-server
+LAST DEPLOYED: Sat Jul 16 11:14:59 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+The NFS Provisioner service has now been installed.
+
+A storage class named 'nfs' has now been created
+and is available to provision dynamic volumes.
+
+You can use this storageclass by creating a `PersistentVolumeClaim` with the
+correct storageClassName attribute. For example:
+
+    ---
+    kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: test-dynamic-volume-claim
+    spec:
+      storageClassName: "nfs"
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Mi
+bash: /: Is a directory
+controlplane $ apt install nfs-common -y && ssh node01 && /
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following additional packages will be installed:
+  keyutils libnfsidmap2 libtirpc-common libtirpc3 rpcbind
+Suggested packages:
+  watchdog
+The following NEW packages will be installed:
+  keyutils libnfsidmap2 libtirpc-common libtirpc3 nfs-common rpcbind
+0 upgraded, 6 newly installed, 0 to remove and 130 not upgraded.
+Need to get 404 kB of archives.
+After this operation, 1517 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal/main amd64 libtirpc-common all 1.2.5-1 [7632 B]
+Get:2 http://archive.ubuntu.com/ubuntu focal/main amd64 libtirpc3 amd64 1.2.5-1 [77.2 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal/main amd64 rpcbind amd64 1.2.5-8 [42.8 kB]
+Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 keyutils amd64 1.6-6ubuntu1 [45.0 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 libnfsidmap2 amd64 0.25-5.1ubuntu1 [27.9 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 nfs-common amd64 1:1.3.4-2.5ubuntu3.4 [204 kB]
+Fetched 404 kB in 0s (1709 kB/s)    
+Selecting previously unselected package libtirpc-common.
+(Reading database ... 72097 files and directories currently installed.)
+Preparing to unpack .../0-libtirpc-common_1.2.5-1_all.deb ...
+Unpacking libtirpc-common (1.2.5-1) ...
+Selecting previously unselected package libtirpc3:amd64.
+Preparing to unpack .../1-libtirpc3_1.2.5-1_amd64.deb ...
+Unpacking libtirpc3:amd64 (1.2.5-1) ...
+Selecting previously unselected package rpcbind.
+Preparing to unpack .../2-rpcbind_1.2.5-8_amd64.deb ...
+Unpacking rpcbind (1.2.5-8) ...
+Selecting previously unselected package keyutils.
+Preparing to unpack .../3-keyutils_1.6-6ubuntu1_amd64.deb ...
+Unpacking keyutils (1.6-6ubuntu1) ...
+Selecting previously unselected package libnfsidmap2:amd64.
+Preparing to unpack .../4-libnfsidmap2_0.25-5.1ubuntu1_amd64.deb ...
+Unpacking libnfsidmap2:amd64 (0.25-5.1ubuntu1) ...
+Selecting previously unselected package nfs-common.
+Preparing to unpack .../5-nfs-common_1%3a1.3.4-2.5ubuntu3.4_amd64.deb ...
+Unpacking nfs-common (1:1.3.4-2.5ubuntu3.4) ...
+Setting up libtirpc-common (1.2.5-1) ...
+Setting up keyutils (1.6-6ubuntu1) ...
+Setting up libnfsidmap2:amd64 (0.25-5.1ubuntu1) ...
+Setting up libtirpc3:amd64 (1.2.5-1) ...
+Setting up rpcbind (1.2.5-8) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/rpcbind.service → /lib/systemd/system/rpcbind.service.
+Created symlink /etc/systemd/system/sockets.target.wants/rpcbind.socket → /lib/systemd/system/rpcbind.socket.
+Setting up nfs-common (1:1.3.4-2.5ubuntu3.4) ...
+
+Creating config file /etc/idmapd.conf with new version
+Adding system user `statd' (UID 114) ...
+Adding new user `statd' (UID 114) with group `nogroup' ...
+Not creating home directory `/var/lib/nfs'.
+Created symlink /etc/systemd/system/multi-user.target.wants/nfs-client.target → /lib/systemd/system/nfs-client.target.
+Created symlink /etc/systemd/system/remote-fs.target.wants/nfs-client.target → /lib/systemd/system/nfs-client.target.
+nfs-utils.service is a disabled or a static unit, not starting it.
+Processing triggers for systemd (245.4-4ubuntu3.13) ...
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
+Last login: Fri Oct  8 17:04:36 2021 from 10.32.0.22
+node01 $ 
+node01 $ 
+node01 $ apt install nfs-common -y && exit
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following additional packages will be installed:
+  keyutils libnfsidmap2 libtirpc-common libtirpc3 rpcbind
+Suggested packages:
+  watchdog
+The following NEW packages will be installed:
+  keyutils libnfsidmap2 libtirpc-common libtirpc3 nfs-common rpcbind
+0 upgraded, 6 newly installed, 0 to remove and 130 not upgraded.
+Need to get 404 kB of archives.
+After this operation, 1517 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal/main amd64 libtirpc-common all 1.2.5-1 [7632 B]
+Get:2 http://archive.ubuntu.com/ubuntu focal/main amd64 libtirpc3 amd64 1.2.5-1 [77.2 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal/main amd64 rpcbind amd64 1.2.5-8 [42.8 kB]
+Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 keyutils amd64 1.6-6ubuntu1 [45.0 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 libnfsidmap2 amd64 0.25-5.1ubuntu1 [27.9 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 nfs-common amd64 1:1.3.4-2.5ubuntu3.4 [204 kB]
+Fetched 404 kB in 0s (2069 kB/s)
+Selecting previously unselected package libtirpc-common.
+(Reading database ... 72097 files and directories currently installed.)
+Preparing to unpack .../0-libtirpc-common_1.2.5-1_all.deb ...
+Unpacking libtirpc-common (1.2.5-1) ...
+Selecting previously unselected package libtirpc3:amd64.
+Preparing to unpack .../1-libtirpc3_1.2.5-1_amd64.deb ...
+Unpacking libtirpc3:amd64 (1.2.5-1) ...
+Selecting previously unselected package rpcbind.
+Preparing to unpack .../2-rpcbind_1.2.5-8_amd64.deb ...
+Unpacking rpcbind (1.2.5-8) ...
+Selecting previously unselected package keyutils.
+Preparing to unpack .../3-keyutils_1.6-6ubuntu1_amd64.deb ...
+Unpacking keyutils (1.6-6ubuntu1) ...
+Selecting previously unselected package libnfsidmap2:amd64.
+Preparing to unpack .../4-libnfsidmap2_0.25-5.1ubuntu1_amd64.deb ...
+Unpacking libnfsidmap2:amd64 (0.25-5.1ubuntu1) ...
+Selecting previously unselected package nfs-common.
+Preparing to unpack .../5-nfs-common_1%3a1.3.4-2.5ubuntu3.4_amd64.deb ...
+Unpacking nfs-common (1:1.3.4-2.5ubuntu3.4) ...
+Setting up libtirpc-common (1.2.5-1) ...
+Setting up keyutils (1.6-6ubuntu1) ...
+Setting up libnfsidmap2:amd64 (0.25-5.1ubuntu1) ...
+Setting up libtirpc3:amd64 (1.2.5-1) ...
+Setting up rpcbind (1.2.5-8) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/rpcbind.service → /lib/systemd/system/rpcbind.service.
+Created symlink /etc/systemd/system/sockets.target.wants/rpcbind.socket → /lib/systemd/system/rpcbind.socket.
+Setting up nfs-common (1:1.3.4-2.5ubuntu3.4) ...
+
+Creating config file /etc/idmapd.conf with new version
+Adding system user `statd' (UID 114) ...
+Adding new user `statd' (UID 114) with group `nogroup' ...
+Not creating home directory `/var/lib/nfs'.
+Created symlink /etc/systemd/system/multi-user.target.wants/nfs-client.target → /lib/systemd/system/nfs-client.target.
+Created symlink /etc/systemd/system/remote-fs.target.wants/nfs-client.target → /lib/systemd/system/nfs-client.target.
+nfs-utils.service is a disabled or a static unit, not starting it.
+Processing triggers for systemd (245.4-4ubuntu3.13) ...
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
+logout
+Connection to node01 closed.
+bash: /: Is a directory
+controlplane $ 
+```
+* Logs - 2
+
+```
+
+controlplane $ kubectl get po,pv,pvc,sc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          22m
+pod/pod                                   0/1     Pending   0          54s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                      my-nfs         54s
+
+NAME                                 PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/my-nfs   example.com/external-nfs                          Delete          Immediate           false                  54s
+storageclass.storage.k8s.io/nfs      cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   22m
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc,sc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          22m
+pod/pod                                   0/1     Pending   0          70s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                      my-nfs         70s
+
+NAME                                 PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/my-nfs   example.com/external-nfs                          Delete          Immediate           false                  70s
+storageclass.storage.k8s.io/nfs      cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   22m
+controlplane $ 
+controlplane $ kubectl get sc
+NAME     PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+my-nfs   example.com/external-nfs                          Delete          Immediate           false                  115s
+nfs      cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   23m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po,pv,pvc,sc
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          25m
+pod/pod                                   0/1     Pending   0          3m44s
+
+NAME                        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc   Pending                                      my-nfs         3m44s
+
+NAME                                 PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+storageclass.storage.k8s.io/my-nfs   example.com/external-nfs                          Delete          Immediate           false                  3m44s
+storageclass.storage.k8s.io/nfs      cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   25m
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get csinodes
+NAME           DRIVERS   AGE
+controlplane   0         68d
+node01         0         68d
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get csidrivers
+No resources found
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl logs -f nfs-server-nfs-server-provisioner-0 
+I0716 11:15:07.597112       1 main.go:64] Provisioner cluster.local/nfs-server-nfs-server-provisioner specified
+I0716 11:15:07.597976       1 main.go:88] Setting up NFS server!
+I0716 11:15:07.727210       1 server.go:149] starting RLIMIT_NOFILE rlimit.Cur 1048576, rlimit.Max 1048576
+I0716 11:15:07.727307       1 server.go:160] ending RLIMIT_NOFILE rlimit.Cur 1048576, rlimit.Max 1048576
+I0716 11:15:07.727659       1 server.go:134] Running NFS server!
+
+^C
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe po nfs-server-nfs-server-provisioner-0 
+Name:         nfs-server-nfs-server-provisioner-0
+Namespace:    default
+Priority:     0
+Node:         node01/172.30.2.2
+Start Time:   Sat, 16 Jul 2022 11:15:01 +0000
+Labels:       app=nfs-server-provisioner
+              chart=nfs-server-provisioner-1.1.3
+              controller-revision-hash=nfs-server-nfs-server-provisioner-64bd6d7f65
+              heritage=Helm
+              release=nfs-server
+              statefulset.kubernetes.io/pod-name=nfs-server-nfs-server-provisioner-0
+Annotations:  cni.projectcalico.org/containerID: ae7233e81fcded580bc83a2b91cd59e39122335ed3d26637ff07875e29d617e7
+              cni.projectcalico.org/podIP: 192.168.1.4/32
+              cni.projectcalico.org/podIPs: 192.168.1.4/32
+Status:       Running
+IP:           192.168.1.4
+IPs:
+  IP:           192.168.1.4
+Controlled By:  StatefulSet/nfs-server-nfs-server-provisioner
+Containers:
+  nfs-server-provisioner:
+    Container ID:  containerd://d8defccb4cc24c6c7100e19bab498c49be557d8af92e102e33a4b1a3bb085159
+    Image:         quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0
+    Image ID:      quay.io/kubernetes_incubator/nfs-provisioner@sha256:f402e6039b3c1e60bf6596d283f3c470ffb0a1e169ceb8ce825e3218cd66c050
+    Ports:         2049/TCP, 2049/UDP, 32803/TCP, 32803/UDP, 20048/TCP, 20048/UDP, 875/TCP, 875/UDP, 111/TCP, 111/UDP, 662/TCP, 662/UDP
+    Host Ports:    0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP
+    Args:
+      -provisioner=cluster.local/nfs-server-nfs-server-provisioner
+    State:          Running
+      Started:      Sat, 16 Jul 2022 11:15:07 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      POD_IP:          (v1:status.podIP)
+      SERVICE_NAME:   nfs-server-nfs-server-provisioner
+      POD_NAMESPACE:  default (v1:metadata.namespace)
+    Mounts:
+      /export from data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-lzckt (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  data:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-lzckt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  39m   default-scheduler  Successfully assigned default/nfs-server-nfs-server-provisioner-0 to node01
+  Normal  Pulling    39m   kubelet            Pulling image "quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0"
+  Normal  Pulled     39m   kubelet            Successfully pulled image "quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0" in 5.620265356s
+  Normal  Created    39m   kubelet            Created container nfs-server-provisioner
+  Normal  Started    39m   kubelet            Started container nfs-server-provisioner
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl logs pvc pvc
+Error from server (NotFound): pods "pvc" not found
+controlplane $ 
+controlplane $ kubectl logs pvc
+Error from server (NotFound): pods "pvc" not found
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl logs pod pod
+error: container pod is not valid for pod pod
+controlplane $ 
+controlplane $ kubectl logs pod    
+controlplane $ 
+controlplane $ kubectl logs pod
+controlplane $ 
+controlplane $ kubectl logs -f pod                                 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe po pod                                 
+Name:         pod
+Namespace:    default
+Priority:     0
+Node:         <none>
+Labels:       <none>
+Annotations:  <none>
+Status:       Pending
+IP:           
+IPs:          <none>
+Containers:
+  nginx:
+    Image:        nginx
+    Port:         <none>
+    Host Port:    <none>
+    Environment:  <none>
+    Mounts:
+      /static from my-volume (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-ltszg (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False 
+Volumes:
+  my-volume:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  pvc
+    ReadOnly:   false
+  kube-api-access-ltszg:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  24m   default-scheduler  0/2 nodes are available: 2 persistentvolumeclaim "pvc" not found. preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.
+  Warning  FailedScheduling  24m   default-scheduler  0/2 nodes are available: 2 pod has unbound immediate PersistentVolumeClaims. preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.
+  Warning  FailedScheduling  24m   default-scheduler  0/2 nodes are available: 2 pod has unbound immediate PersistentVolumeClaims. preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.
+controlplane $ 
+controlplane $ 
+```
+
+
+
+
+```shell script
+kubectl exec pod -- ls -la /static
+kubectl exec pod -- sh -c "echo 'dynamic' > /static/dynamic.txt"
+```
+# Определим в какой папке у нас хранятся данные
+```
+kubectl get pv -o yaml | grep '^\s*path:'
+```
+# На ноде ищем файл. Например
+```
+sudo ls -la /var/snap/microk8s/common/default-storage/default-pvc-pvc-7bd66d4c-189e-44d1-ad0f-bc091491525e
+```
+
+
+
+
+
 ---
 
 ### Как оформить ДЗ?
