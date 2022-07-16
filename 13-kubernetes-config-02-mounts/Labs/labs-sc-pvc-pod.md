@@ -464,3 +464,573 @@ node01 $
 node01 $ 
 node01 $ 
 ```
+* Лог Terminal 0
+```
+controlplane $ kubectl get sc
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   48m
+controlplane $ 
+controlplane $ kubectl get sc -o yaml
+apiVersion: v1
+items:
+- allowVolumeExpansion: true
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: nfs-server
+      meta.helm.sh/release-namespace: default
+    creationTimestamp: "2022-07-16T16:27:12Z"
+    labels:
+      app: nfs-server-provisioner
+      app.kubernetes.io/managed-by: Helm
+      chart: nfs-server-provisioner-1.1.3
+      heritage: Helm
+      release: nfs-server
+    name: nfs
+    resourceVersion: "2857"
+    uid: 43b045e3-51f7-4270-9821-f6f666374870
+  mountOptions:
+  - vers=3
+  provisioner: cluster.local/nfs-server-nfs-server-provisioner
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+kind: List
+metadata:
+  resourceVersion: ""
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe sc nfs 
+Name:                  nfs
+IsDefaultClass:        No
+Annotations:           meta.helm.sh/release-name=nfs-server,meta.helm.sh/release-namespace=default
+Provisioner:           cluster.local/nfs-server-nfs-server-provisioner
+Parameters:            <none>
+AllowVolumeExpansion:  True
+MountOptions:
+  vers=3
+ReclaimPolicy:      Delete
+VolumeBindingMode:  Immediate
+Events:             <none>
+controlplane $ 
+controlplane $ date
+Sat Jul 16 17:16:39 UTC 2022
+controlplane $ 
+controlplane $ kubectl get pvc       
+NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pvc-40c0b077-37e5-4193-bf44-992074b9d4c6   2Gi        RWO            nfs            29m
+controlplane $ 
+controlplane $ kubectl get pvc -o yaml
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"name":"pvc","namespace":"default"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"nfs"}}
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+      volume.beta.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+      volume.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+    creationTimestamp: "2022-07-16T16:47:09Z"
+    finalizers:
+    - kubernetes.io/pvc-protection
+    name: pvc
+    namespace: default
+    resourceVersion: "5051"
+    uid: 40c0b077-37e5-4193-bf44-992074b9d4c6
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+    storageClassName: nfs
+    volumeMode: Filesystem
+    volumeName: pvc-40c0b077-37e5-4193-bf44-992074b9d4c6
+  status:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: 2Gi
+    phase: Bound
+kind: List
+metadata:
+  resourceVersion: ""
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe pvc
+Name:          pvc
+Namespace:     default
+StorageClass:  nfs
+Status:        Bound
+Volume:        pvc-40c0b077-37e5-4193-bf44-992074b9d4c6
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+               volume.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      2Gi
+Access Modes:  RWO
+VolumeMode:    Filesystem
+Used By:       pod
+Events:
+  Type    Reason                 Age   From                                                                                                                      Message
+  ----    ------                 ----  ----                                                                                                                      -------
+  Normal  ExternalProvisioning   30m   persistentvolume-controller                                                                                               waiting for a volume to be created, either by external provisioner "cluster.local/nfs-server-nfs-server-provisioner" or manually created by system administrator
+  Normal  Provisioning           30m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_90a580d2-f958-4efa-a4f8-fae144863a9a  External provisioner is provisioning volume for claim "default/pvc"
+  Normal  ProvisioningSucceeded  30m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_90a580d2-f958-4efa-a4f8-fae144863a9a  Successfully provisioned volume pvc-40c0b077-37e5-4193-bf44-992074b9d4c6
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po pod
+NAME   READY   STATUS    RESTARTS   AGE
+pod    1/1     Running   0          24m
+controlplane $ 
+controlplane $ kubectl get po pod -o wide
+NAME   READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES
+pod    1/1     Running   0          24m   192.168.1.5   node01   <none>           <none>
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po pod -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: d086c7043b6101d4e18ee5cf5761d00937faa69ac43af618a52be92bfcace8fd
+    cni.projectcalico.org/podIP: 192.168.1.5/32
+    cni.projectcalico.org/podIPs: 192.168.1.5/32
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"pod","namespace":"default"},"spec":{"containers":[{"image":"nginx","name":"nginx","volumeMounts":[{"mountPath":"/static","name":"my-volume"}]}],"volumes":[{"name":"my-volume","persistentVolumeClaim":{"claimName":"pvc"}}]}}
+  creationTimestamp: "2022-07-16T16:53:39Z"
+  name: pod
+  namespace: default
+  resourceVersion: "5768"
+  uid: 99302fea-c717-43a3-98f5-8b4b753b678b
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: Always
+    name: nginx
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /static
+      name: my-volume
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-zvt6b
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: node01
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: my-volume
+    persistentVolumeClaim:
+      claimName: pvc
+  - name: kube-api-access-zvt6b
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:53:39Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:53:44Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:53:44Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:53:39Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://674cd8d7fc9e55f7270d72e6650ba8d8e6e74fe08104288f48ba42dfde5588b8
+    image: docker.io/library/nginx:latest
+    imageID: docker.io/library/nginx@sha256:db345982a2f2a4257c6f699a499feb1d79451a1305e8022f16456ddc3ad6b94c
+    lastState: {}
+    name: nginx
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-16T16:53:43Z"
+  hostIP: 172.30.2.2
+  phase: Running
+  podIP: 192.168.1.5
+  podIPs:
+  - ip: 192.168.1.5
+  qosClass: BestEffort
+  startTime: "2022-07-16T16:53:39Z"
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe po pod                                 
+Name:         pod
+Namespace:    default
+Priority:     0
+Node:         node01/172.30.2.2
+Start Time:   Sat, 16 Jul 2022 16:53:39 +0000
+Labels:       <none>
+Annotations:  cni.projectcalico.org/containerID: d086c7043b6101d4e18ee5cf5761d00937faa69ac43af618a52be92bfcace8fd
+              cni.projectcalico.org/podIP: 192.168.1.5/32
+              cni.projectcalico.org/podIPs: 192.168.1.5/32
+Status:       Running
+IP:           192.168.1.5
+IPs:
+  IP:  192.168.1.5
+Containers:
+  nginx:
+    Container ID:   containerd://674cd8d7fc9e55f7270d72e6650ba8d8e6e74fe08104288f48ba42dfde5588b8
+    Image:          nginx
+    Image ID:       docker.io/library/nginx@sha256:db345982a2f2a4257c6f699a499feb1d79451a1305e8022f16456ddc3ad6b94c
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sat, 16 Jul 2022 16:53:43 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /static from my-volume (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-zvt6b (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  my-volume:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  pvc
+    ReadOnly:   false
+  kube-api-access-zvt6b:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  25m   default-scheduler  Successfully assigned default/pod to node01
+  Normal  Pulling    25m   kubelet            Pulling image "nginx"
+  Normal  Pulled     24m   kubelet            Successfully pulled image "nginx" in 3.587555698s
+  Normal  Created    24m   kubelet            Created container nginx
+  Normal  Started    24m   kubelet            Started container nginx
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po nfs -o wide
+Error from server (NotFound): pods "nfs" not found
+controlplane $ 
+controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 -o wide
+NAME                                  READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          51m   192.168.1.4   node01   <none>           <none>
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: 636bde238ae70e4ce280fcadd24674b2352c57e9695bcaca4409462d9c802b59
+    cni.projectcalico.org/podIP: 192.168.1.4/32
+    cni.projectcalico.org/podIPs: 192.168.1.4/32
+  creationTimestamp: "2022-07-16T16:27:12Z"
+  generateName: nfs-server-nfs-server-provisioner-
+  labels:
+    app: nfs-server-provisioner
+    chart: nfs-server-provisioner-1.1.3
+    controller-revision-hash: nfs-server-nfs-server-provisioner-64bd6d7f65
+    heritage: Helm
+    release: nfs-server
+    statefulset.kubernetes.io/pod-name: nfs-server-nfs-server-provisioner-0
+  name: nfs-server-nfs-server-provisioner-0
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: StatefulSet
+    name: nfs-server-nfs-server-provisioner
+    uid: 3643b097-5ddc-4043-996c-031874c186c3
+  resourceVersion: "2891"
+  uid: b988d1c3-dc57-4bcd-99d8-3a285a880e4f
+spec:
+  containers:
+  - args:
+    - -provisioner=cluster.local/nfs-server-nfs-server-provisioner
+    env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: SERVICE_NAME
+      value: nfs-server-nfs-server-provisioner
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    image: quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0
+    imagePullPolicy: IfNotPresent
+    name: nfs-server-provisioner
+    ports:
+    - containerPort: 2049
+      name: nfs
+      protocol: TCP
+    - containerPort: 2049
+      name: nfs-udp
+      protocol: UDP
+    - containerPort: 32803
+      name: nlockmgr
+      protocol: TCP
+    - containerPort: 32803
+      name: nlockmgr-udp
+      protocol: UDP
+    - containerPort: 20048
+      name: mountd
+      protocol: TCP
+    - containerPort: 20048
+      name: mountd-udp
+      protocol: UDP
+    - containerPort: 875
+      name: rquotad
+      protocol: TCP
+    - containerPort: 875
+      name: rquotad-udp
+      protocol: UDP
+    - containerPort: 111
+      name: rpcbind
+      protocol: TCP
+    - containerPort: 111
+      name: rpcbind-udp
+      protocol: UDP
+    - containerPort: 662
+      name: statd
+      protocol: TCP
+    - containerPort: 662
+      name: statd-udp
+      protocol: UDP
+    resources: {}
+    securityContext:
+      capabilities:
+        add:
+        - DAC_READ_SEARCH
+        - SYS_RESOURCE
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /export
+      name: data
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-6vkg6
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  hostname: nfs-server-nfs-server-provisioner-0
+  nodeName: node01
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: nfs-server-nfs-server-provisioner
+  serviceAccountName: nfs-server-nfs-server-provisioner
+  subdomain: nfs-server-nfs-server-provisioner
+  terminationGracePeriodSeconds: 100
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - emptyDir: {}
+    name: data
+  - name: kube-api-access-6vkg6
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:27:12Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:27:19Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:27:19Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-07-16T16:27:12Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://45f0a7e4ea4d6303ab5de47fa93728e6f1ed0616ece4d444773eaf7f99324c14
+    image: quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0
+    imageID: quay.io/kubernetes_incubator/nfs-provisioner@sha256:f402e6039b3c1e60bf6596d283f3c470ffb0a1e169ceb8ce825e3218cd66c050
+    lastState: {}
+    name: nfs-server-provisioner
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-07-16T16:27:18Z"
+  hostIP: 172.30.2.2
+  phase: Running
+  podIP: 192.168.1.4
+  podIPs:
+  - ip: 192.168.1.4
+  qosClass: BestEffort
+  startTime: "2022-07-16T16:27:12Z"
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe po nfs-server-nfs-server-provisioner-0 
+Name:         nfs-server-nfs-server-provisioner-0
+Namespace:    default
+Priority:     0
+Node:         node01/172.30.2.2
+Start Time:   Sat, 16 Jul 2022 16:27:12 +0000
+Labels:       app=nfs-server-provisioner
+              chart=nfs-server-provisioner-1.1.3
+              controller-revision-hash=nfs-server-nfs-server-provisioner-64bd6d7f65
+              heritage=Helm
+              release=nfs-server
+              statefulset.kubernetes.io/pod-name=nfs-server-nfs-server-provisioner-0
+Annotations:  cni.projectcalico.org/containerID: 636bde238ae70e4ce280fcadd24674b2352c57e9695bcaca4409462d9c802b59
+              cni.projectcalico.org/podIP: 192.168.1.4/32
+              cni.projectcalico.org/podIPs: 192.168.1.4/32
+Status:       Running
+IP:           192.168.1.4
+IPs:
+  IP:           192.168.1.4
+Controlled By:  StatefulSet/nfs-server-nfs-server-provisioner
+Containers:
+  nfs-server-provisioner:
+    Container ID:  containerd://45f0a7e4ea4d6303ab5de47fa93728e6f1ed0616ece4d444773eaf7f99324c14
+    Image:         quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0
+    Image ID:      quay.io/kubernetes_incubator/nfs-provisioner@sha256:f402e6039b3c1e60bf6596d283f3c470ffb0a1e169ceb8ce825e3218cd66c050
+    Ports:         2049/TCP, 2049/UDP, 32803/TCP, 32803/UDP, 20048/TCP, 20048/UDP, 875/TCP, 875/UDP, 111/TCP, 111/UDP, 662/TCP, 662/UDP
+    Host Ports:    0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP, 0/TCP, 0/UDP
+    Args:
+      -provisioner=cluster.local/nfs-server-nfs-server-provisioner
+    State:          Running
+      Started:      Sat, 16 Jul 2022 16:27:18 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      POD_IP:          (v1:status.podIP)
+      SERVICE_NAME:   nfs-server-nfs-server-provisioner
+      POD_NAMESPACE:  default (v1:metadata.namespace)
+    Mounts:
+      /export from data (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6vkg6 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  data:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:     
+    SizeLimit:  <unset>
+  kube-api-access-6vkg6:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  52m   default-scheduler  Successfully assigned default/nfs-server-nfs-server-provisioner-0 to node01
+  Normal  Pulling    52m   kubelet            Pulling image "quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0"
+  Normal  Pulled     52m   kubelet            Successfully pulled image "quay.io/kubernetes_incubator/nfs-provisioner:v2.3.0" in 5.436767439s
+  Normal  Created    52m   kubelet            Created container nfs-server-provisioner
+  Normal  Started    52m   kubelet            Started container nfs-server-provisioner
+controlplane $ 
+controlplane $ 
+controlplane $ 
+```
