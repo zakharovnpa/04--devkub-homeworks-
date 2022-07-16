@@ -9,3 +9,5 @@
 - [Подготовка к выполнению ДЗ по теме "13.2 разделы и монтирование"](/13-kubernetes-config-02-mounts/Labs/create-pvc-5.md)
 
 - [Подготовка к выполнению ДЗ, вопрос №2](/13-kubernetes-config-02-mounts/Labs/create-pvc-6.md)
+
+- [Запуск сервера NFS и днамческого создания PV](/13-kubernetes-config-02-mounts/Labs/labs-create-pvc-storageclass.md)
