@@ -11,3 +11,5 @@
 - [Подготовка к выполнению ДЗ, вопрос №2](/13-kubernetes-config-02-mounts/Labs/create-pvc-6.md)
 
 - [Запуск сервера NFS и днамческого создания PV](/13-kubernetes-config-02-mounts/Labs/labs-pvc-storagecklass.md)
+
+- [Успешная ЛР по запуску сервера NFS и днамического создания PV](/13-kubernetes-config-02-mounts/Labs/abs-sc-pvc-pod.md)
