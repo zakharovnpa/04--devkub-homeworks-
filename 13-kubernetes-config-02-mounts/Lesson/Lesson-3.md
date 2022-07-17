@@ -101,11 +101,19 @@ spec:
 ```
 
 ### 6. Создаем поды
-* Для Stage
+
+* Для Stage измененные манифесты
+
+  * Frontend и Backend [mount-stage-front-back.yaml](/13-kubernetes-config-02-mounts/Files/mount-stage-front-back.yaml)
 ```
 kubectl apply -f mount-stage-front-back.yaml
 ```
-* Для Prod
+
+* Для Prod измененные манифесты
+
+  * Frontend [mount-prod-frontend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-frontend.yaml)
+  * Backend [mount-prod-backend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-backend.yaml)
+
 ```
 kubectl apply -f mount-prod-frontend.yaml
 ```
