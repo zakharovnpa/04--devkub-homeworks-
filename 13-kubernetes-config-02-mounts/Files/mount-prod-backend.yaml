@@ -1,6 +1,6 @@
 # For change!!! Config Backend StatefulSet & Services
 # with mount NFS
-# Please, adding mount information!
+# Str 32-34, 36-39 -  adding mount information!
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -29,7 +29,14 @@ spec:
           name: backend
           ports:
           - containerPort: 9000
+          volumeMounts:                         # mount information
+            - mountPath: "/static"              # mount information
+              name: my-volume                   # mount information
       terminationGracePeriodSeconds: 30
+      volumes:                                  # mount information
+        - name: my-volume                       # mount information
+          persistentVolumeClaim:                # mount information
+            claimName: pvc                      # mount information
 
 # Config Service ClasterIP
 ---
