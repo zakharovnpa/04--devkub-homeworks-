@@ -83,8 +83,9 @@ controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          3m13s
 ```
-### 5. NFS установлен. Создаем запрос на том
+### 5. NFS установлен. Создаем запрос (PVC) на том
 
+* pvc.yaml
 ```yml
 ---
 apiVersion: v1
@@ -92,9 +93,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc
 spec:
-  storageClassName: nfs
+  storageClassName: nfs  # этот storageclass создан автоматически при установке nfs
   accessModes:
-    - ReadWriteMany
+    - ReadWriteMany   # режим доступа
   resources:
     requests:
       storage: 2Gi
