@@ -1,40 +1,50 @@
 ## Логи ЛР по запуску сервера NFS и днамического создания PV
 
-* Лог Tab 1
+### Лог Tab 1
 
+#### 1. До установки NFS проверка наличия StorageClass, Services, Pod
 ```
 controlplane $ 
 controlplane $ date
 Sat Jul 16 16:24:28 UTC 2022
-controlplane $ 
+```
+```
 controlplane $ kubectl get po
 No resources found in default namespace.
-controlplane $ 
+```
+```
 controlplane $ kubectl get pvc
 No resources found in default namespace.
-controlplane $ 
+```
+```
 controlplane $ kubectl get sc 
 No resources found
-controlplane $ 
+```
+```
 controlplane $ kubectl get svc
 NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
 kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   68d
-controlplane $ 
+```
+* на какие ноды можно подключать тома
+```
 controlplane $ kubectl get csinodes
 NAME           DRIVERS   AGE
 controlplane   0         68d
 node01         0         68d
-controlplane $ 
+```
+* Есть ли драйвер Storage Interface
+```
 controlplane $ kubectl get csidrivers
 No resources found
-controlplane $ 
+```
+```
 controlplane $ kubectl get pv 
 No resources found
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+#### 2. Установка NFS и автоматическое создание StorageClass
+
+* Установка helm 
+```
 controlplane $ date
 Sat Jul 16 16:26:56 UTC 2022
 controlplane $ 
@@ -47,12 +57,17 @@ Verifying checksum... Done.
 Preparing to install helm into /usr/local/bin
 helm installed into /usr/local/bin/helm
 bash: /: Is a directory
+```
+* Добавление репозитория чартов 
+```
 controlplane $ helm repo add stable https://charts.helm.sh/stable && helm repo update && /
 "stable" has been added to your repositories
 Hang tight while we grab the latest from your chart repositories...
 ...Successfully got an update from the "stable" chart repository
 Update Complete. ⎈Happy Helming!⎈
-bash: /: Is a directory
+```
+* Установка nfs-server через helm 
+```
 controlplane $ helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
 WARNING: This chart is deprecated
 NAME: nfs-server
@@ -139,81 +154,94 @@ nfs-utils.service is a disabled or a static unit, not starting it.
 Processing triggers for systemd (245.4-4ubuntu3.13) ...
 Processing triggers for man-db (2.9.1-1) ...
 Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
-controlplane $ 
-controlplane $ 
+
+```
+
+#### 3. После установки NFS проверка наличия StorageClass, Services, Pod
+
+```
 controlplane $ kubectl get sc
 NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   91s
-controlplane $ 
+```
+```
 controlplane $ kubectl get pv
 No resources found
-controlplane $ 
+```
+```
 controlplane $ kubectl get csinodes
 NAME           DRIVERS   AGE
 controlplane   0         68d
 node01         0         68d
-controlplane $ 
+```
+```
 controlplane $ kubectl get csidrivers
 No resources found
-controlplane $ 
+```
+```
 controlplane $ kubectl get svc
 NAME                                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                                                                     AGE
 kubernetes                          ClusterIP   10.96.0.1      <none>        443/TCP                                                                                                     68d
 nfs-server-nfs-server-provisioner   ClusterIP   10.96.246.57   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   2m12s
-controlplane $ 
+```
+```
 controlplane $ kubectl get pvc
 No resources found in default namespace.
-controlplane $ 
+```
+```
 controlplane $ kubectl get po 
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          3m13s
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ kubectl get pv
 No resources found
-controlplane $ 
-controlplane $ 
-controlplan./
-bash: ./: Is a directory
-controlplane $ 
-controlplane $  
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ kubectl get pv
 No resources found
-controlplane $ 
+```
+```
 controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          12m
-controlplane $ 
+```
+```
 controlplane $ kubectl get svc
 NAME                                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                                                                     AGE
 kubernetes                          ClusterIP   10.96.0.1      <none>        443/TCP                                                                                                     68d
 nfs-server-nfs-server-provisioner   ClusterIP   10.96.246.57   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   12m
-controlplane $ 
+```
+```
 controlplane $ kubectl get csidrivers
 No resources found
-controlplane $ 
+```
+```
 controlplane $ kubectl get csinodes
 NAME           DRIVERS   AGE
 controlplane   0         68d
 node01         0         68d
-controlplane $ 
-controlplane $ 
+```
+
+#### 4. Применение запроса PVC
+```
 controlplane $ cd My-Project/
 controlplane $ 
 controlplane $ kubectl apply -f pvc.yaml 
 persistentvolumeclaim/pvc created
-controlplane $ 
+```
+```
 controlplane $ kubectl get pvc
 NAME   STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 pvc    Pending                                      my-nfs         15s
-controlplane $ 
+```
+```
 controlplane $ kubectl get pvc
 NAME   STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 pvc    Pending                                      my-nfs         30s
-controlplane $ 
+```
+* Показан пример состояния Pending для PVC по причине не соотвектствия имени `storageClassName` в PVC и имени самого StorageClass
+```
 controlplane $ kubectl describe pvc
 Name:          pvc
 Namespace:     default
@@ -231,35 +259,33 @@ Events:
   Type     Reason              Age               From                         Message
   ----     ------              ----              ----                         -------
   Warning  ProvisioningFailed  8s (x5 over 53s)  persistentvolume-controller  storageclass.storage.k8s.io "my-nfs" not found
-controlplane $ 
-controlplane $ 
+```
+* Исправляем
+```
 controlplane $ kubectl delete -f pvc.yaml 
 persistentvolumeclaim "pvc" deleted
 controlplane $ 
-controlplane $ kubectl get pvc
-No resources found in default namespace.
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
 controlplane $ kubectl apply -f pvc.yaml 
 persistentvolumeclaim/pvc created
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ kubectl get pvc
 NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 pvc    Bound    pvc-40c0b077-37e5-4193-bf44-992074b9d4c6   2Gi        RWO            nfs            36s
-controlplane $ 
+```
+```
 controlplane $ kubectl get pv 
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
 pvc-40c0b077-37e5-4193-bf44-992074b9d4c6   2Gi        RWO            Delete           Bound    default/pvc   nfs                     55s
-controlplane $ 
+```
+* Pod с сервером NFS работает
+```
 controlplane $ kubectl get po 
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          21m
-controlplane $ 
+```
+* pvc.yaml
+```
 controlplane $ cat pvc.yaml 
 ---
 apiVersion: v1
@@ -267,16 +293,16 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc
 spec:
-  storageClassName: nfs
+  storageClassName: nfs  # было исправлено на имя StorageClass
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi
-      
-controlplane $ 
-controlplane $ 
-controlplane $ 
+     
+```
+* PVC с файлом `pvc.yaml`. Статус - Bound
+```
 controlplane $ date
 Sat Jul 16 16:49:04 UTC 2022
 controlplane $ 
@@ -284,9 +310,9 @@ controlplane $
 controlplane $ kubectl get pvc
 NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 pvc    Bound    pvc-40c0b077-37e5-4193-bf44-992074b9d4c6   2Gi        RWO            nfs            3m44s
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+* Pod с нашим приложением nginx запустился с файлом `pvc.yaml`. Статус - Running
+```
 controlplane $ date
 Sat Jul 16 16:53:09 UTC 2022
 controlplane $ 
@@ -298,11 +324,9 @@ controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          26m
 pod                                   1/1     Running   0          16s
-controlplane $ 
-controlplane $ 
-controlplane $ kubectl logs po pod
-Error from server (NotFound): pods "po" not found
-controlplane $ 
+```
+* Логи пода
+```
 controlplane $ kubectl logs pod
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
@@ -319,7 +343,9 @@ controlplane $ kubectl logs pod
 2022/07/16 16:53:43 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
 2022/07/16 16:53:43 [notice] 1#1: start worker processes
 2022/07/16 16:53:43 [notice] 1#1: start worker process 30
-controlplane $ 
+```
+* Логи provisioner
+```
 controlplane $ date
 Sat Jul 16 16:58:00 UTC 2022
 controlplane $ 
@@ -331,10 +357,12 @@ I0716 16:27:18.963693       1 server.go:149] starting RLIMIT_NOFILE rlimit.Cur 1
 I0716 16:27:18.963772       1 server.go:160] ending RLIMIT_NOFILE rlimit.Cur 1048576, rlimit.Max 1048576
 I0716 16:27:18.964061       1 server.go:134] Running NFS server!
 I0716 16:47:09.312605       1 provision.go:450] using service SERVICE_NAME=nfs-server-nfs-server-provisioner cluster IP 10.96.246.57 as NFS server IP
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ cat pod.yaml 
+```
+* Манифест нашего пода `pod.yaml`
+```
 ---
 apiVersion: v1
 kind: Pod
@@ -352,11 +380,9 @@ spec:
       persistentVolumeClaim:
         claimName: pvc
         
-controlplane $ 
-controlplane $ 
 ```
 
-* Лог Tab 2
+### Лог Tab 2. Установка nfs-common на WorkerNode
 
 ```
 controlplane $ ssh node01
@@ -425,7 +451,8 @@ node01 $
 node01 $ 
 node01 $ 
 ```
-* Лог Terminal 0
+
+### Лог Terminal 0
 ```
 controlplane $ kubectl get sc
 NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
@@ -459,9 +486,9 @@ items:
 kind: List
 metadata:
   resourceVersion: ""
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```yml
 controlplane $ kubectl describe sc nfs 
 Name:                  nfs
 IsDefaultClass:        No
@@ -520,10 +547,9 @@ items:
 kind: List
 metadata:
   resourceVersion: ""
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl describe pvc
 Name:          pvc
 Namespace:     default
@@ -546,19 +572,21 @@ Events:
   Normal  ExternalProvisioning   30m   persistentvolume-controller                                                                                               waiting for a volume to be created, either by external provisioner "cluster.local/nfs-server-nfs-server-provisioner" or manually created by system administrator
   Normal  Provisioning           30m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_90a580d2-f958-4efa-a4f8-fae144863a9a  External provisioner is provisioning volume for claim "default/pvc"
   Normal  ProvisioningSucceeded  30m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_90a580d2-f958-4efa-a4f8-fae144863a9a  Successfully provisioned volume pvc-40c0b077-37e5-4193-bf44-992074b9d4c6
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl get po pod
 NAME   READY   STATUS    RESTARTS   AGE
 pod    1/1     Running   0          24m
-controlplane $ 
+```
+
+```
 controlplane $ kubectl get po pod -o wide
 NAME   READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES
 pod    1/1     Running   0          24m   192.168.1.5   node01   <none>           <none>
-controlplane $ 
-controlplane $ 
+```
+
+```yml
 controlplane $ kubectl get po pod -o yaml
 apiVersion: v1
 kind: Pod
@@ -667,10 +695,9 @@ status:
   - ip: 192.168.1.5
   qosClass: BestEffort
   startTime: "2022-07-16T16:53:39Z"
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl describe po pod                                 
 Name:         pod
 Namespace:    default
@@ -729,17 +756,19 @@ Events:
   Normal  Pulled     24m   kubelet            Successfully pulled image "nginx" in 3.587555698s
   Normal  Created    24m   kubelet            Created container nginx
   Normal  Started    24m   kubelet            Started container nginx
-controlplane $ 
-controlplane $ 
-controlplane $ kubectl get po nfs -o wide
-Error from server (NotFound): pods "nfs" not found
-controlplane $ 
+```
+
+```
 controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 -o wide
 NAME                                  READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          51m   192.168.1.4   node01   <none>           <none>
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl get po nfs-server-nfs-server-provisioner-0 -o yaml
+```
+
+```yml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -918,10 +947,9 @@ status:
   - ip: 192.168.1.4
   qosClass: BestEffort
   startTime: "2022-07-16T16:27:12Z"
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl describe po nfs-server-nfs-server-provisioner-0 
 Name:         nfs-server-nfs-server-provisioner-0
 Namespace:    default
