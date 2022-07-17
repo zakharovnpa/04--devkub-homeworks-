@@ -12,9 +12,16 @@ No resources found
 ```
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
-* Лог
+* Лог 
 ```
-
+controlplane $ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 11156  100 11156    0     0  44983      0 --:--:-- --:--:-- --:--:-- 45165
+Downloading https://get.helm.sh/helm-v3.9.1-linux-amd64.tar.gz
+Verifying checksum... Done.
+Preparing to install helm into /usr/local/bin
+helm installed into /usr/local/bin/helm
 ```
 * Тест запуска NFS
 ```
