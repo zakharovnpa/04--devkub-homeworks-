@@ -15,3 +15,5 @@
 - [Успешная ЛР по запуску сервера NFS и днамического создания PV](/13-kubernetes-config-02-mounts/Labs/labs-sc-pvc-pod.md)
 
 - [Определение момента запуска сервера NFS при его нсталляции](/13-kubernetes-config-02-mounts/Labs/labs-start-nfs.md)
+
+- [Создание запроса PVC. Добавление к манифесту пода специфкации на подключене к PV](/13-kubernetes-config-02-mounts/Labs/labs-pvc-pv.md)
