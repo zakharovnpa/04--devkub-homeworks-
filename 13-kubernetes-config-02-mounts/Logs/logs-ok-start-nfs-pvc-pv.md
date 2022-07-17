@@ -1,5 +1,7 @@
 ## Логи ЛР по запуску сервера NFS и днамического создания PV
 
+* Работа проводилась на сайте `https://killercoda.com/playgrounds/scenario/kubernetes`
+
 ### Лог Tab 1
 
 #### 1. До установки NFS проверка наличия StorageClass, Services, Pod
