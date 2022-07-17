@@ -43,12 +43,21 @@ No resources found
 ```
 #### 2. Установка NFS и автоматическое создание StorageClass
 
+```
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+helm repo add stable https://charts.helm.sh/stable && helm repo update
+
+helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
+
+```
+
 * Установка helm 
 ```
 controlplane $ date
 Sat Jul 16 16:26:56 UTC 2022
 controlplane $ 
-controlplane $ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && /
+controlplane $ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100 11156  100 11156    0     0  63386      0 --:--:-- --:--:-- --:--:-- 63386
@@ -60,7 +69,7 @@ bash: /: Is a directory
 ```
 * Добавление репозитория чартов 
 ```
-controlplane $ helm repo add stable https://charts.helm.sh/stable && helm repo update && /
+controlplane $ helm repo add stable https://charts.helm.sh/stable && helm repo update
 "stable" has been added to your repositories
 Hang tight while we grab the latest from your chart repositories...
 ...Successfully got an update from the "stable" chart repository
