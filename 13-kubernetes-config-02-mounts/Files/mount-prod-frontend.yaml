@@ -1,6 +1,6 @@
 # For change!!! Config Frontend StatefulSet & Services 
 # with mount NFS
-# Please, adding mount information!!!
+# Str 32-34, 36-39 - , adding mount information!!!
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -29,7 +29,14 @@ spec:
           name: frontend
           ports:
           - containerPort: 80
+          volumeMounts:                     # mount information
+            - mountPath: "/static"          # mount information
+              name: my-volume               # mount information
       terminationGracePeriodSeconds: 30
+      volumes:                              # mount information
+        - name: my-volume                   # mount information
+          persistentVolumeClaim:            # mount information
+            claimName: pvc                  # mount information
 ---
 apiVersion: v1
 kind: Service
