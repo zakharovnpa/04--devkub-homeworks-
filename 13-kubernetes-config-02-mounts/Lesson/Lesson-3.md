@@ -11,7 +11,7 @@
 
 * Измененные манифесты
 
-  * Frontend и Backend [stage-front-back.yaml](/13-kubernetes-config-02-mounts/mount-stage-front-back.yaml)
+  * Frontend и Backend [mount-stage-front-back.yaml](/13-kubernetes-config-02-mounts/Files/mount-stage-front-back.yaml)
 
 
 
@@ -24,6 +24,6 @@
 
 * Измененные манифесты
 
-  * Frontend [prod-frontend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-frontend.yaml)
-  * Backend [prod-backend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-backend.yaml)
+  * Frontend [mount-prod-frontend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-frontend.yaml)
+  * Backend [mount-prod-backend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-backend.yaml)
 
