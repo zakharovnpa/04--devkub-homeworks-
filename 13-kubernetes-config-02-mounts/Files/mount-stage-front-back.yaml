@@ -1,6 +1,6 @@
 # For change!!! Config Deployment Frontend & Backend 
 # with dynamical mount NFS
-# Please, add mount information!!!
+# Str 28-30, 34-36, 37-40 - adding mount information!!!
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,19 +25,19 @@ spec:
           name: frontend
           ports:
           - containerPort: 80
-          volumeMounts:
-            - mountPath: "/static"
-              name: my-volume
+          volumeMounts:                   # mount information
+            - mountPath: "/static"        # mount information
+              name: my-volume             # mount information
         - image: zakharovnpa/k8s-backend:05.07.22
           imagePullPolicy: IfNotPresent
           name: backend
-          volumeMounts:
-            - mountPath: "/static"
-              name: my-volume
-      volumes:
-       - name: my-volume
-         persistentVolumeClaim:
-           claimName: pvc
+          volumeMounts:                  # mount information
+            - mountPath: "/static"       # mount information
+              name: my-volume            # mount information
+      volumes:                           # mount information
+       - name: my-volume                 # mount information
+         persistentVolumeClaim:          # mount information
+           claimName: pvc                # mount information
       terminationGracePeriodSeconds: 30
 
 ---
