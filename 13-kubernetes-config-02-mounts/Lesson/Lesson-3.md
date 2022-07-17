@@ -101,14 +101,20 @@ spec:
       storage: 2Gi
 ```
 
-### 6. Создаем поды
+### 6. Создаем поды для Stage
 
 * Для Stage измененные манифесты
+  * Добавлена информация о подключении тома
+  * Директория для доступа к NFS - "определить" 
 
   * Frontend и Backend [mount-stage-front-back.yaml](/13-kubernetes-config-02-mounts/Files/mount-stage-front-back.yaml)
 ```
 kubectl apply -f mount-stage-front-back.yaml
 ```
+#### 6.1 Проверяем доступность тома и возможность создания файлов в NFS
+
+
+### 7. Создаем поды для Prod
 
 * Для Prod измененные манифесты
 
