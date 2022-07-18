@@ -184,6 +184,63 @@ spec:
 ```
 kubectl apply -f mount-prod-frontend.yaml
 ```
+```yml
+# For change!!! Config Frontend StatefulSet & Services 
+# with mount NFS
+# Str 32-34, 36-39 - , adding mount information!!!
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: f-app
+  name: f-pod
+  namespace: prod
+spec:
+  replicas: 1
+  serviceName: b-pod
+  selector:
+    matchLabels:
+      app: f-app
+  template:
+    metadata:
+      labels:
+        app: f-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:12.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: BASE_URL
+            value: "http://b-pod:9000"
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: prod      
+  name: f-svc
+spec:
+  type: NodePort
+  selector:
+    app: f-app
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+# The END
+
+```
 ```
 kubectl apply -f mount-prod-backend.yaml
 ```
