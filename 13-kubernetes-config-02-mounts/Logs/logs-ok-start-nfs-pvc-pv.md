@@ -58,9 +58,9 @@ helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common 
 ```
 apt install nfs-common -y
 ```
+#### 3. Развертывание приложений, создане запроса на подключение тома
 
-
-* pvc.yaml
+* запроса на подключение тома `pvc.yaml`
 ```yml
 ---
 apiVersion: v1
