@@ -70,10 +70,27 @@ spec:
       storage: 2Gi
      
 ```
-* pod.yaml
-```yml
 
-```f
+* Манифест нашего пода `pod.yaml`
+```
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+        
+```
 
 * Установка helm 
 ```
