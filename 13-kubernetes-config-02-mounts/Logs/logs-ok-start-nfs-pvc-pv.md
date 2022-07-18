@@ -44,7 +44,7 @@ controlplane $ kubectl get pv
 No resources found
 ```
 #### 2. Установка NFS и автоматическое создание StorageClass
-
+##### 2.1 На ControlNode выполнить
 ```
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
@@ -53,6 +53,13 @@ helm repo add stable https://charts.helm.sh/stable && helm repo update
 helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
 
 ```
+
+##### 2.2 На WorkerNode выполнить
+```
+apt install nfs-common -y
+```
+
+
 * pvc.yaml
 ```yml
 controlplane $ cat pvc.yaml 
