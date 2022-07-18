@@ -62,7 +62,6 @@ apt install nfs-common -y
 
 * pvc.yaml
 ```yml
-controlplane $ cat pvc.yaml 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -78,7 +77,7 @@ spec:
      
 ```
 
-* Манифест нашего пода `pod.yaml`
+* Манифест пода с приложением nginx `pod.yaml`
 ```yml
 ---
 apiVersion: v1
@@ -124,7 +123,7 @@ Update Complete. ⎈Happy Helming!⎈
 ```
 * Установка nfs-server через helm 
 ```
-controlplane $ helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
+controlplane $ helm install nfs-server stable/nfs-server-provisioner
 WARNING: This chart is deprecated
 NAME: nfs-server
 LAST DEPLOYED: Sat Jul 16 16:27:11 2022
@@ -153,6 +152,10 @@ correct storageClassName attribute. For example:
       resources:
         requests:
           storage: 100Mi
+```
+* Установка утлиты nfs-common
+```
+controlplane $ apt install nfs-common -y
 Reading package lists... Done
 Building dependency tree       
 Reading state information... Done
