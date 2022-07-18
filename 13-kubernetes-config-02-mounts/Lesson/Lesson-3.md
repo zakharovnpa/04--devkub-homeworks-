@@ -30,17 +30,21 @@
 ### 2. Установка в кластер Kubernetes Halm, NFS
 #### 2.1 Control Node
 ```
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash &&
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 ```
 ```
 helm repo add stable https://charts.helm.sh/stable && helm repo update
 ```
 ```
-helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
+helm install nfs-server stable/nfs-server-provisioner
 ```
+```
+apt install nfs-common -y
+```
+
 #### 2.1 Worker Node
 ```
-apt install nfs-common
+apt install nfs-common -y
 ```
 
 ### 3. Создание namespace `stage`, `prod`
