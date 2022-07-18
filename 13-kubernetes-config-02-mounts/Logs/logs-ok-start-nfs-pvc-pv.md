@@ -68,7 +68,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc
 spec:
-  storageClassName: nfs  # было исправлено на имя StorageClass
+  storageClassName: nfs
   accessModes:
     - ReadWriteOnce
   resources:
