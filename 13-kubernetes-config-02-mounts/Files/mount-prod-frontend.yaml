@@ -29,14 +29,14 @@ spec:
           name: frontend
           ports:
           - containerPort: 80
-          volumeMounts:                     # mount information
-            - mountPath: "/static"          # mount information
-              name: my-volume               # mount information
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
       terminationGracePeriodSeconds: 30
-      volumes:                              # mount information
-        - name: my-volume                   # mount information
-          persistentVolumeClaim:            # mount information
-            claimName: pvc                  # mount information
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: pvc
 ---
 apiVersion: v1
 kind: Service
