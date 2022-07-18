@@ -25,19 +25,19 @@ spec:
           name: frontend
           ports:
           - containerPort: 80
-          volumeMounts:                   # mount information
-            - mountPath: "/static"        # mount information
-              name: my-volume             # mount information
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
         - image: zakharovnpa/k8s-backend:05.07.22
           imagePullPolicy: IfNotPresent
           name: backend
-          volumeMounts:                  # mount information
-            - mountPath: "/static"       # mount information
-              name: my-volume            # mount information
-      volumes:                           # mount information
-       - name: my-volume                 # mount information
-         persistentVolumeClaim:          # mount information
-           claimName: pvc                # mount information
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      volumes:
+       - name: my-volume
+         persistentVolumeClaim:
+           claimName: pvc
       terminationGracePeriodSeconds: 30
 
 ---
