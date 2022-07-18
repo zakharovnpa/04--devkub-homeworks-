@@ -72,7 +72,7 @@ spec:
 ```
 
 * Манифест нашего пода `pod.yaml`
-```
+```yml
 ---
 apiVersion: v1
 kind: Pod
