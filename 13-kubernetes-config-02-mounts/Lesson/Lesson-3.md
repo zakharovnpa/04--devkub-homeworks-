@@ -239,6 +239,7 @@ spec:
 
 #### 6.1 Проверяем доступность тома и возможность создания файлов в NFS
 
+- Логи можно увидеть здесь [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
 
 ### 7. Создаем поды для Prod
 
