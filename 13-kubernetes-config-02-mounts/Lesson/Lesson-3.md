@@ -83,7 +83,7 @@ controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          3m13s
 ```
-### 5. NFS установлен. Создаем запрос (PVC) на том
+### 5. NFS установлен. Создаем запрос (PVC) на том и создаем тестовый Pod с Nginx
 
 * pvc.yaml
 ```yml
@@ -99,6 +99,25 @@ spec:
   resources:
     requests:
       storage: 2Gi
+```
+* pod.yaml
+```yml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
 ```
 
 ### 6. Создаем поды для Stage
