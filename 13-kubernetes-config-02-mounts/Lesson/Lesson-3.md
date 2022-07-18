@@ -93,9 +93,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc
 spec:
-  storageClassName: nfs  # этот storageclass создан автоматически при установке nfs
+  storageClassName: nfs
   accessModes:
-    - ReadWriteMany   # режим доступа
+    - ReadWriteMany
   resources:
     requests:
       storage: 2Gi
