@@ -183,9 +183,6 @@ kubectl apply -f mount-prod-frontend.yaml
 ```
 * `mount-prod-frontend.yaml`
 ```yml
-# For change!!! Config Frontend StatefulSet & Services 
-# with mount NFS
-# Str 32-34, 36-39 - , adding mount information!!!
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -244,7 +241,6 @@ spec:
 kubectl apply -f mount-prod-backend.yaml
 ```
 * `mount-prod-backend.yaml`
-
 ```yml
 ---
 apiVersion: apps/v1
