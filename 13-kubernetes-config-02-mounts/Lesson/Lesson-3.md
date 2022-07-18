@@ -176,14 +176,12 @@ spec:
 
 ### 7. Создаем поды для Prod
 
-* Для Prod измененные манифесты
-
-  * Frontend [mount-prod-frontend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-frontend.yaml)
-  * Backend [mount-prod-backend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-backend.yaml)
+#### 7.1 Frontend [mount-prod-frontend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-frontend.yaml)
 
 ```
 kubectl apply -f mount-prod-frontend.yaml
 ```
+* `mount-prod-frontend.yaml`
 ```yml
 # For change!!! Config Frontend StatefulSet & Services 
 # with mount NFS
@@ -241,6 +239,90 @@ spec:
 # The END
 
 ```
+#### 7.2 Backend [mount-prod-backend.yaml](/13-kubernetes-config-02-mounts/Files/mount-prod-backend.yaml)
 ```
 kubectl apply -f mount-prod-backend.yaml
+```
+* `mount-prod-backend.yaml`
+
+```yml
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: b-app
+  name: b-pod
+  namespace: prod
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: b-app
+  template:
+    metadata:
+      labels:
+        app: b-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-backend:12.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: DATABASE_URL
+            value: "postgres://postgres:postgres@db:5432/news"
+          name: backend
+          ports:
+          - containerPort: 9000
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: pvc
+
+# Config Service ClasterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: prod
+spec:
+  ports:
+    - name: db      
+      port: 5432
+      targetPort: 5432
+
+# Config Service ClasterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: b-pod
+  namespace: prod
+spec:
+  selector:
+    app: b-app   
+  ports:
+    - name: b-pod
+      port: 9000
+      targetPort: 9000
+
+# Config Service EndPoint    
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: db  
+  namespace: prod
+subsets:
+  - addresses:
+      - ip: 10.128.0.23
+    ports:
+      - port: 5432
+        name: db
+
 ```
