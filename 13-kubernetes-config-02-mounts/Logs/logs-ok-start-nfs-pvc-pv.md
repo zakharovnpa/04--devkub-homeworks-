@@ -53,6 +53,27 @@ helm repo add stable https://charts.helm.sh/stable && helm repo update
 helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
 
 ```
+* pvc.yaml
+```yml
+controlplane $ cat pvc.yaml 
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  storageClassName: nfs  # было исправлено на имя StorageClass
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+     
+```
+* pod.yaml
+```yml
+
+```f
 
 * Установка helm 
 ```
