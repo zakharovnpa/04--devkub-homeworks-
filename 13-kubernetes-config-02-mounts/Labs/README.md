@@ -17,3 +17,5 @@
 - [Определение момента запуска сервера NFS при его нсталляции](/13-kubernetes-config-02-mounts/Labs/labs-start-nfs.md)
 
 - [Неуспешное добавление к манифесту пода специфкации на подключене к PV. Создание запроса PVC](/13-kubernetes-config-02-mounts/Labs/labs-pvc-pv.md)
+
+- [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
