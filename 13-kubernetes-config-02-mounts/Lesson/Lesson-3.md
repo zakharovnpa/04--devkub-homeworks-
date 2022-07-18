@@ -123,49 +123,7 @@ spec:
       persistentVolumeClaim:
         claimName: pvc
 ```
-#### 5.1 Создаем в контейнере nginx в директории монтирования /static файл 42.txt
-```
-controlplane $ kubectl exec pod -c nginx -it bash
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-root@pod:/# 
-root@pod:/# 
-root@pod:/# ls -lha | grep static
-drwxrwsrwx   2 root root 4.0K Jul 18 12:59 static
-root@pod:/# 
-root@pod:/# cd static/
-root@pod:/static# 
-root@pod:/static# ls -lha
-total 8.0K
-drwxrwsrwx 2 root root 4.0K Jul 18 12:59 .
-drwxr-xr-x 1 root root 4.0K Jul 18 13:00 ..
-root@pod:/static# 
-root@pod:/static# echo '42' > 42.txt
-root@pod:/static# 
-root@pod:/static# cat 42.txt 
-42
-root@pod:/static# 
-```
-#### 5.2 Ищем файл 42.txt на ноде, на которой запущен под и контейнер с NFS сервером
-```
-controlnode$ ssh node01
-node01 $
-node01 $ find / -name 42.txt
-/var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/42.txt
-```
-```
-node01 $ ls -lha /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/      
-total 16K
-drwxrwsrwx 2 root root 4.0K Jul 18 13:16 .
-drwxr-x--- 3 root root 4.0K Jul 18 13:00 ..
--rw-r--r-- 1 root root    3 Jul 18 13:03 42.txt
--rw-r--r-- 1 root root    3 Jul 18 13:16 43.txt
-node01 $ cat /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/42.txt
-42
-node01 $ 
-node01 $ cat /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/43.txt
-43
-node01 $ 
-```
+
 
 ### 6. Создаем поды для Stage
 
@@ -239,7 +197,57 @@ spec:
 
 #### 6.1 Проверяем доступность тома и возможность создания файлов в NFS
 
-- Логи можно увидеть здесь [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
+#### 6.1.1 Создаем в контейнере nginx в директории монтирования /static файл 42.txt
+```
+controlplane $ kubectl exec pod -c nginx -it bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@pod:/# 
+root@pod:/# 
+root@pod:/# ls -lha | grep static
+drwxrwsrwx   2 root root 4.0K Jul 18 12:59 static
+root@pod:/# 
+root@pod:/# cd static/
+root@pod:/static# 
+root@pod:/static# ls -lha
+total 8.0K
+drwxrwsrwx 2 root root 4.0K Jul 18 12:59 .
+drwxr-xr-x 1 root root 4.0K Jul 18 13:00 ..
+root@pod:/static# 
+root@pod:/static# echo '42' > 42.txt
+root@pod:/static# 
+root@pod:/static# cat 42.txt 
+42
+root@pod:/static# 
+```
+#### 6.1.2 Ищем файл 42.txt на ноде, на которой запущен под и контейнер с NFS сервером
+```
+controlnode$ ssh node01
+node01 $
+node01 $ find / -name 42.txt
+/var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/42.txt
+```
+```
+node01 $ ls -lha /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/      
+total 16K
+drwxrwsrwx 2 root root 4.0K Jul 18 13:16 .
+drwxr-x--- 3 root root 4.0K Jul 18 13:00 ..
+-rw-r--r-- 1 root root    3 Jul 18 13:03 42.txt
+-rw-r--r-- 1 root root    3 Jul 18 13:16 43.txt
+node01 $ cat /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/42.txt
+42
+node01 $ 
+node01 $ cat /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/43.txt
+43
+node01 $ 
+```
+
+
+#### 6.2 Результат:
+  - общая директория монтируется через запрос PVC только к тому PV? 
+  - подключение с одного контейнера к двум разным PVC, находящимся в разных Namespace - невозможно
+  - Подключение к одному PVC из контейнеров из разных Namespace - невозможно
+
+#### 6.3 Логи можно увидеть здесь [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
 
 ### 7. Создаем поды для Prod
 
