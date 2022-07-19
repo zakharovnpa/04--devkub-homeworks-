@@ -247,7 +247,9 @@ node01 $
   - подключение с одного контейнера к двум разным PVC, находящимся в разных Namespace - невозможно
   - Подключение к одному PVC из контейнеров из разных Namespace - невозможно
 
-#### 6.3 Логи можно увидеть здесь [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
+#### 6.3 Логи можно увидеть здесь 
+- [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
+- [Подключение к NFS подов в default и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-default-stage-pvc.md)
 
 ### 7. Создаем поды для Prod
 
