@@ -516,8 +516,11 @@ node01 $
 controlplane $ kubectl get sc
 NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   48m
-controlplane $ 
+```
+```
 controlplane $ kubectl get sc -o yaml
+```
+```yml
 apiVersion: v1
 items:
 - allowVolumeExpansion: true
@@ -547,7 +550,7 @@ metadata:
   resourceVersion: ""
 ```
 
-```yml
+```
 controlplane $ kubectl describe sc nfs 
 Name:                  nfs
 IsDefaultClass:        No
