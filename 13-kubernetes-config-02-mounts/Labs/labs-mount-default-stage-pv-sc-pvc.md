@@ -699,3 +699,942 @@ spec:
       storage: 2Gi
 
 ```
+
+#### Логи
+
+```
+controlplane $ 
+controlplane $ 
+controlplane $ date
+Wed Jul 20 16:29:03 UTC 2022
+controlplane $ 
+controlplane $ mkdir -p My-project
+controlplane $ 
+controlplane $ cd My-project/
+controlplane $ 
+controlplane $ vi pv.yaml
+controlplane $ 
+controlplane $ vi default-pvc.yaml
+controlplane $ 
+controlplane $ vi default-pod.yaml
+controlplane $ 
+controlplane $ vi stage-pvc.yaml
+controlplane $ 
+controlplane $ vi stage-pod.yaml
+controlplane $ 
+controlplane $ kubectl create namespace stage 
+namespace/stage created
+controlplane $ 
+controlplane $ kubectl get ns
+NAME              STATUS   AGE
+default           Active   72d
+kube-node-lease   Active   72d
+kube-public       Active   72d
+kube-system       Active   72d
+stage             Active   6s
+controlplane $ 
+controlplane $ date
+Wed Jul 20 16:32:45 UTC 2022
+controlplane $ 
+controlplane $ ls -lha
+total 28K
+drwxr-xr-x 2 root root 4.0K Jul 20 16:32 .
+drwx------ 8 root root 4.0K Jul 20 16:32 ..
+-rw-r--r-- 1 root root  266 Jul 20 16:31 default-pod.yaml
+-rw-r--r-- 1 root root  179 Jul 20 16:31 default-pvc.yaml
+-rw-r--r-- 1 root root  186 Jul 20 16:30 pv.yaml
+-rw-r--r-- 1 root root  285 Jul 20 16:32 stage-pod.yaml
+-rw-r--r-- 1 root root  193 Jul 20 16:31 stage-pvc.yaml
+controlplane $ 
+controlplane $ cat pv
+cat: pv: No such file or directory
+controlplane $ 
+controlplane $ cat pv.yaml 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ cat default-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat default-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+controlplane $ 
+controlplane $ 
+controlplane $ cat stage-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+namespace: stage
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat stage-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+  namespace: stage
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+controlplane $ 
+controlplane $ 
+controlplane $ date
+Wed Jul 20 16:34:06 UTC 2022
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get sc
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   6m53s
+controlplane $ 
+controlplane $ kubectl get pvc
+No resources found in default namespace.
+controlplane $ 
+controlplane $ kubectl get pv 
+No resources found
+controlplane $ 
+controlplane $ kubectl get po
+NAME                                  READY   STATUS    RESTARTS   AGE
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          7m10s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl apply -f .
+pod/pod created
+persistentvolumeclaim/pvc created
+persistentvolume/pv created
+pod/pod created
+error: error validating "stage-pvc.yaml": error validating data: ValidationError(PersistentVolumeClaim): unknown field "namespace" in io.k8s.api.core.v1.PersistentVolumeClaim; if you choose to ignore these errors, turn validation off with --validate=false
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po
+NAME                                  READY   STATUS    RESTARTS   AGE
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          8m56s
+pod                                   1/1     Running   0          64s
+controlplane $ 
+controlplane $ kubectl get pv
+NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+pv     2Gi        RWX            Retain           Bound    default/pvc   nfs                     71s
+controlplane $ 
+controlplane $ kubectl get pvc
+NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pv       2Gi        RWX            nfs            77s
+controlplane $ 
+controlplane $ kubectl get sc
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   9m20s
+controlplane $ 
+controlplane $ kubectl logs pod pod
+error: container pod is not valid for pod pod
+controlplane $ 
+controlplane $ kubectl logs pod    
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2022/07/20 16:35:24 [notice] 1#1: using the "epoll" event method
+2022/07/20 16:35:24 [notice] 1#1: nginx/1.23.1
+2022/07/20 16:35:24 [notice] 1#1: built by gcc 10.2.1 20210110 (Debian 10.2.1-6) 
+2022/07/20 16:35:24 [notice] 1#1: OS: Linux 5.4.0-88-generic
+2022/07/20 16:35:24 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+2022/07/20 16:35:24 [notice] 1#1: start worker processes
+2022/07/20 16:35:24 [notice] 1#1: start worker process 30
+controlplane $ 
+controlplane $ kubectl exec pod -c nginx -it bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@pod:/# 
+root@pod:/# ls -lha | grep static
+drwxr-xr-x   2 root root 4.0K Jul 20 16:35 static
+root@pod:/# 
+root@pod:/# cd static/
+root@pod:/static# 
+root@pod:/static# echo '42' > 42.txt
+root@pod:/static# 
+root@pod:/static# ls -lha
+total 12K
+drwxr-xr-x 2 root root 4.0K Jul 20 16:38 .
+drwxr-xr-x 1 root root 4.0K Jul 20 16:35 ..
+-rw-r--r-- 1 root root    3 Jul 20 16:38 42.txt
+root@pod:/static# 
+root@pod:/static# 
+root@pod:/static# exit
+exit
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME   READY   STATUS    RESTARTS   AGE
+pod    0/1     Pending   0          5m
+controlplane $ 
+controlplane $ kubectl -n stage get sc
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   13m
+controlplane $ 
+controlplane $ kubectl -n stage get pv
+NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+pv     2Gi        RWX            Retain           Bound    default/pvc   nfs                     5m15s
+controlplane $ 
+controlplane $ kubectl -n stage get pvc
+No resources found in stage namespace.
+controlplane $ 
+controlplane $ 
+controlplane $ vi stage-pvc.yaml 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl apply -f stage-pvc.yaml 
+persistentvolumeclaim/pvc created
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get pvc
+NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9   2Gi        RWX            nfs            7s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME   READY   STATUS              RESTARTS   AGE
+pod    0/1     ContainerCreating   0          6m36s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME   READY   STATUS    RESTARTS   AGE
+pod    1/1     Running   0          6m40s
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage exec pod -c nginx -it bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@pod:/# 
+root@pod:/# ls -lha
+total 92K
+drwxr-xr-x   1 root root 4.0K Jul 20 16:41 .
+drwxr-xr-x   1 root root 4.0K Jul 20 16:41 ..
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 bin
+drwxr-xr-x   2 root root 4.0K Jun 30 21:35 boot
+drwxr-xr-x   5 root root  360 Jul 20 16:41 dev
+drwxr-xr-x   1 root root 4.0K Jul 19 19:20 docker-entrypoint.d
+-rwxrwxr-x   1 root root 1.2K Jul 19 19:19 docker-entrypoint.sh
+drwxr-xr-x   1 root root 4.0K Jul 20 16:41 etc
+drwxr-xr-x   2 root root 4.0K Jun 30 21:35 home
+drwxr-xr-x   1 root root 4.0K Jul 11 00:00 lib
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 lib64
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 media
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 mnt
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 opt
+dr-xr-xr-x 244 root root    0 Jul 20 16:41 proc
+drwx------   2 root root 4.0K Jul 11 00:00 root
+drwxr-xr-x   1 root root 4.0K Jul 20 16:41 run
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 sbin
+drwxr-xr-x   2 root root 4.0K Jul 11 00:00 srv
+drwxrwsrwx   2 root root 4.0K Jul 20 16:41 static
+dr-xr-xr-x  13 root root    0 Jul 20 16:41 sys
+drwxrwxrwt   1 root root 4.0K Jul 19 19:20 tmp
+drwxr-xr-x   1 root root 4.0K Jul 11 00:00 usr
+drwxr-xr-x   1 root root 4.0K Jul 11 00:00 var
+root@pod:/# 
+root@pod:/# ls static/
+root@pod:/# 
+root@pod:/# cd static/
+root@pod:/static# 
+root@pod:/static# ls
+root@pod:/static# 
+root@pod:/static# ls -lha
+total 8.0K
+drwxrwsrwx 2 root root 4.0K Jul 20 16:41 .
+drwxr-xr-x 1 root root 4.0K Jul 20 16:41 ..
+root@pod:/static# 
+root@pod:/static# echo '43' > 43.txt
+root@pod:/static# 
+root@pod:/static# exit
+exit
+controlplane $ 
+controlplane $ kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+pv                                         2Gi        RWX            Retain           Bound    default/pvc   nfs                     8m48s
+pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9   2Gi        RWX            Delete           Bound    stage/pvc     nfs                     2m26s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+pv                                         2Gi        RWX            Retain           Bound    default/pvc   nfs                     9m13s
+pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9   2Gi        RWX            Delete           Bound    stage/pvc     nfs                     2m51s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage describe pv pv
+Name:            pv
+Labels:          <none>
+Annotations:     pv.kubernetes.io/bound-by-controller: yes
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    nfs
+Status:          Bound
+Claim:           default/pvc
+Reclaim Policy:  Retain
+Access Modes:    RWX
+VolumeMode:      Filesystem
+Capacity:        2Gi
+Node Affinity:   <none>
+Message:         
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /data/pv
+    HostPathType:  
+Events:            <none>
+controlplane $ 
+controlplane $ kubectl -n stage describe pv pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9 
+Name:            pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9
+Labels:          <none>
+Annotations:     EXPORT_block:
+                   
+                   EXPORT
+                   {
+                     Export_Id = 1;
+                     Path = /export/pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9;
+                     Pseudo = /export/pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9;
+                     Access_Type = RW;
+                     Squash = no_root_squash;
+                     SecType = sys;
+                     Filesystem_id = 1.1;
+                     FSAL {
+                       Name = VFS;
+                     }
+                   }
+                 Export_Id: 1
+                 Project_Id: 0
+                 Project_block: 
+                 Provisioner_Id: d0061fa2-f69e-405f-ba71-d2bc6f3eec8a
+                 kubernetes.io/createdby: nfs-dynamic-provisioner
+                 pv.kubernetes.io/provisioned-by: cluster.local/nfs-server-nfs-server-provisioner
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    nfs
+Status:          Bound
+Claim:           stage/pvc
+Reclaim Policy:  Delete
+Access Modes:    RWX
+VolumeMode:      Filesystem
+Capacity:        2Gi
+Node Affinity:   <none>
+Message:         
+Source:
+    Type:      NFS (an NFS mount that lasts the lifetime of a pod)
+    Server:    10.105.88.189
+    Path:      /export/pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9
+    ReadOnly:  false
+Events:        <none>
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ cat default-pvc.yaml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat stage-pvc.yaml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get storageclasses.storage.k8s.io 
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   19m
+controlplane $ 
+controlplane $ kubectl -n stage get storageclasses.storage.k8s.io 
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   19m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe storageclasses.storage.k8s.io nfs
+Name:                  nfs
+IsDefaultClass:        No
+Annotations:           meta.helm.sh/release-name=nfs-server,meta.helm.sh/release-namespace=default
+Provisioner:           cluster.local/nfs-server-nfs-server-provisioner
+Parameters:            <none>
+AllowVolumeExpansion:  True
+MountOptions:
+  vers=3
+ReclaimPolicy:      Delete
+VolumeBindingMode:  Immediate
+Events:             <none>
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get storageclasses.storage.k8s.io -o yaml
+apiVersion: v1
+items:
+- allowVolumeExpansion: true
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: nfs-server
+      meta.helm.sh/release-namespace: default
+    creationTimestamp: "2022-07-20T16:27:25Z"
+    labels:
+      app: nfs-server-provisioner
+      app.kubernetes.io/managed-by: Helm
+      chart: nfs-server-provisioner-1.1.3
+      heritage: Helm
+      release: nfs-server
+    name: nfs
+    resourceVersion: "2980"
+    uid: b4628178-887d-46a0-b34b-65138fff2a67
+  mountOptions:
+  - vers=3
+  provisioner: cluster.local/nfs-server-nfs-server-provisioner
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+kind: List
+metadata:
+  resourceVersion: ""
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pvc
+NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pv       2Gi        RWX            nfs            17m
+controlplane $ 
+controlplane $ kubectl describe pvc
+Name:          pvc
+Namespace:     default
+StorageClass:  nfs
+Status:        Bound
+Volume:        pv
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+               volume.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      2Gi
+Access Modes:  RWX
+VolumeMode:    Filesystem
+Used By:       pod
+Events:
+  Type    Reason                 Age   From                                                                                                                      Message
+  ----    ------                 ----  ----                                                                                                                      -------
+  Normal  ExternalProvisioning   17m   persistentvolume-controller                                                                                               waiting for a volume to be created, either by external provisioner "cluster.local/nfs-server-nfs-server-provisioner" or manually created by system administrator
+  Normal  Provisioning           17m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_65e90db0-4105-444d-b3f6-7724803cea4f  External provisioner is provisioning volume for claim "default/pvc"
+  Normal  ProvisioningSucceeded  17m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_65e90db0-4105-444d-b3f6-7724803cea4f  Successfully provisioned volume pvc-e9621760-9af1-4889-9a2d-7191c56af672
+controlplane $ 
+controlplane $ 
+controlplane $ ping nfs-server
+ping: nfs-server: Name or service not known
+controlplane $ 
+controlplane $ ping nfs-common
+ping: nfs-common: Name or service not known
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pvc pvc
+NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pv       2Gi        RWX            nfs            26m
+controlplane $ 
+controlplane $ kubectl get -n stage pvc pvc
+NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9   2Gi        RWX            nfs            20m
+controlplane $ 
+controlplane $ kubectl describe -n stage pvc pvc
+Name:          pvc
+Namespace:     stage
+StorageClass:  nfs
+Status:        Bound
+Volume:        pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+               volume.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      2Gi
+Access Modes:  RWX
+VolumeMode:    Filesystem
+Used By:       pod
+Events:
+  Type    Reason                 Age   From                                                                                                                      Message
+  ----    ------                 ----  ----                                                                                                                      -------
+  Normal  ExternalProvisioning   20m   persistentvolume-controller                                                                                               waiting for a volume to be created, either by external provisioner "cluster.local/nfs-server-nfs-server-provisioner" or manually created by system administrator
+  Normal  Provisioning           20m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_65e90db0-4105-444d-b3f6-7724803cea4f  External provisioner is provisioning volume for claim "stage/pvc"
+  Normal  ProvisioningSucceeded  20m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_65e90db0-4105-444d-b3f6-7724803cea4f  Successfully provisioned volume pvc-befd0ddc-87cf-41c6-81b1-ee5711739aa9
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe pvc pvc
+Name:          pvc
+Namespace:     default
+StorageClass:  nfs
+Status:        Bound
+Volume:        pv
+Labels:        <none>
+Annotations:   pv.kubernetes.io/bind-completed: yes
+               pv.kubernetes.io/bound-by-controller: yes
+               volume.beta.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+               volume.kubernetes.io/storage-provisioner: cluster.local/nfs-server-nfs-server-provisioner
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      2Gi
+Access Modes:  RWX
+VolumeMode:    Filesystem
+Used By:       pod
+Events:
+  Type    Reason                 Age   From                                                                                                                      Message
+  ----    ------                 ----  ----                                                                                                                      -------
+  Normal  ExternalProvisioning   27m   persistentvolume-controller                                                                                               waiting for a volume to be created, either by external provisioner "cluster.local/nfs-server-nfs-server-provisioner" or manually created by system administrator
+  Normal  Provisioning           27m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_65e90db0-4105-444d-b3f6-7724803cea4f  External provisioner is provisioning volume for claim "default/pvc"
+  Normal  ProvisioningSucceeded  27m   cluster.local/nfs-server-nfs-server-provisioner_nfs-server-nfs-server-provisioner-0_65e90db0-4105-444d-b3f6-7724803cea4f  Successfully provisioned volume pvc-e9621760-9af1-4889-9a2d-7191c56af672
+controlplane $ 
+controlplane $ cat default-pvc.yaml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ cat stage-pvc.yaml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat pv.yaml        
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+controlplane $ 
+controlplane $ 
+controlplane $ cp pv.yaml stage-pv.yaml
+controlplane $ 
+controlplane $ vi stage-pv.yaml 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME   READY   STATUS    RESTARTS   AGE
+pod    1/1     Running   0          32m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n default get pod
+NAME                                  READY   STATUS    RESTARTS   AGE
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          40m
+pod                                   1/1     Running   0          32m
+controlplane $ 
+controlplane $ kubectl apply -f stage-pv.yaml  
+persistentvolume/pv unchanged
+controlplane $ 
+controlplane $ ls -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Jul 20 17:06 .
+drwx------ 8 root root 4.0K Jul 20 17:06 ..
+-rw-r--r-- 1 root root  266 Jul 20 16:31 default-pod.yaml
+-rw-r--r-- 1 root root  179 Jul 20 16:31 default-pvc.yaml
+-rw-r--r-- 1 root root  186 Jul 20 16:30 pv.yaml
+-rw-r--r-- 1 root root  285 Jul 20 16:32 stage-pod.yaml
+-rw-r--r-- 1 root root  205 Jul 20 17:06 stage-pv.yaml
+-rw-r--r-- 1 root root  198 Jul 20 16:41 stage-pvc.yaml
+controlplane $ 
+controlplane $ 
+controlplane $ cat pv.yaml 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ cat stage-pv.yaml 
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+controlplane $ 
+controlplane $ 
+controlplane $ mv pv.yaml default-pv.yaml
+controlplane $ 
+controlplane $ 
+controlplane $ ls -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Jul 20 17:09 .
+drwx------ 8 root root 4.0K Jul 20 17:06 ..
+-rw-r--r-- 1 root root  266 Jul 20 16:31 default-pod.yaml
+-rw-r--r-- 1 root root  186 Jul 20 16:30 default-pv.yaml
+-rw-r--r-- 1 root root  179 Jul 20 16:31 default-pvc.yaml
+-rw-r--r-- 1 root root  285 Jul 20 16:32 stage-pod.yaml
+-rw-r--r-- 1 root root  205 Jul 20 17:06 stage-pv.yaml
+-rw-r--r-- 1 root root  198 Jul 20 16:41 stage-pvc.yaml
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl delete -f .
+pod "pod" deleted
+persistentvolume "pv" deleted
+persistentvolumeclaim "pvc" deleted
+pod "pod" deleted
+persistentvolume "pv" deleted
+persistentvolumeclaim "pvc" deleted
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl apply -f .
+pod/pod created
+persistentvolume/pv created
+persistentvolumeclaim/pvc created
+pod/pod created
+persistentvolume/pv unchanged
+persistentvolumeclaim/pvc created
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po
+NAME                                  READY   STATUS    RESTARTS   AGE
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          44m
+pod                                   1/1     Running   0          14s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME   READY   STATUS    RESTARTS   AGE
+pod    1/1     Running   0          26s
+controlplane $ 
+controlplane $ kubectl -n stage get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM         STORAGECLASS   REASON   AGE
+pv                                         2Gi        RWX            Retain           Bound    default/pvc   nfs                     41s
+pvc-35cb3b31-036e-4f39-853e-ca617ea4f3bc   2Gi        RWX            Delete           Bound    stage/pvc     nfs                     41s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe -n stage pv pv
+Name:            pv
+Labels:          <none>
+Annotations:     pv.kubernetes.io/bound-by-controller: yes
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    nfs
+Status:          Bound
+Claim:           default/pvc
+Reclaim Policy:  Retain
+Access Modes:    RWX
+VolumeMode:      Filesystem
+Capacity:        2Gi
+Node Affinity:   <none>
+Message:         
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /data/pv
+    HostPathType:  
+Events:            <none>
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl describe -n default pv pv
+Name:            pv
+Labels:          <none>
+Annotations:     pv.kubernetes.io/bound-by-controller: yes
+Finalizers:      [kubernetes.io/pv-protection]
+StorageClass:    nfs
+Status:          Bound
+Claim:           default/pvc
+Reclaim Policy:  Retain
+Access Modes:    RWX
+VolumeMode:      Filesystem
+Capacity:        2Gi
+Node Affinity:   <none>
+Message:         
+Source:
+    Type:          HostPath (bare host directory volume)
+    Path:          /data/pv
+    HostPathType:  
+Events:            <none>
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl exec pod pod -it bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+error: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "fd77eecbc044dbd316dc3d13001ac4b3c527dd72541d28d97f15eab5d3715b09": OCI runtime exec failed: exec failed: unable to start container process: exec: "pod": executable file not found in $PATH: unknown
+controlplane $ 
+controlplane $ kubectl exec pod -it bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@pod:/# 
+root@pod:/# ls -lha | i grep static
+bash: i: command not found
+root@pod:/# 
+root@pod:/# ls -lha | grep static
+drwxr-xr-x   2 root root 4.0K Jul 20 16:38 static
+root@pod:/# 
+root@pod:/# cd static/
+root@pod:/static# 
+root@pod:/static# ls
+42.txt
+root@pod:/static# 
+root@pod:/static# 
+root@pod:/static# 
+root@pod:/static# ls -lha
+total 12K
+drwxr-xr-x 2 root root 4.0K Jul 20 16:38 .
+drwxr-xr-x 1 root root 4.0K Jul 20 17:11 ..
+-rw-r--r-- 1 root root    3 Jul 20 16:38 42.txt
+root@pod:/static# 
+root@pod:/static# 
+root@pod:/static# exit
+exit
+controlplane $ 
+controlplane $ ls -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Jul 20 17:09 .
+drwx------ 8 root root 4.0K Jul 20 17:06 ..
+-rw-r--r-- 1 root root  266 Jul 20 16:31 default-pod.yaml
+-rw-r--r-- 1 root root  186 Jul 20 16:30 default-pv.yaml
+-rw-r--r-- 1 root root  179 Jul 20 16:31 default-pvc.yaml
+-rw-r--r-- 1 root root  285 Jul 20 16:32 stage-pod.yaml
+-rw-r--r-- 1 root root  205 Jul 20 17:06 stage-pv.yaml
+-rw-r--r-- 1 root root  198 Jul 20 16:41 stage-pvc.yaml
+controlplane $ 
+controlplane $ 
+controlplane $ 
+```
+
+controlplane $ cat default-pod.yaml
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+```
+controlplane $ 
+controlplane $ cat default-pv.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+```
+controlplane $ 
+controlplane $ cat default-pvc.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+```
+```
+controlplane $ 
+controlplane $ ls -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Jul 20 17:09 .
+drwx------ 8 root root 4.0K Jul 20 17:06 ..
+-rw-r--r-- 1 root root  266 Jul 20 16:31 default-pod.yaml
+-rw-r--r-- 1 root root  186 Jul 20 16:30 default-pv.yaml
+-rw-r--r-- 1 root root  179 Jul 20 16:31 default-pvc.yaml
+-rw-r--r-- 1 root root  285 Jul 20 16:32 stage-pod.yaml
+-rw-r--r-- 1 root root  205 Jul 20 17:06 stage-pv.yaml
+-rw-r--r-- 1 root root  198 Jul 20 16:41 stage-pvc.yaml
+```
+controlplane $ 
+controlplane $ cat stage-pod.yaml
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+  namespace: stage
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+```
+controlplane $ 
+controlplane $ cat stage-pv.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+```
+controlplane $ 
+controlplane $ cat stage-pvc.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+```
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+```
+
+### Создаем свой StorageClass
+* sc.yaml
+
+```yml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: my-nfs
+provisioner: cluster.local/nfs-server-nfs-server-provisioner
+parameters:
+  server: nfs-server.example.com
+  path: /share
+  readOnly: "false"
+```
+
