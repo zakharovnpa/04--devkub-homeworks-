@@ -46,7 +46,7 @@ spec:
     path: /data/pv
 ```
 
-* fb-pod.yaml
+*  fb-pod.yaml
 ```yml
 apiVersion: v1
 kind: Pod
@@ -61,7 +61,8 @@ spec:
         - mountPath: "/static"
           name: my-volume
     - name: backend
-      image: nginx
+      image: busybox
+      command: ["sleep", "3600"]
       volumeMounts:
         - mountPath: "/static"
           name: my-volume
@@ -86,17 +87,7 @@ spec:
       storage: 2Gi
 ```
 
-
-
-```
-    - name: busybox
-      image: busybox
-      command: ["sleep", "3600"]
-      volumeMounts:
-        - mountPath: "/static"
-          name: my-volume
-```
-*  fb-pod.yaml
+* fb-pod.yaml
 ```yml
 apiVersion: v1
 kind: Pod
@@ -110,9 +101,8 @@ spec:
       volumeMounts:
         - mountPath: "/static"
           name: my-volume
-    - name: busybox
-      image: busybox
-      command: ["sleep", "3600"]
+    - name: backend
+      image: nginx
       volumeMounts:
         - mountPath: "/static"
           name: my-volume
@@ -121,6 +111,15 @@ spec:
       persistentVolumeClaim:
         claimName: pvc
 ```
+```
+    - name: busybox
+      image: busybox
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+```
+
 
 
 ### Логи
