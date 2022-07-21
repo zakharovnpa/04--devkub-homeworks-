@@ -250,6 +250,9 @@ node01 $
 #### 6.3 Логи можно увидеть здесь 
 - [Подключение к NFS пода в namespace stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pvc.md)
 - [Подключение к NFS подов в default и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-default-stage-pvc.md)
+- [Невозможное решение: Подключение к PV через StorageClass подов в default и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-default-stage-pv-sc-pvc.md)
+- [Подключение к PV через StorageClass подов в prod и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-prod-stage-pv-sc-pvc.md)
+
 
 ### 7. Создаем поды для Prod
 
