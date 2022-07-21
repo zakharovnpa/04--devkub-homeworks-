@@ -677,6 +677,303 @@ spec:
         claimName: pvc
 ```
 
+### Ход выполнения
+
+#### ИСпользуется материал ЛР
+- [Успешное подключение к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok.md)
+
+
+```
+controlplane $ ls -lha
+total 20K
+drwxr-xr-x 2 root root 4.0K Jul 21 13:55 .
+drwx------ 8 root root 4.0K Jul 21 13:55 ..
+-rw-r--r-- 1 root root  186 Jul 21 13:51 pv.yaml
+-rw-r--r-- 1 root root  197 Jul 21 13:55 pvc.yaml
+-rw-r--r-- 1 root root 1.1K Jul 21 13:55 stage-front-back.yaml
+controlplane $ 
+controlplane $ 
+```
+* cat pv.yaml
+
+```yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+```
+* cat pvc.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+```
+
+* stage-front-back.yaml
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      volumes:
+       - name: my-volume
+         persistentVolumeClaim:
+           claimName: pvc
+      terminationGracePeriodSeconds: 30
+
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+```
+#### 1. Проеряем состав кластера перед развертыванием
+* Статус Pod сервера NFS - Running
+```
+controlplane $ kubectl get po
+NAME                                  READY   STATUS    RESTARTS   AGE
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          5m31s
+```
+* PersistentVolume отсутствуют в Namespace default
+```
+controlplane $ kubectl get pv
+No resources found
+```
+* PersistentVolumeClaim отсутствуют в Namespace default
+```
+controlplane $ kubectl get pvc
+No resources found in default namespace.
+```
+* PersistentVolume отсутствуют в Namespace stage
+```
+controlplane $ kubectl -n stage get pv 
+No resources found
+```
+* PersistentVolumeClaim отсутствуют в Namespace stage
+```
+controlplane $ kubectl -n stage get pvc
+No resources found in stage namespace.
+```
+* Pod отсутствуют в Namespace stage
+```
+controlplane $ kubectl -n stage get po
+No resources found in stage namespace.
+```
+* Services отсутствуют в Namespace stage
+```
+controlplane $ kubectl -n stage get svc
+No resources found in stage namespace.
+```
+* Deployments отсутствуют в Namespace stage
+```
+controlplane $ kubectl -n stage get deployments.apps 
+No resources found in stage namespace.
+```
+
+
+#### 2. Создаем PersistentVolume - постоянный том в сети на основе StoageClass `nfs`
+```
+controlplane $ kubectl apply -f pv.yaml 
+persistentvolume/pv created
+```
+* Persistent Volume в статусе Available в Namespace stage. Режим доступа - RWX - ReadWriteMany
+```
+controlplane $ kubectl -n stage get pv
+NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+pv     2Gi        RWX            Retain           Available           nfs                     7s
+```
+* Persistent Volume в статусе Available в Namespace default. Режим доступа - RWX - ReadWriteMany
+```
+controlplane $ kubectl -n default get pv
+NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
+pv     2Gi        RWX            Retain           Available           nfs                     20s
+```
+#### 3. Создаем PersistentVolumeClaim, принадлежать он будет Namespace stage
+```
+controlplane $ kubectl apply -f pvc.yaml 
+persistentvolumeclaim/pvc created
+```
+```
+controlplane $ kubectl -n default get pvc
+No resources found in default namespace.
+controlplane $ 
+controlplane $ kubectl -n stage get pvc
+NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc    Bound    pv       2Gi        RWX            nfs            11s
+```
+#### 4. Создаем Deployment в Namespace stage с контейнерами front и back
+```
+controlplane $ kubectl apply -f stage-front-back.yaml 
+deployment.apps/fb-pod created
+service/fb-pod created
+controlplane $ 
+controlplane $ kubectl -n stage get pod              
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6c4fbd7c86-lqh7v   2/2     Running   0          36s
+```
+* Заходим в контейнер frontend
+```
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c frontend -it bash   
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@fb-pod-6c4fbd7c86-lqh7v:/app# 
+root@fb-pod-6c4fbd7c86-lqh7v:/app# cd  
+root@fb-pod-6c4fbd7c86-lqh7v:~# 
+root@fb-pod-6c4fbd7c86-lqh7v:~# 
+root@fb-pod-6c4fbd7c86-lqh7v:~# ls -lha
+total 16K
+drwx------ 2 root root 4.0K Jun 22 00:00 .
+drwxr-xr-x 1 root root 4.0K Jul 21 13:57 ..
+-rw-r--r-- 1 root root  571 Apr 10  2021 .bashrc
+-rw-r--r-- 1 root root  161 Jul  9  2019 .profile
+root@fb-pod-6c4fbd7c86-lqh7v:~# 
+root@fb-pod-6c4fbd7c86-lqh7v:~# pwd
+/root
+root@fb-pod-6c4fbd7c86-lqh7v:~# 
+root@fb-pod-6c4fbd7c86-lqh7v:~# cd /
+root@fb-pod-6c4fbd7c86-lqh7v:/# 
+root@fb-pod-6c4fbd7c86-lqh7v:/# ls -lha | grep static
+drwxr-xr-x   2 root root 4.0K Jul 21 13:57 static
+root@fb-pod-6c4fbd7c86-lqh7v:/# 
+root@fb-pod-6c4fbd7c86-lqh7v:/# cd static/
+```
+* Директория для общих файлов пока пустая
+```
+root@fb-pod-6c4fbd7c86-lqh7v:/static# ls -lha
+total 8.0K
+drwxr-xr-x 2 root root 4.0K Jul 21 13:57 .
+drwxr-xr-x 1 root root 4.0K Jul 21 13:57 ..
+```
+* Создаем новый общий файл
+```
+root@fb-pod-6c4fbd7c86-lqh7v:/static# echo '42' > 42.txt
+```
+* Считываем его содержимое
+```
+root@fb-pod-6c4fbd7c86-lqh7v:/static# cat 42.txt 
+42
+```
+* В контейнере backend создаем новый файл
+
+```
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c backend -it bash
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+root@fb-pod-6c4fbd7c86-lqh7v:/app# cd /
+root@fb-pod-6c4fbd7c86-lqh7v:/# 
+root@fb-pod-6c4fbd7c86-lqh7v:/# cd static/
+```
+* Видим в общей директории файл 42.txt, созданный ранее в контейнере Frontend
+```
+root@fb-pod-6c4fbd7c86-lqh7v:/static# ls
+42.txt
+```
+* Создаем новый общий файл 43.txt
+```
+root@fb-pod-6c4fbd7c86-lqh7v:/static# echo '43' > 43.txt
+```
+* Видим в общей директории новый файл 43.txt, и файл 42.txt, созданный ранее в контейнере Frontend
+```
+root@fb-pod-6c4fbd7c86-lqh7v:/static# ls
+42.txt  43.txt
+```
+
+#### 5. Реплицируем Deployment
+```
+controlplane $ kubectl -n stage scale deployment fb-pod --replicas=3
+deployment.apps/fb-pod scaled
+```
+
+* Смотрим количество реплик подов
+```
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS                   RESTARTS   AGE
+fb-pod-6c4fbd7c86-8tprw   2/2     Running                  0          5m6s
+fb-pod-6c4fbd7c86-jncwt   2/2     Running                  0          3m50s
+fb-pod-6c4fbd7c86-lqh7v   2/2     Running                  0          12m
+```
+#### 6. Во всех контейнерах есть общие папки и общие файлы
+* Для пода fb-pod-6c4fbd7c86-8tprw
+```
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-8tprw -c frontend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-8tprw -c backend -it bash -- ls /static
+42.txt  43.txt
+```
+* Для пода fb-pod-6c4fbd7c86-jncwt
+```
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-jncwt -c frontend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-jncwt -c backend -it bash -- ls /static
+42.txt  43.txt
+```
+* Для пода fb-pod-6c4fbd7c86-lqh7v
+```
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c frontend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c backend -it bash -- ls /static
+42.txt  43.txt
+```
+
 
 
 ---
