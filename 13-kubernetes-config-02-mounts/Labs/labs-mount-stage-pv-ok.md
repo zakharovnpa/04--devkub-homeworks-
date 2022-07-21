@@ -1,5 +1,111 @@
 ## Успешное подключение Deployment Stage
 
+
+```
+controlplane $ ls -lha
+total 20K
+drwxr-xr-x 2 root root 4.0K Jul 21 13:55 .
+drwx------ 8 root root 4.0K Jul 21 13:55 ..
+-rw-r--r-- 1 root root  186 Jul 21 13:51 pv.yaml
+-rw-r--r-- 1 root root  197 Jul 21 13:55 pvc.yaml
+-rw-r--r-- 1 root root 1.1K Jul 21 13:55 stage-front-back.yaml
+controlplane $ 
+controlplane $ 
+```
+* cat pv.yaml
+
+```yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+```
+* cat pvc.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+  namespace: stage
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+```
+
+* stage-front-back.yaml
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      volumes:
+       - name: my-volume
+         persistentVolumeClaim:
+           claimName: pvc
+      terminationGracePeriodSeconds: 30
+
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+```
+
+
+
+
 * Tab 1
 
 ```
