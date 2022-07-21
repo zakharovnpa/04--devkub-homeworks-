@@ -213,27 +213,36 @@ spec:
     app: fb-pod
 
 ```
-- Логи на сайте killercoda `https://killercoda.com/playgrounds/scenario/kubernetes`
+- Логи выполнения ДЗ на сайте killercoda `https://killercoda.com/playgrounds/scenario/kubernetes`
 ```
 controlplane $ kubectl create ns stage
 namespace/stage created
 controlplane $ 
 controlplane $ cd My-Project/     
 controlplane $ 
+```
+#### Первая попытка запуска StatefilSet
+```
 controlplane $ kubectl apply -f statefulset-front-back.yaml 
 deployment.apps/fb-pod created
 service/fb-pod created
-controlplane $ 
+```
+* StatefulSet запущен. Почему-то только один контейнер запустился
+```
 controlplane $ kubectl -n stage get po,svc,pv,pvc 
 NAME                          READY   STATUS    RESTARTS   AGE
 pod/fb-pod-697b65674f-kcx46   1/1     Running   0          2m25s
 
 NAME             TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod   NodePort   10.103.168.232   <none>        80:30080/TCP   2m25s
-controlplane $ 
-controlplane $ 
+```
+#### Создание файлов в дирекотриях контейнеров, подключенных к общему тому
+* На frontend
+```
 controlplane $ kubectl -n stage exec fb-pod-697b65674f-kcx46 -c frontend -- sh -c "echo '42' > /static/42.txt"
-controlplane $ 
+```
+* На backend. Не создается из-за ошибки "конетйнер backend отсутствет в поде"
+```
 controlplane $ kubectl -n stage exec fb-pod-697b65674f-kcx46 -c backend -- sh -c "echo '43' > /157cache/43.txt"
 Error from server (BadRequest): container backend is not valid for pod fb-pod-697b65674f-kcx46
 controlplane $ 
@@ -245,15 +254,21 @@ Error from server (BadRequest): container backend is not valid for pod fb-pod-69
 controlplane $ 
 controlplane $ kubectl -n stage exec fb-pod-697b65674f-kcx46 -c backend -it bash --                             
 error: you must specify at least one command for the container
-controlplane $ 
+```
+* Статус пода - Running. Один контейнер запущен.
+```
 controlplane $ kubectl -n stage get po
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-697b65674f-kcx46   1/1     Running   0          13m
-controlplane $ 
+```
+* Статус пода - Running в раширенном виде
+```
 controlplane $ kubectl -n stage get po -o wide
 NAME                      READY   STATUS    RESTARTS   AGE   IP            NODE     NOMINATED NODE   READINESS GATES
 fb-pod-697b65674f-kcx46   1/1     Running   0          14m   192.168.1.4   node01   <none>           <none>
-controlplane $ 
+```
+* Описание пода показывает, что контейнер backend не запущен.
+```
 controlplane $ kubectl -n stage describe po fb-pod-697b65674f-kcx46 
 Name:         fb-pod-697b65674f-kcx46
 Namespace:    stage
@@ -314,12 +329,15 @@ Events:
   Normal  Pulled     14m   kubelet            Successfully pulled image "zakharovnpa/k8s-frontend:05.07.22" in 6.948000613s
   Normal  Created    14m   kubelet            Created container frontend
   Normal  Started    14m   kubelet            Started container frontend
-controlplane $ 
-controlplane $ 
+```
+* Под в статусе Running. ЗАпущен только один контейнер
+```
 controlplane $ kubectl -n stage get po        
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-697b65674f-kcx46   1/1     Running   0          25m
-controlplane $ 
+```
+* Удаляем под
+```
 controlplane $ kubectl delete -f statefulset-front-back.yaml 
 deployment.apps "fb-pod" deleted
 service "fb-pod" deleted
@@ -327,17 +345,20 @@ controlplane $
 controlplane $ 
 controlplane $ kubectl apply -f statefulset-front-back.yaml 
 error: error validating "statefulset-front-back.yaml": error validating data: [ValidationError(Deployment.spec.template.spec.volumes[1]): unknown field "image" in io.k8s.api.core.v1.Volume, ValidationError(Deployment.spec.template.spec.volumes[1]): unknown field "imagePullPolicy" in io.k8s.api.core.v1.Volume, ValidationError(Deployment.spec.template.spec.volumes[1]): unknown field "volumeMounts" in io.k8s.api.core.v1.Volume]; if you choose to ignore these errors, turn validation off with --validate=false
-controlplane $ 
+```
+* Подов запущенных нет.
+```
 controlplane $ kubectl -n stage get po
 No resources found in stage namespace.
-controlplane $ 
-controlplane $ kubectl -n stage get po
-No resources found in stage namespace.
-controlplane $ 
+```
+#### Вторая попытка запуска StatefulSet 
+```
 controlplane $ kubectl apply -f statefulset-front-back.yaml 
 deployment.apps/fb-pod created
 service/fb-pod created
-controlplane $ 
+```
+* Под запустился после создания 
+```
 controlplane $ kubectl -n stage get po
 NAME                     READY   STATUS              RESTARTS   AGE
 fb-pod-57bdd94bd-ldwg5   0/2     ContainerCreating   0          8s
@@ -345,7 +366,9 @@ controlplane $
 controlplane $ kubectl -n stage get po
 NAME                     READY   STATUS    RESTARTS   AGE
 fb-pod-57bdd94bd-ldwg5   2/2     Running   0          34s
-controlplane $ 
+```
+* Описание пода. Созданы два конейнера - backend и frontend
+```
 controlplane $ kubectl -n stage describe po fb-pod-57bdd94bd-ldwg5 
 Name:         fb-pod-57bdd94bd-ldwg5
 Namespace:    stage
@@ -423,42 +446,65 @@ Events:
   Normal  Pulled     41s   kubelet            Successfully pulled image "zakharovnpa/k8s-backend:05.07.22" in 23.627716599s
   Normal  Created    40s   kubelet            Created container backend
   Normal  Started    40s   kubelet            Started container backend
-controlplane $ 
+```
+* Под в статусе Running
+```
 controlplane $ kubectl -n stage get po
 NAME                     READY   STATUS    RESTARTS   AGE
 fb-pod-57bdd94bd-ldwg5   2/2     Running   0          2m15s
-controlplane $ 
+```
+
+
+#### Проверка возможности записи в том
+
+* Выполняем запись в общий том для backend
+```
 controlplane $ kubectl -n stage exec fb-pod-57bdd94bd-ldwg5 -c backend -- sh -c "echo '43' > /157/cache/43.txt"
-controlplane $ 
+```
+* Выполняем запись в общий том для backend
+```
 controlplane $ kubectl -n stage exec fb-pod-57bdd94bd-ldwg5 -c frontend -- sh -c "echo '42' > /static/42.txt"
-controlplane $ 
+```
+#### Проверка возможности считвыания из тома
+
+* Считывание для frontend. Оба файла доступны
+```
 controlplane $ kubectl -n stage exec fb-pod-57bdd94bd-ldwg5 -c frontend -- ls -la /static                    
 total 16
 drwxrwxrwx 2 root root 4096 Jul 15 15:13 .
 drwxr-xr-x 1 root root 4096 Jul 15 15:10 ..
 -rw-r--r-- 1 root root    3 Jul 15 15:13 42.txt
 -rw-r--r-- 1 root root    3 Jul 15 15:13 43.txt
-controlplane $ 
+```
+* Считывание для backend. Оба файла доступны
+```
 controlplane $ kubectl -n stage exec fb-pod-57bdd94bd-ldwg5 -c backend -- ls -la /157/cache                    
 total 16
 drwxrwxrwx 2 root root 4096 Jul 15 15:13 .
 drwxr-xr-x 3 root root 4096 Jul 15 15:10 ..
 -rw-r--r-- 1 root root    3 Jul 15 15:13 42.txt
 -rw-r--r-- 1 root root    3 Jul 15 15:13 43.txt
-controlplane $ 
-controlplane $ 
+```
+* Узнаем на какой ноде развернулся под. На node01
+```
 controlplane $ kubectl -n stage get po fb-pod-57bdd94bd-ldwg5 -o yaml | grep nodeName
   nodeName: node01
-controlplane $ 
+```
+* Уточнием какие uid у томов пода
+```
 controlplane $ kubectl -n stage get po fb-pod-57bdd94bd-ldwg5 -o yaml | grep uid     
     uid: fa5904cb-3c15-4f4a-8efb-13f3bf269b67
   uid: fbe0ffb6-9237-4d34-a8a4-51f411ebe0aa
-controlplane $ 
-controlplane $ 
+```
+#### Выполняем проверку где распологаются созданные файла на ноде
+* Подключаемся к ноде 01
+```
 controlplane $ ssh node01
 Last login: Fri Oct  8 17:04:36 2021 from 10.32.0.22
 node01 $ 
-node01 $ 
+```
+* Выполняем поиск файлов
+```
 node01 $ find /var/lib/kubelet -name 42.txt
 /var/lib/kubelet/pods/fbe0ffb6-9237-4d34-a8a4-51f411ebe0aa/volumes/kubernetes.io~empty-dir/my-volume/42.txt
 node01 $ 
@@ -481,14 +527,18 @@ drwxrwxrwx 2 root root 4096 Jul 15 15:13 .
 drwxr-xr-x 3 root root 4096 Jul 15 15:10 ..
 -rw-r--r-- 1 root root    3 Jul 15 15:13 42.txt
 -rw-r--r-- 1 root root    3 Jul 15 15:13 43.txt
-node01 $ 
+```
+* Содержимое тома `my-volume`
+```
 node01 $ ls -lha /var/lib/kubelet/pods/fbe0ffb6-9237-4d34-a8a4-51f411ebe0aa/volumes/kubernetes.io~empty-dir/my-volume/
 total 16K
 drwxrwxrwx 2 root root 4.0K Jul 15 15:13 .
 drwxr-xr-x 3 root root 4.0K Jul 15 15:10 ..
 -rw-r--r-- 1 root root    3 Jul 15 15:13 42.txt
 -rw-r--r-- 1 root root    3 Jul 15 15:13 43.txt
-node01 $ 
+```
+* Считываем содержимое общих файлов
+```
 node01 $ cat /var/lib/kubelet/pods/fbe0ffb6-9237-4d34-a8a4-51f411ebe0aa/volumes/kubernetes.io~empty-dir/my-volume/42.txt
 42
 node01 $ 
