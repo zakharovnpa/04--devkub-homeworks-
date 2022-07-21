@@ -868,26 +868,12 @@ controlplane $ kubectl -n stage get pod
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6c4fbd7c86-lqh7v   2/2     Running   0          36s
 ```
-* Заходим в контейнер frontend
+* Заходим в контейнере frontend в общую папку static
 ```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c frontend -it bash   
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 root@fb-pod-6c4fbd7c86-lqh7v:/app# 
-root@fb-pod-6c4fbd7c86-lqh7v:/app# cd  
-root@fb-pod-6c4fbd7c86-lqh7v:~# 
-root@fb-pod-6c4fbd7c86-lqh7v:~# 
-root@fb-pod-6c4fbd7c86-lqh7v:~# ls -lha
-total 16K
-drwx------ 2 root root 4.0K Jun 22 00:00 .
-drwxr-xr-x 1 root root 4.0K Jul 21 13:57 ..
--rw-r--r-- 1 root root  571 Apr 10  2021 .bashrc
--rw-r--r-- 1 root root  161 Jul  9  2019 .profile
-root@fb-pod-6c4fbd7c86-lqh7v:~# 
-root@fb-pod-6c4fbd7c86-lqh7v:~# pwd
-/root
-root@fb-pod-6c4fbd7c86-lqh7v:~# 
-root@fb-pod-6c4fbd7c86-lqh7v:~# cd /
-root@fb-pod-6c4fbd7c86-lqh7v:/# 
+root@fb-pod-6c4fbd7c86-lqh7v:/app# cd /
 root@fb-pod-6c4fbd7c86-lqh7v:/# ls -lha | grep static
 drwxr-xr-x   2 root root 4.0K Jul 21 13:57 static
 root@fb-pod-6c4fbd7c86-lqh7v:/# 
@@ -909,7 +895,7 @@ root@fb-pod-6c4fbd7c86-lqh7v:/static# echo '42' > 42.txt
 root@fb-pod-6c4fbd7c86-lqh7v:/static# cat 42.txt 
 42
 ```
-* В контейнере backend создаем новый файл
+* Заходим в контейнере backend в общую папку static
 
 ```
 controlplane $ 
