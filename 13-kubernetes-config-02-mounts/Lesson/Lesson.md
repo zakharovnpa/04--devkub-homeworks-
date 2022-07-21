@@ -229,13 +229,13 @@ spec:
 
 ```
 - Логи выполнения ДЗ на сайте killercoda `https://killercoda.com/playgrounds/scenario/kubernetes`
+
+* Создаем NAmespace stage
 ```
 controlplane $ kubectl create ns stage
 namespace/stage created
-controlplane $ 
-controlplane $ cd My-Project/     
-controlplane $ 
 ```
+
 #### Первая попытка запуска StatefilSet
 ```
 controlplane $ kubectl apply -f statefulset-front-back.yaml 
