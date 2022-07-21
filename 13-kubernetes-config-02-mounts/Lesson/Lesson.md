@@ -22,6 +22,8 @@
 
 Пояснение: показать, что оно доступно из другого пода.
 
+- ["Успешное подключение - 2" к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok-2.md)
+
 ### Ход выполнения ДЗ вопрос №1
 
 #### 0. Установка NFS
