@@ -67,6 +67,44 @@ spec:
     requests:
       storage: 2Gi
 ```
+
+
+
+```
+    - name: busybox
+      image: busybox
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+```
+*  fb-pod.yaml
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fb-pod
+spec:
+  replicas: 3
+  containers:
+    - name: frontend
+      image: nginx
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+    - name: busybox
+      image: busybox
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - mountPath: "/static"
+          name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvc
+```
+
+
 ### Логи
 
 ```
