@@ -25,3 +25,5 @@
 - [Невозможное решение: Подключение к PV через StorageClass подов в default и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-default-stage-pv-sc-pvc.md)
 
 - [Подключение к PV через StorageClass подов в prod и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-prod-stage-pv-sc-pvc.md)
+
+- [Успешное подключение к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok.md)
