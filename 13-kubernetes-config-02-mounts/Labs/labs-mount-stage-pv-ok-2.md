@@ -2,6 +2,67 @@
 
 #### Только логи
 * Tab 1
+
+
+* Используемый манифест `stage-front-back.yaml`
+```yml
+# Config Deployment Frontend & Backend with Volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/157/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+ 
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+
+controlplane $ 
+```
 ```
 controlplane $ 
 controlplane $ mkdir -p My-Project
@@ -111,63 +172,6 @@ drwx------ 8 root root 4.0K Jul 21 16:17 ..
 -rw-r--r-- 1 root root 1.1K Jul 21 16:17 stage-front-back.yaml
 controlplane $ 
 controlplane $ 
-controlplane $ 
-controlplane $ cat stage-front-back.yaml 
-# Config Deployment Frontend & Backend with Volume
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: fb-app
-  name: fb-pod 
-  namespace: stage
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: fb-app
-  template:
-    metadata:
-      labels:
-        app: fb-app
-    spec:
-      containers:
-        - image: zakharovnpa/k8s-frontend:05.07.22
-          imagePullPolicy: IfNotPresent
-          name: frontend
-          ports:
-          - containerPort: 80
-          volumeMounts:
-            - mountPath: "/static"
-              name: my-volume
-        - image: zakharovnpa/k8s-backend:05.07.22
-          imagePullPolicy: IfNotPresent
-          name: backend
-          volumeMounts:
-            - mountPath: "/157/cache"
-              name: my-volume
-      volumes:
-        - name: my-volume
-          emptyDir: {}
- 
----
-# Config Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: fb-pod
-  namespace: stage
-  labels:
-    app: fb
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: 30080
-  selector:
-    app: fb-pod
-
 controlplane $ 
 ```
 * Tab 2
