@@ -27,3 +27,5 @@
 - [Подключение к PV через StorageClass подов в prod и stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-prod-stage-pv-sc-pvc.md)
 
 - [Успешное подключение к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok.md)
+
+- ["Успешное подключение - 2" к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok-2.md)
