@@ -24,6 +24,21 @@
 
 ### Ход выполнения ДЗ вопрос №1
 
+#### 0. Установка NFS
+* ControlNode
+```
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
+
+helm repo add stable https://charts.helm.sh/stable && helm repo update && \
+
+helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
+
+```
+* WorkerNode
+```
+apt install nfs-common -y
+```
+
 #### 1. Исходный манифест `stage-front-back.yaml` для развертывания приложений на одной  тойже ноде
 
 ```yml
