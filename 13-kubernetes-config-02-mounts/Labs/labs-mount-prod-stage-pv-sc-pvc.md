@@ -9,6 +9,24 @@
 
 ### Ход выполнения задания
 
+#### 0. Установка NFS
+
+```
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+```
+```
+helm repo add stable https://charts.helm.sh/stable
+```
+```
+helm repo update
+```
+```
+helm install nfs-server stable/nfs-server-provisioner 
+```
+```
+apt install nfs-common -y
+```
+
 #### 1. При репликаци обеспечить подключение всех Backend, Frontend к общему тому
 1. Т.к. в данном решении используется Provisioner NFS для динамического создания тома на основе StorageClass, Манифесты будем создавать такие:
 
