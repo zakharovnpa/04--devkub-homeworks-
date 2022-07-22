@@ -456,4 +456,17 @@ controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/42.txt"
 42
 controlplane $ 
 controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/43.txt"
+controlplane $ kubectl -n prod exec b-pod-0 -- sh "cat /static/43.txt"
+sh: 0: Can't open cat /static/43.txt
+command terminated with exit code 127
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "echo '49' > /static/49.txt"
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh "cat /static/49.txt"
+sh: 0: Can't open cat /static/49.txt
+command terminated with exit code 127
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/49.txt"
+49
+controlplane $ 
 ```
