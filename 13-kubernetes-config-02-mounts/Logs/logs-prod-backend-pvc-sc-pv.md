@@ -469,4 +469,17 @@ controlplane $
 controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/49.txt"
 49
 controlplane $ 
+/app
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- cd /
+error: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "19a628fb51bd8c24ce886e7c710dfa6008ee6fdc20344bfe0d212cc979b72a19": OCI runtime exec failed: exec failed: unable to start container process: exec: "cd": executable file not found in $PATH: unknown
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cd /"
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- pwd
+/app
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cd / && pwd"
+/
+controlplane $ 
 ```
