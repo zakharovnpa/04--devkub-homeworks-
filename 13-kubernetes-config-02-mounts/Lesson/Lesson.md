@@ -1050,14 +1050,7 @@ spec:
           name: frontend
           ports:
           - containerPort: 80
-          volumeMounts:
-            - mountPath: "/static"
-              name: my-volume
       terminationGracePeriodSeconds: 30
-      volumes:
-        - name: my-volume
-          persistentVolumeClaim:
-            claimName: pvc
 ---
 apiVersion: v1
 kind: Service
