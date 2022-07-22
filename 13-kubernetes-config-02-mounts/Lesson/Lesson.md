@@ -587,6 +587,7 @@ node01 $
 
 #### Ход выполнения заданя 2
 
+#### Задача:
 ##### 1. Запуск на ноде в отдельном поде сервера NFS
 
  Если на используется NFS, то создать папку на ноде и указать ее в качестве PV
@@ -595,7 +596,9 @@ node01 $
 2. Сделать PV, который будет иметь доступ к серверу NFS
 3.
 
-##### 2. Подключить Backend-ы из Stage и Prod к одному и тому же PV
+##### Х. Неверная трактовка задания: Подключить Backend-ы из Stage и Prod к одному и тому же PV
+##### 2. Верная трактовка задания: Подключить экземпляры Backend из всех его реплик в окружении Stage к одному и тому же PV.
+##### 3. Верная трактовка задания: Подключить экземпляры Backend из всех его реплик в окружении Prod к одному и тому же PV.
 
 1. В манифесте StatefuSet Backend Stage
   - Добавть монитроване к Volume
@@ -610,7 +613,7 @@ node01 $
   - в спецификации пода необходимо указать ссылку на PersistentVolumeClaim (запрос на том);
   - в спецификации PersistentVolumeClaim указываются необходимые параметры тома: размер и режим доступа;
 
-##### 3. Подключить Frontend из Prod к тому же PV с NFS, что Backend 
+##### Х. Неверная трактовка: Подключить Frontend из Prod к тому же PV с NFS, что Backend 
 
 1. В манифесте StatefuSet Frontend Prod
   - Добавть монитроване к Volume
@@ -677,9 +680,9 @@ spec:
         claimName: pvc
 ```
 
-### Ход выполнения
+#### Ход выполнения тестового подключения. Используется конфигурация для frontend, backend из одного пода в окружении stage.
 
-#### ИСпользуется материал ЛР
+##### Иcпользуется материал ЛР
 - [Успешное подключение к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok.md)
 
 
@@ -784,7 +787,7 @@ spec:
   selector:
     app: fb-pod
 ```
-#### 1. Проеряем состав кластера перед развертыванием
+##### 1. Проdеряем состав кластера перед развертыванием
 * Статус Pod сервера NFS - Running
 ```
 controlplane $ kubectl get po
@@ -828,7 +831,7 @@ No resources found in stage namespace.
 ```
 
 
-#### 2. Создаем PersistentVolume - постоянный том в сети на основе StoageClass `nfs`
+##### 2. Создаем PersistentVolume - постоянный том в сети на основе StoageClass `nfs`
 ```
 controlplane $ kubectl apply -f pv.yaml 
 persistentvolume/pv created
@@ -845,7 +848,7 @@ controlplane $ kubectl -n default get pv
 NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
 pv     2Gi        RWX            Retain           Available           nfs                     20s
 ```
-#### 3. Создаем PersistentVolumeClaim, принадлежать он будет Namespace stage
+##### 3. Создаем PersistentVolumeClaim, принадлежать он будет Namespace stage
 ```
 controlplane $ kubectl apply -f pvc.yaml 
 persistentvolumeclaim/pvc created
@@ -858,7 +861,7 @@ controlplane $ kubectl -n stage get pvc
 NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 pvc    Bound    pv       2Gi        RWX            nfs            11s
 ```
-#### 4. Создаем Deployment в Namespace stage с контейнерами front и back
+##### 4. Создаем Deployment в Namespace stage с контейнерами front и back
 ```
 controlplane $ kubectl apply -f stage-front-back.yaml 
 deployment.apps/fb-pod created
@@ -920,7 +923,7 @@ root@fb-pod-6c4fbd7c86-lqh7v:/static# ls
 42.txt  43.txt
 ```
 
-#### 5. Реплицируем Deployment
+##### 5. Реплицируем Deployment
 ```
 controlplane $ kubectl -n stage scale deployment fb-pod --replicas=3
 deployment.apps/fb-pod scaled
@@ -934,7 +937,7 @@ fb-pod-6c4fbd7c86-8tprw   2/2     Running                  0          5m6s
 fb-pod-6c4fbd7c86-jncwt   2/2     Running                  0          3m50s
 fb-pod-6c4fbd7c86-lqh7v   2/2     Running                  0          12m
 ```
-#### 6. Во всех контейнерах есть общие папки и общие файлы
+##### 6. Во всех контейнерах есть общие папки и общие файлы
 * Для пода fb-pod-6c4fbd7c86-8tprw
 ```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-8tprw -c frontend -it bash -- ls /static
@@ -959,6 +962,211 @@ controlplane $
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c backend -it bash -- ls /static
 42.txt  43.txt
 ```
+##### 7. Проdеряем состав кластера после развертыванием
+
+
+
+#### Ход выполнения тестового подключения. Используется конфигурация для frontend, backend, где каждый в своем поде в окружении prod
+
+##### Установка NFS
+
+* ControlNode
+```
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
+helm repo add stable https://charts.helm.sh/stable && helm repo update && \
+helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
+```
+* WorkerNode
+```
+apt install nfs-common -y
+```
+
+##### Используемые манифесты
+##### Манифесты томов
+* pv.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/pv
+```
+* pvc.yaml
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc
+  namespace: prod
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+```
+
+
+##### Манифесты окружения
+* prod-frontend.yaml
+
+```yml
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: f-app
+  name: f-pod
+  namespace: prod
+spec:
+  replicas: 1
+  serviceName: b-pod
+  selector:
+    matchLabels:
+      app: f-app
+  template:
+    metadata:
+      labels:
+        app: f-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:12.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: BASE_URL
+            value: "http://b-pod:9000"
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: prod      
+  name: f-svc
+spec:
+  type: NodePort
+  selector:
+    app: f-app
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+---
+# The END
+
+```
+* prod-backend.yaml
+
+```yml
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: b-app
+  name: b-pod
+  namespace: prod
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: b-app
+  template:
+    metadata:
+      labels:
+        app: b-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-backend:12.07.22
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: DATABASE_URL
+            value: "postgres://postgres:postgres@db:5432/news"
+          name: backend
+          ports:
+          - containerPort: 9000
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: pvc
+
+# Config Service ClasterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: prod
+spec:
+  ports:
+    - name: db      
+      port: 5432
+      targetPort: 5432
+
+# Config Service ClasterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: b-pod
+  namespace: prod
+spec:
+  selector:
+    app: b-app   
+  ports:
+    - name: b-pod
+      port: 9000
+      targetPort: 9000
+
+# Config Service EndPoint    
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: db  
+  namespace: prod
+subsets:
+  - addresses:
+      - ip: 10.128.0.23
+    ports:
+      - port: 5432
+        name: db
+---
+# The END
+```
+
+##### Команды создания файлов в конейнере
+
+##### Команды просмотра наличия файлов в конейнере
+
+##### Команды просмотра содержимого файлов в конейнере
+
+##### Команды просмотра содержимого файлов в ноде
+
+##### Логи выполнения
 
 
 
