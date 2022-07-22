@@ -411,4 +411,49 @@ controlplane $ kubectl -n prod exec b-pod-0 -c backend -it bash -- cat /static/4
 42
 controlplane $ 
 controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c backend -it bash -c "cat /static/42.txt"
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+Error from server (BadRequest): container cat /static/42.txt is not valid for pod b-pod-0
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c backend -it bash "cat /static/42.txt"
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+bash: cat /static/42.txt: No such file or directory
+command terminated with exit code 127
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c backend -it sh "cat /static/42.txt"
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+sh: 0: Can't open cat /static/42.txt
+command terminated with exit code 127
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c backend sh "cat /static/42.txt"
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+sh: 0: Can't open cat /static/42.txt
+command terminated with exit code 127
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c backend sh cat /static/42.txt 
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+sh: 0: Can't open cat
+command terminated with exit code 127
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c sh cat /static/42.txt
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+Error from server (BadRequest): container sh is not valid for pod b-pod-0
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c sh "cat /static/42.txt"
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+Error from server (BadRequest): container sh is not valid for pod b-pod-0
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -c -- sh "cat /static/42.txt"
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+Error from server (BadRequest): container -- is not valid for pod b-pod-0
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/43.txt"
 ```
