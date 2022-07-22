@@ -980,7 +980,10 @@ helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common 
 ```
 apt install nfs-common -y
 ```
-
+##### Создаем namespace prod
+```
+kubectl create namespace prod
+```
 ##### Используемые манифесты
 ##### Манифесты томов
 * pv.yaml
