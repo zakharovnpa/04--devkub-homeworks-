@@ -144,6 +144,14 @@ fb-pod-6d5f85cbb8-6wck8   2/2     Running             0          49m
 fb-pod-6d5f85cbb8-d65zs   0/2     ContainerCreating   0          14s
 fb-pod-6d5f85cbb8-jpw4l   2/2     Running             0          14s
 ```
+```
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS                   RESTARTS   AGE
+fb-pod-6d5f85cbb8-6wck8   2/2     Running                  0          54m
+fb-pod-6d5f85cbb8-88chm   2/2     Running                  0          4m14s
+fb-pod-6d5f85cbb8-d65zs   0/2     ContainerStatusUnknown   2          5m10s
+fb-pod-6d5f85cbb8-jpw4l   2/2     Running                  0          5m10s
+```
 #### Команды тестирование доступа к общему тому
 ```
 kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "echo '42' > /static/42.txt"
