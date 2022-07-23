@@ -10,11 +10,13 @@ helm repo update && \
 helm install nfs-server stable/nfs-server-provisioner && \
 apt install nfs-common -y && \
 kubectl create namespace stage && \
+kubectl create namespace prod && \
 mkdir -p My-Procect && \
 cd My-Procect && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
 ls -lha && \
 kubectl get namespace stage && \
+kubectl get namespace prod && \
 kubectl get sc && \
 kubectl get pod && \
 kubectl get svc
@@ -127,7 +129,20 @@ spec:
 ```
 #### Репликация stage
 ```
-kubectl scale fb-pod-0 --replicas=3
+controlplane $ kubectl -n stage get deployments.apps     
+NAME     READY   UP-TO-DATE   AVAILABLE   AGE
+fb-pod   1/1     1            1           41m
+```
+```
+controlplane $ kubectl -n stage scale --replicas=3 deploy/fb-pod
+deployment.apps/fb-pod scaled
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6d5f85cbb8-6wck8   2/2     Running             0          49m
+fb-pod-6d5f85cbb8-d65zs   0/2     ContainerCreating   0          14s
+fb-pod-6d5f85cbb8-jpw4l   2/2     Running             0          14s
 ```
 #### Команды тестирование доступа к общему тому
 ```
