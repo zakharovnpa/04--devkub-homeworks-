@@ -8,7 +8,16 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 helm repo add stable https://charts.helm.sh/stable && \
 helm repo update && \
 helm install nfs-server stable/nfs-server-provisioner && \
-apt install nfs-common -y
+apt install nfs-common -y && \
+kubectl create namespace stage && \
+mkdir -p My-Procect && \
+cd My-Procect && \
+touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
+ls -lha && \
+kubectl get namespace stage && \
+kubectl get sc && \
+kubectl get pod && \
+kubectl get svc
 ```
 * WorkerNode
 ```
@@ -18,11 +27,17 @@ apt install nfs-common -y
 ### Создание окружения stage
 #### Namespace stage
 ```
-kubectl create namespace stage
+kubectl get namespace stage
 ```
 #### Манифесты для окружения stage
+```
+mkdir -p My-Procect && \
+cd My-Procect && \
+touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
+ls -lha
+```
 
-* pv.yaml
+* stage-pv.yaml
 
 ```yml
 apiVersion: v1
@@ -38,7 +53,7 @@ spec:
   hostPath:
     path: /data/stage/pv
 ```
-* pvc.yaml
+* stage-pvc.yaml
 
 ```yml
 apiVersion: v1
@@ -115,6 +130,84 @@ spec:
 kubectl scale fb-pod-0 --replicas=3
 ```
 #### Команды тестирование доступа к общему тому
+```
+kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "echo '42' > /static/42.txt"
+```
+```
+kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "ls -lha /static"
+```
+```
+kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "cat /static/42.txt"
+```
+
+* Логи
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "echo '42' > /static/42.txt"
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "ls -lha /static"
+total 12K
+drwxr-xr-x 2 root root 4.0K Jul 23 04:47 .
+drwxr-xr-x 1 root root 4.0K Jul 23 04:37 ..
+-rw-r--r-- 1 root root    3 Jul 23 04:47 42.txt
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+```
+* Для frontend stage-volume недоступен
+
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c frontend -- sh -c "cat /static/42.txt"
+cat: /static/42.txt: No such file or directory
+command terminated with exit code 1
+```
+* Поиск файла 42.txt на ноде node01
+
+```
+node01 $ find /data/stage/pv -name 42.txt
+/data/stage/pv/42.txt
+```
+```
+node01 $ cat /data/stage/pv/42.txt
+42, 42, 42
+```
+* Есть обмен данными. На ноде создался новый файл 43.txt
+
+```
+node01 $ echo '43' > /data/stage/pv/43.txt
+```
+* Файл 43.txt в контейнере
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "ls -lha /static"
+total 20K
+drwxr-xr-x 2 root root 4.0K Jul 23 05:07 .
+drwxr-xr-x 1 root root 4.0K Jul 23 04:37 ..
+-rw-r--r-- 1 root root   11 Jul 23 05:02 42.txt
+-rw-r--r-- 1 root root    3 Jul 23 05:07 43.txt
+```
+* Добавление информации в файл 42.txt
+```
+node01 $ echo '44' >> /data/stage/pv/42.txt
+```
+* На backend можно прочитать новую информацию
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+```
+
+
+#### Скрипт для проверок
+* Разворачиваем приложения в окружении
+```
+kubectl apply -f .
+```
+* Скрипт тестирования окружения
+```
+kubectl get po && \
+kubectl -n stage get pv && \
+kubectl -n stage get pvc
+```
 
 
 
