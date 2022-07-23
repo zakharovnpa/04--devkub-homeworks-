@@ -8,6 +8,15 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 helm repo add stable https://charts.helm.sh/stable && helm repo update && \
 helm install nfs-server stable/nfs-server-provisioner && \ apt install nfs-common -y
 ```
+```
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
+helm repo add stable https://charts.helm.sh/stable && \
+helm repo update && \
+helm install nfs-server stable/nfs-server-provisioner && \
+apt install nfs-common -y
+```
+
+
 * WorkerNode
 ```
 apt install nfs-common -y
