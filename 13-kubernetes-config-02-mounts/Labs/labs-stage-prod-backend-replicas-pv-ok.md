@@ -47,14 +47,15 @@ apt install nfs-common -y
 ```
 kubectl get namespace stage
 ```
-#### Манифесты для окружения stage
+
+#### Создаем рабочую дирекорию и файлы манифестов
 ```
 mkdir -p My-Procect && \
 cd My-Procect && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
 ls -lha
 ```
-
+#### Манифесты для окружения stage
 * stage-pv.yaml
 
 ```yml
