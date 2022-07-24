@@ -1,6 +1,15 @@
  ## Ответ на ДЗ - backend в окружениях stage и prod подключаются каждый к своему PV, при репликации остаетмя возможность обмена данными между конейнерами всех backend в stage и между конейнерами всех backend в prod
 
-### Создание NFS сервера
+Задача:
+1. Создание NFS сервера
+2. Создание окружения stage
+3. Репликация stage
+4. Тестирование доступа к общему тому
+5. Логи окружения stage
+6. Скрипт для проверок
+
+
+### 1. Создание NFS сервера
 
 * ControlNode
 ```
@@ -26,7 +35,7 @@ kubectl get svc
 apt install nfs-common -y
 ```
 
-### Создание окружения stage
+### 2. Создание окружения stage
 #### Namespace stage
 ```
 kubectl get namespace stage
@@ -127,7 +136,7 @@ spec:
   selector:
     app: fb-pod
 ```
-#### Репликация stage
+### 3. Репликация stage
 ```
 controlplane $ kubectl -n stage get deployments.apps     
 NAME     READY   UP-TO-DATE   AVAILABLE   AGE
@@ -152,7 +161,7 @@ fb-pod-6d5f85cbb8-88chm   2/2     Running                  0          4m14s
 fb-pod-6d5f85cbb8-d65zs   0/2     ContainerStatusUnknown   2          5m10s
 fb-pod-6d5f85cbb8-jpw4l   2/2     Running                  0          5m10s
 ```
-#### Команды тестирование доступа к общему тому
+### 4. Тестирование доступа к общему тому
 ```
 kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "echo '42' > /static/42.txt"
 ```
@@ -163,7 +172,7 @@ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "ls -lha /stat
 kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "cat /static/42.txt"
 ```
 
-* Логи
+### 5. Логи окружения stage
 ```
 controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "echo '42' > /static/42.txt"
 controlplane $ 
@@ -220,7 +229,7 @@ controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c
 ```
 
 
-#### Скрипт для проверок
+#### 6. Скрипт для проверок
 * Разворачиваем приложения в окружении
 ```
 kubectl apply -f .
@@ -238,6 +247,6 @@ kubectl -n stage get pvc
 
 ### Манифесты для окружения prod
 
-### Логи окружения stage
+
 
 ### Логи окружения prod
