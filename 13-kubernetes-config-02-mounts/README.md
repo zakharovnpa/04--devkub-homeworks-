@@ -213,11 +213,11 @@ node01 $ cat /var/lib/kubelet/pods/fbe0ffb6-9237-4d34-a8a4-51f411ebe0aa/volumes/
 43
 node01 $ 
 ```
-#### Ответ-2:
+#### Ход решения:
 
 ##### Используемые манифесты:
 
-* cat pv.yaml
+* `pv.yaml` Манифест для создания сетевого хранилища на ноде в директории /data/pv на основе storageClassName nfs. Режим доступа - Чтение и запись для многих. Размер - 2Гб.
 
 ```yml
 apiVersion: v1
@@ -233,7 +233,7 @@ spec:
   hostPath:
     path: /data/pv
 ```
-* cat pvc.yaml
+* `pvc.yaml` Манифест для создания запроса на сетевоге хранилище. 
 ```yml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -249,7 +249,8 @@ spec:
       storage: 2Gi
 ```
 
-* stage-front-back.yaml
+* `stage-front-back.yaml` Манифест развертывания приложений с возможностью монитрования директории контейнеров /static к volume на основе запроса PVC
+
 ```yml
 ---
 apiVersion: apps/v1
