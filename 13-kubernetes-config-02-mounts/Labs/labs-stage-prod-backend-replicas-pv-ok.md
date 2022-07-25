@@ -1,4 +1,4 @@
- ## Ответ на ДЗ - backend в окружениях stage и prod подключаются каждый к своему PV, при репликации остаетмя возможность обмена данными между конейнерами всех backend в stage и между конейнерами всех backend в prod
+ ## Ответ на ДЗ - backend в окружениях stage и prod подключаются каждый к своему PV, при репликации остается возможность обмена данными между конейнерами всех backend в stage и между конейнерами всех backend в prod
 
 Задача:
 1. [Создание NFS сервера](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#1-%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-nfs-%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%B0)
@@ -26,8 +26,8 @@ helm install nfs-server stable/nfs-server-provisioner && \
 apt install nfs-common -y && \
 kubectl create namespace stage && \
 kubectl create namespace prod && \
-mkdir -p My-Procect-stage && \
-cd My-Procect-stage && \
+mkdir -p My-Procect/stage && \
+cd My-Procect/stage && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
 ls -lha && \
 kubectl get namespace stage && \
@@ -50,11 +50,12 @@ kubectl get namespace stage
 ```
 
 #### Создаем рабочую дирекорию и файлы манифестов
+* Описано ранее в скрипте
 ```
-mkdir -p My-Procect && \
-cd My-Procect && \
+mkdir -p My-Procect/stage && \
+cd My-Procect/stage && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
-ls -lha
+ls -lha 
 ```
 #### Манифесты для окружения stage
 * stage-pv.yaml
@@ -243,11 +244,11 @@ controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c
 
 ### 6. Скрипт для проверок. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
-* Разворачиваем приложения в окружении
+* Разворачиваем приложения в окружении stage
 ```
 kubectl apply -f .
 ```
-* Скрипт тестирования окружения
+* Скрипт тестирования окружения stage
 ```
 kubectl get po && \
 kubectl -n stage get pv && \
@@ -260,6 +261,13 @@ kubectl -n stage get pvc
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
 
 #### Скрипт запуска NFS, Namespace
+
+* WorkerNode
+```
+apt install nfs-common -y
+```
+
+* ControlNode
 ```
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
 helm repo add stable https://charts.helm.sh/stable && \
@@ -268,15 +276,19 @@ helm install nfs-server stable/nfs-server-provisioner && \
 apt install nfs-common -y && \
 kubectl create namespace stage && \
 kubectl create namespace prod && \
-mkdir -p My-Procect-prod && \
-cd My-Procect-prod && \
+mkdir -p My-Procect/prod && \
+cd My-Procect/prod && \
 touch prod-pv.yaml prod-pvc.yaml prod-frontend.yaml prod-backend.yaml && \
 ls -lha && \
 kubectl get namespace prod && \
 kubectl get sc && \
 kubectl get pod && \
 kubectl get svc && \
+kubectl -n prod get sc && \
+kubectl -n prod get pod && \
+kubectl -n prod get svc && 
 ```
+
 
 #### Манифесты для окружения prod. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
