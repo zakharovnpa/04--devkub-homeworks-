@@ -356,14 +356,8 @@ spec:
           name: frontend
           ports:
           - containerPort: 80
-          volumeMounts:
-            - mountPath: "/static"
-              name: prod-volume
       terminationGracePeriodSeconds: 30
-      volumes:
-        - name: prod-volume
-          persistentVolumeClaim:
-            claimName: pvc
+
 ---
 apiVersion: v1
 kind: Service
@@ -413,7 +407,7 @@ spec:
           - containerPort: 9000
           volumeMounts:
             - mountPath: "/static"
-              name: my-volume
+              name: prod-volume
       terminationGracePeriodSeconds: 30
       volumes:
         - name: prod-volume
