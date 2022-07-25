@@ -629,6 +629,114 @@ controlplane $
 controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/43.txt"
 43
 ```
+### 10. Логи проверки доступности node01 /data/stage/pv, data/prod/pv
+* Tab 1
+```
+ontrolplane $ kubectl -n prod scale --replicas=3 statefulset/f-pod
+statefulset.apps/f-pod scaled
+controlplane $ 
+controlplane $ kubectl -n prod get pv  
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     26m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     26m
+controlplane $ 
+controlplane $ kubectl -n prod get pvc
+NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-prod   Bound    pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            nfs            26m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n prod get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     26m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     26m
+controlplane $ 
+controlplane $ kubectl get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     27m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     27m
+controlplane $ 
+controlplane $ kubectl get pvc
+No resources found in default namespace.
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM             STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Bound       stage/pvc-stage   nfs                     39m
+pv-stage                                   2Gi        RWX            Retain           Available                     nfs                     7m19s
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod     nfs                     39m
+```
+* Tab 2
+```
+ontrolplane $ kubectl -n prod scale --replicas=3 statefulset/f-pod
+statefulset.apps/f-pod scaled
+controlplane $ 
+controlplane $ kubectl -n prod get pv  
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     26m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     26m
+controlplane $ 
+controlplane $ kubectl -n prod get pvc
+NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-prod   Bound    pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            nfs            26m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n prod get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     26m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     26m
+controlplane $ 
+controlplane $ kubectl get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     27m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     27m
+controlplane $ 
+controlplane $ kubectl get pvc
+No resources found in default namespace.
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM             STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Bound       stage/pvc-stage   nfs                     39m
+pv-stage                                   2Gi        RWX            Retain           Available                     nfs                     7m19s
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod     nfs                     39m
+```
+
+* Tab 3
+
+```
+ontrolplane $ kubectl -n prod scale --replicas=3 statefulset/f-pod
+statefulset.apps/f-pod scaled
+controlplane $ 
+controlplane $ kubectl -n prod get pv  
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     26m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     26m
+controlplane $ 
+controlplane $ kubectl -n prod get pvc
+NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-prod   Bound    pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            nfs            26m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n prod get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     26m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     26m
+controlplane $ 
+controlplane $ kubectl get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM           STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Available                   nfs                     27m
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod   nfs                     27m
+controlplane $ 
+controlplane $ kubectl get pvc
+No resources found in default namespace.
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pv 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM             STORAGECLASS   REASON   AGE
+pv-prod                                    2Gi        RWX            Retain           Bound       stage/pvc-stage   nfs                     39m
+pv-stage                                   2Gi        RWX            Retain           Available                     nfs                     7m19s
+pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod     nfs                     39m
+```
 
 ### 11. Скрипт для проверок prod. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
