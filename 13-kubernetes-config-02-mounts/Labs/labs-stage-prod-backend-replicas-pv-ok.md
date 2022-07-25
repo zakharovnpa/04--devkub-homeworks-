@@ -664,6 +664,15 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pv-prod                                    2Gi        RWX            Retain           Bound       stage/pvc-stage   nfs                     39m
 pv-stage                                   2Gi        RWX            Retain           Available                     nfs                     7m19s
 pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod     nfs                     39m
+controlplane $ kubectl -n prod get po
+NAME      READY   STATUS    RESTARTS   AGE
+b-pod-0   1/1     Running   0          18m
+b-pod-1   1/1     Running   0          30m
+b-pod-2   1/1     Running   0          17m
+f-pod-0   1/1     Running   0          45m
+f-pod-1   1/1     Running   0          18m
+f-pod-2   1/1     Running   0          19m
+
 ```
 * Tab 2
 ```
