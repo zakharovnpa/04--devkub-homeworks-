@@ -307,7 +307,7 @@ spec:
   capacity:
     storage: 2Gi
   hostPath:
-    path: /data/stage/pv
+    path: /data/prod/pv
 ```
 * prod-pvc.yaml
 
@@ -358,10 +358,10 @@ spec:
           - containerPort: 80
           volumeMounts:
             - mountPath: "/static"
-              name: my-volume
+              name: prod-volume
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: my-volume
+        - name: prod-volume
           persistentVolumeClaim:
             claimName: pvc
 ---
@@ -416,9 +416,9 @@ spec:
               name: my-volume
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: my-volume
+        - name: prod-volume
           persistentVolumeClaim:
-            claimName: pvc
+            claimName: pvc-prod
 
 # Config Service ClasterIP
 ---
