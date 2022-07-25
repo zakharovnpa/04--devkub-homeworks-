@@ -15,7 +15,8 @@ helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common 
 apt install nfs-common -y
 ```
 
-#### 1. 
+#### 1. Разворачивание среды stage
+
 * манифест `stage-front-back.yaml`
 
 ```yml
@@ -76,10 +77,68 @@ spec:
 ```
 #### 3. Создаем Namespace stage
 ```
-controlplane $ kubectl create ns stage
+controlplane $ kubectl create namespace stage
 namespace/stage created
+controlplane $ 
+controlplane $ kubectl get ns 
+NAME              STATUS   AGE
+default           Active   77d
+kube-node-lease   Active   77d
+kube-public       Active   77d
+kube-system       Active   77d
+stage             Active   8s
+```
+#### 4. Тестирование кластера
+```
+controlplane $ kubectl create namespace stage
+namespace/stage created
+controlplane $ 
+controlplane $ kubectl get ns 
+NAME              STATUS   AGE
+default           Active   77d
+kube-node-lease   Active   77d
+kube-public       Active   77d
+kube-system       Active   77d
+stage             Active   8s
 ```
 
+#### 5. Разворачиваем stage
+```
+controlplane $ kubectl -n stage get pod
+No resources found in stage namespace.
+```
+```
+controlplane $ kubectl apply -f stage-front-back.yaml 
+deployment.apps/fb-pod created
+service/fb-pod created
+```
+#### 6. Тестирование stage после развертывания
+```
+controlplane $ kubectl -n stage get pod
+NAME                     READY   STATUS    RESTARTS   AGE
+fb-pod-57bdd94bd-9nwmp   2/2     Running   0          2m29s
+controlplane $ 
+controlplane 
+controlplane $ kubectl -n stage get pv 
+No resources found
+controlplane $ 
+controlplane $ kubectl -n stage get pvc
+No resources found in stage namespace.
+controlplane $ 
+controlplane $ kubectl -n stage get storageclasses.storage.k8s.io 
+No resources found
+```
+
+
+
+
+
+
+
+
+
+
+### Это от другого задания:
 #### 4. Запуск StatefulSet 
 ```
 controlplane $ kubectl apply -f statefulset-front-back.yaml 
