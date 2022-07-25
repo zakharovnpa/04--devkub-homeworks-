@@ -269,9 +269,13 @@ apt install nfs-common -y
 
 * ControlNode
 ```
+echo "curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash" && \
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
+echo "helm repo add stable https://charts.helm.sh/stable" && \
 helm repo add stable https://charts.helm.sh/stable && \
+echo "helm repo update" && \
 helm repo update && \
+echo "helm install nfs-server stable/nfs-server-provisioner" && \
 helm install nfs-server stable/nfs-server-provisioner && \
 apt install nfs-common -y && \
 kubectl create namespace stage && \
