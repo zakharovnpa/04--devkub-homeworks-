@@ -41,7 +41,7 @@ helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common 
 apt install nfs-common -y
 ```
 
-#### 1. Исходный манифест `stage-front-back.yaml` для развертывания приложений на одной  тойже ноде
+#### 1. Исходный манифест `stage-front-back.yaml` для развертывания приложений на одной и той же ноде
 
 ```yml
 ---
@@ -232,7 +232,7 @@ spec:
 ```
 - Логи выполнения ДЗ на сайте killercoda `https://killercoda.com/playgrounds/scenario/kubernetes`
 
-* Создаем NAmespace stage
+* Создаем Namespace stage
 ```
 controlplane $ kubectl create ns stage
 namespace/stage created
