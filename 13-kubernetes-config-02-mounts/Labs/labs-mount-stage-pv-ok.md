@@ -106,7 +106,9 @@ spec:
 
 
 
-* Tab 1
+### Tab 1
+
+#### Установка NFS
 
 ```
 nitialising Kubernetes... done
@@ -119,16 +121,18 @@ Downloading https://get.helm.sh/helm-v3.9.1-linux-amd64.tar.gz
 Verifying checksum... Done.
 Preparing to install helm into /usr/local/bin
 helm installed into /usr/local/bin/helm
-controlplane $ 
+```
+```
 controlplane $ helm repo add stable https://charts.helm.sh/stable
 "stable" has been added to your repositories
-controlplane $ 
+```
+```
 controlplane $ helm repo update
 Hang tight while we grab the latest from your chart repositories...
 ...Successfully got an update from the "stable" chart repository
 Update Complete. ⎈Happy Helming!⎈
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ helm install nfs-server stable/nfs-server-provisioner 
 WARNING: This chart is deprecated
 NAME: nfs-server
@@ -158,8 +162,8 @@ correct storageClassName attribute. For example:
       resources:
         requests:
           storage: 100Mi
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ apt install nfs-common -y
 Reading package lists... Done
 Building dependency tree       
@@ -218,8 +222,9 @@ nfs-utils.service is a disabled or a static unit, not starting it.
 Processing triggers for systemd (245.4-4ubuntu3.13) ...
 Processing triggers for man-db (2.9.1-1) ...
 Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
-controlplane $ 
-controlplane $ 
+```
+#### Создание рабочей директории и файлов
+```
 controlplane $ mkdir -p My-project
 controlplane $ 
 controlplane $ cd My-project/
@@ -233,14 +238,14 @@ controlplane $
 controlplane $ vi pvc.yaml
 controlplane $ 
 controlplane $ vi stage-front-back.yaml
-controlplane $ 
+```
+#### Создание Namespace stage
+```
 controlplane $ kubectl create namespace stage
 namespace/stage created
-controlplane $ 
-controlplane $ 
-controlplane $ vi pvc.yaml 
-controlplane $ 
-controlplane $ 
+```
+#### Тестирование кластера
+```
 controlplane $ kubectl get po
 NAME                                  READY   STATUS    RESTARTS   AGE
 nfs-server-nfs-server-provisioner-0   1/1     Running   0          5m31s
@@ -305,7 +310,10 @@ controlplane $
 controlplane $ kubectl -n stage get pod              
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6c4fbd7c86-lqh7v   2/2     Running   0          36s
-controlplane $ 
+```
+#### Логи контейнеров
+* Frontend
+```
 controlplane $ kubectl -n stage logs fb-pod-6c4fbd7c86-lqh7v -c frontend
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
@@ -322,9 +330,9 @@ controlplane $ kubectl -n stage logs fb-pod-6c4fbd7c86-lqh7v -c frontend
 2022/07/21 13:57:54 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
 2022/07/21 13:57:54 [notice] 1#1: start worker processes
 2022/07/21 13:57:54 [notice] 1#1: start worker process 30
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+* Backend
+```
 controlplane $ kubectl -n stage logs fb-pod-6c4fbd7c86-lqh7v -c backend
 INFO:     Uvicorn running on http://0.0.0.0:9000 (Press CTRL+C to quit)
 INFO:     Started reloader process [7] using statreload
@@ -449,11 +457,13 @@ Traceback (most recent call last):
 sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) could not translate host name "db" to address: Name or service not known
 
 (Background on this error at: http://sqlalche.me/e/13/e3q8)
-controlplane $ 
-controlplane $ 
+```
+#### Тестирование доступа к общим директориям
+```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c frontend -it bash --
 error: you must specify at least one command for the container
-controlplane $ 
+```
+```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c frontend -it bash   
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 root@fb-pod-6c4fbd7c86-lqh7v:/app# 
@@ -526,7 +536,7 @@ root@fb-pod-6c4fbd7c86-lqh7v:/static# cat 43.txt
 root@fb-pod-6c4fbd7c86-lqh7v:/static# 
 root@fb-pod-6c4fbd7c86-lqh7v:/static# 
 ```
-* Tab 2
+### Tab 2
 
 ```
 controlplane $ 
@@ -547,8 +557,8 @@ root@fb-pod-6c4fbd7c86-lqh7v:/static#
 root@fb-pod-6c4fbd7c86-lqh7v:/static# 
 root@fb-pod-6c4fbd7c86-lqh7v:/static# 
 ```
-* Tab 3
-
+### Tab 3
+#### Создание файлов в общих директориях
 ```
 controlplane $ 
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c backend -it bash
@@ -569,10 +579,9 @@ root@fb-pod-6c4fbd7c86-lqh7v:/static#
 root@fb-pod-6c4fbd7c86-lqh7v:/static# 
 ```
 
-* Tab 4
+### Tab 4
+#### Репликация приложений
 ```
-ontrolplane $ 
-controlplane $ 
 controlplane $ kubectl -n stage scale deployment fb-pod --replicas=3
 deployment.apps/fb-pod scaled
 controlplane $ 
@@ -589,8 +598,9 @@ NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6c4fbd7c86-2b99x   2/2     Running   0          50s
 fb-pod-6c4fbd7c86-8tprw   2/2     Running   0          50s
 fb-pod-6c4fbd7c86-lqh7v   2/2     Running   0          8m11s
-controlplane $ 
-controlplane $ 
+```
+* Ошибочные команды
+```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-2b99x -it bash -- ls /static
 error: cannot exec into a container in a completed pod; current phase is Failed
 controlplane $ 
@@ -613,15 +623,18 @@ error: cannot exec into a container in a completed pod; current phase is Failed
 controlplane $ 
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-2b99x -c frontend -it sh -- pwd
 error: cannot exec into a container in a completed pod; current phase is Failed
-controlplane $ 
+```
+* Реплицированные приложения
+```
 controlplane $ kubectl -n stage get pod
 NAME                      READY   STATUS                   RESTARTS   AGE
 fb-pod-6c4fbd7c86-2b99x   0/2     ContainerStatusUnknown   2          3m37s
 fb-pod-6c4fbd7c86-8tprw   2/2     Running                  0          3m37s
 fb-pod-6c4fbd7c86-jncwt   2/2     Running                  0          2m21s
 fb-pod-6c4fbd7c86-lqh7v   2/2     Running                  0          10m
-controlplane $ 
-controlplane $ 
+```
+#### Создание файлов в общих директориях
+```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-8tprw -c frontend -it bash     
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 root@fb-pod-6c4fbd7c86-8tprw:/app# 
@@ -649,8 +662,9 @@ fb-pod-6c4fbd7c86-2b99x   0/2     ContainerStatusUnknown   2          5m6s
 fb-pod-6c4fbd7c86-8tprw   2/2     Running                  0          5m6s
 fb-pod-6c4fbd7c86-jncwt   2/2     Running                  0          3m50s
 fb-pod-6c4fbd7c86-lqh7v   2/2     Running                  0          12m
-controlplane $ 
-controlplane $ 
+```
+#### Проверка доступности общих файлов для всех контейнеров всех реплик
+```
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-8tprw -c frontend -it bash -- ls /static
 42.txt  43.txt
 controlplane $ 
@@ -668,6 +682,5 @@ controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c frontend -it bas
 controlplane $ 
 controlplane $ kubectl -n stage exec fb-pod-6c4fbd7c86-lqh7v -c backend -it bash -- ls /static
 42.txt  43.txt
-controlplane $ 
-controlplane $ 
+
 ```
