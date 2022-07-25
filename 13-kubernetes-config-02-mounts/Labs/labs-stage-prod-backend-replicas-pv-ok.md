@@ -25,18 +25,12 @@ helm repo update && \
 helm install nfs-server stable/nfs-server-provisioner && \
 apt install nfs-common -y && \
 kubectl create namespace stage && \
-kubectl create namespace prod && \
 mkdir -p My-Procect/stage && \
 cd My-Procect/stage && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
-ls -lha && \
-kubectl get namespace stage && \
-kubectl get namespace prod && \
-kubectl get sc && \
-kubectl get pod && \
-kubectl get svc && \
-kubectl get ns
+ls -lha
 ```
+
 * WorkerNode
 ```
 apt install nfs-common -y
@@ -148,6 +142,16 @@ spec:
 ```
 ### 3. Репликация stage.
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
+
+* Тестирование stage
+```
+kubectl get namespace stage && \
+kubectl get sc && \
+kubectl get pod && \
+kubectl get svc && \
+kubectl get ns
+```
+* Репликация
 ```
 controlplane $ kubectl -n stage get deployments.apps     
 NAME     READY   UP-TO-DATE   AVAILABLE   AGE
@@ -240,6 +244,73 @@ controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c
 42, 42, 42
 44
 ```
+
+#### Проверка доступности общих файлов для всех контейнеров всех реплик
+
+##### Для пода fb-pod-6d5f85cbb8-6wck8
+* frontend
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c frontend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c frontend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c frontend -- sh -c "cat /static/43.txt"
+43
+```
+* backend
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-6wck8 -c backend -- sh -c "cat /static/43.txt"
+43
+```
+##### Для пода fb-pod-6d5f85cbb8-88chm
+* frontend
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-88chm -c frontend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-88chm -c frontend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-88chm -c frontend -- sh -c "cat /static/43.txt"
+43
+```
+* backend
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-88chm -c backend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-88chm -c backend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-88chm -c backend -- sh -c "cat /static/43.txt"
+43
+```
+##### Для пода fb-pod-6d5f85cbb8-jpw4l
+* frontend
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-jpw4l -c frontend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-jpw4l -c frontend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-jpw4l -c frontend -- sh -c "cat /static/43.txt"
+43
+```
+* backend
+```
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-jpw4l -c backend -it bash -- ls /static
+42.txt  43.txt
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-jpw4l -c backend -- sh -c "cat /static/42.txt"
+42, 42, 42
+44
+controlplane $ kubectl -n stage exec fb-pod-6d5f85cbb8-jpw4l -c backend -- sh -c "cat /static/43.txt"
+43
+```
+
 
 
 ### 6. Скрипт для проверок. 
