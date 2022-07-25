@@ -286,7 +286,7 @@ kubectl get pod && \
 kubectl get svc && \
 kubectl -n prod get sc && \
 kubectl -n prod get pod && \
-kubectl -n prod get svc && 
+kubectl -n prod get svc
 ```
 
 
