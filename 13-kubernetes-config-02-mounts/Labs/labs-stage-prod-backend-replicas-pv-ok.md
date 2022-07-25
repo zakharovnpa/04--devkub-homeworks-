@@ -759,7 +759,19 @@ pv-prod                                    2Gi        RWX            Retain     
 pv-stage                                   2Gi        RWX            Retain           Available                     nfs                     7m19s
 pvc-86895215-5b8a-4c23-864d-e54c964a66a0   2Gi        RWX            Delete           Bound       prod/pvc-prod     nfs                     39m
 ```
-### 10. Логи при запуске stage prod
+### 10. Логи при запуске stage, prod на разные PV, с индивидуальными PVC.
+* Условия запуска:
+  * Сначала запустил все PV
+  * Потом все PVC
+  * Потом развернул backend, frontend
+   
+* Вывод: 
+  * идет путаница. 
+  * PVC запрашивает неверный PV, при правильном указании имени PV, 
+  * директории data/stage/pv, data/prod/pv создаются некорректно. Одна создалась - другая нет
+  * файлы из stage попали в директорию data/prod/pv
+  * файлы из prod сохраниются только локально в контейнере, на NFS не попадают.
+
 * Tab 1
 ```
 controlplane $ 
