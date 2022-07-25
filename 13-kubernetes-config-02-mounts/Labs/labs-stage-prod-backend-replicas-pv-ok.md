@@ -457,19 +457,178 @@ subsets:
         name: db
 
 ```
-
+### 8. Тестирование окружения
+```
+kubectl -n prod get po
+```
+```
+kubectl -n prod get statefulsets.apps
+```
+```
+kubectl -n prod get storageclasses.storage.k8s.io
+```
 ### 8. Репликация prod. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
 
+* Реплицируем backend
 ```
 kubectl -n prod scale --replicas=3 statefulset/b-pod
+```
+```
+controlplane $ kubectl -n prod scale --replicas=3 statefulset/b-pod
+statefulset.apps/b-pod scaled
+```
+* Реплицированный backend
+```
+controlplane $ kubectl -n prod get po
+NAME      READY   STATUS    RESTARTS   AGE
+b-pod-0   1/1     Running   0          15m
+b-pod-1   1/1     Running   0          64s
+b-pod-2   1/1     Running   0          46s
+f-pod-0   1/1     Running   0          15m
 ```
 
 ### 9. Тестирование доступа к общему тому для prod. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
 
+```
+kubectl -n prod exec b-pod-0 -- sh -c "ls -lha /static"
+```
+
+```
+kubectl -n prod exec b-pod-0 -- sh -c "echo '42' > /static/42.txt"
+```
+
+```
+kubectl -n prod exec b-pod-0 -- sh -c "cat /static/42.txt"
+```
+
+
 ### 10. Логи окружения prod. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
+
+```
+controlplane $ kubectl apply -f .
+statefulset.apps/b-pod created
+service/db created
+service/b-pod created
+endpoints/db created
+statefulset.apps/f-pod created
+service/f-svc created
+persistentvolume/pv-prod created
+persistentvolumeclaim/pvc-prod created
+```
+```
+controlplane $ kubectl -n prod get po
+NAME      READY   STATUS    RESTARTS   AGE
+b-pod-0   1/1     Running   0          106s
+f-pod-0   1/1     Running   0          106s
+```
+```
+controlplane $ kubectl -n prod get deployments.apps 
+No resources found in prod namespace.
+```
+```
+controlplane $ kubectl -n prod get statefulsets.apps 
+NAME    READY   AGE
+b-pod   1/1     2m12s
+f-pod   1/1     2m11s
+```
+```
+controlplane $ kubectl -n prod get storageclasses.storage.k8s.io 
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   16m
+```
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "ls -lha /static"
+total 8.0K
+drwxrwsrwx 2 root root 4.0K Jul 25 02:13 .
+drwxr-xr-x 1 root root 4.0K Jul 25 02:13 ..
+```
+* На frontend нет общей папки
+```
+controlplane $ kubectl -n prod exec f-pod-0 -- sh -c "ls -lha /static"
+ls: cannot access '/static': No such file or directory
+command terminated with exit code 2
+```
+* Создаем в общей директории файл 42.txt
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "echo '42' > /static/42.txt"
+```
+* Созданный файл 42.txt в общей директории
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "ls -lha /static"
+total 12K
+drwxrwsrwx 2 root root 4.0K Jul 25 02:23 .
+drwxr-xr-x 1 root root 4.0K Jul 25 02:13 ..
+-rw-r--r-- 1 root root    3 Jul 25 02:23 42.txt
+```
+* Читаем содержимое файла 42.txt
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/42.txt"
+42
+```
+* Реплицируем backend
+```
+controlplane $ kubectl -n prod scale --replicas=3 statefulset/b-pod
+statefulset.apps/b-pod scaled
+```
+* Реплицированный backend
+```
+controlplane $ kubectl -n prod get po
+NAME      READY   STATUS    RESTARTS   AGE
+b-pod-0   1/1     Running   0          15m
+b-pod-1   1/1     Running   0          64s
+b-pod-2   1/1     Running   0          46s
+f-pod-0   1/1     Running   0          15m
+```
+* В каждом поде backend
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "ls -lha /static"
+total 12K
+drwxrwsrwx 2 root root 4.0K Jul 25 02:23 .
+drwxr-xr-x 1 root root 4.0K Jul 25 02:13 ..
+-rw-r--r-- 1 root root    3 Jul 25 02:23 42.txt
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-1 -- sh -c "ls -lha /static"
+total 12K
+drwxrwsrwx 2 root root 4.0K Jul 25 02:23 .
+drwxr-xr-x 1 root root 4.0K Jul 25 02:28 ..
+-rw-r--r-- 1 root root    3 Jul 25 02:23 42.txt
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-2 -- sh -c "ls -lha /static"
+total 12K
+drwxrwsrwx 2 root root 4.0K Jul 25 02:23 .
+drwxr-xr-x 1 root root 4.0K Jul 25 02:28 ..
+-rw-r--r-- 1 root root    3 Jul 25 02:23 42.txt
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-1 -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-2 -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-2 -- sh -c "echo '43' > /static/43.txt"
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-2 -- sh -c "cat /static/42.txt"
+42
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-2 -- sh -c "ls -lha /static"
+total 16K
+drwxrwsrwx 2 root root 4.0K Jul 25 02:32 .
+drwxr-xr-x 1 root root 4.0K Jul 25 02:28 ..
+-rw-r--r-- 1 root root    3 Jul 25 02:23 42.txt
+-rw-r--r-- 1 root root    3 Jul 25 02:32 43.txt
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-2 -- sh -c "cat /static/43.txt"
+43
+controlplane $ 
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "cat /static/43.txt"
+43
+```
 
 ### 11. Скрипт для проверок prod. 
 [К оглавлению](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-02-mounts/Labs/labs-stage-prod-backend-replicas-pv-ok.md#%D0%BE%D1%82%D0%B2%D0%B5%D1%82-%D0%BD%D0%B0-%D0%B4%D0%B7---backend-%D0%B2-%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F%D1%85-stage-%D0%B8-prod-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B0%D1%8E%D1%82%D1%81%D1%8F-%D0%BA%D0%B0%D0%B6%D0%B4%D1%8B%D0%B9-%D0%BA-%D1%81%D0%B2%D0%BE%D0%B5%D0%BC%D1%83-pv-%D0%BF%D1%80%D0%B8-%D1%80%D0%B5%D0%BF%D0%BB%D0%B8%D0%BA%D0%B0%D1%86%D0%B8%D0%B8-%D0%BE%D1%81%D1%82%D0%B0%D0%B5%D1%82%D0%BC%D1%8F-%D0%B2%D0%BE%D0%B7%D0%BC%D0%BE%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C-%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%BC%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-stage-%D0%B8-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BA%D0%BE%D0%BD%D0%B5%D0%B9%D0%BD%D0%B5%D1%80%D0%B0%D0%BC%D0%B8-%D0%B2%D1%81%D0%B5%D1%85-backend-%D0%B2-prod)
