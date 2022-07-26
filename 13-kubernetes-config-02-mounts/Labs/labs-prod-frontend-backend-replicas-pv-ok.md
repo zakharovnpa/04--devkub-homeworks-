@@ -194,3 +194,81 @@ subsets:
     ports:
       - port: 5432
         name: db
+```
+
+#### Разворачиваем окружение
+```
+controlplane $ kubectl apply -f .
+statefulset.apps/b-pod created
+service/db created
+service/b-pod created
+endpoints/db created
+statefulset.apps/f-pod created
+service/f-svc created
+persistentvolume/pv-prod created
+persistentvolumeclaim/pvc-prod created
+```
+#### Тестирование окружения
+```
+controlplane $ kubectl -n prod get storageclasses.storage.k8s.io 
+NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   8m14s
+controlplane $ 
+controlplane $ kubectl -n prod get persistentvolume              
+NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM           STORAGECLASS   REASON   AGE
+pv-prod   2Gi        RWX            Retain           Bound    prod/pvc-prod   nfs                     116s
+controlplane $ 
+controlplane $ kubectl -n prod get persistentvolumeclaims 
+NAME       STATUS   VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+pvc-prod   Bound    pv-prod   2Gi        RWX            nfs            2m1s
+controlplane $ 
+controlplane $ kubectl -n prod get pod                    
+NAME      READY   STATUS    RESTARTS   AGE
+b-pod-0   1/1     Running   0          2m12s
+f-pod-0   1/1     Running   0          2m12s
+controlplane $ 
+controlplane $ kubectl -n prod get statefulsets.apps 
+NAME    READY   AGE
+b-pod   1/1     2m20s
+f-pod   1/1     2m20s
+```
+#### Тестирование доступа к общему тому для prod. 
+
+```
+kubectl -n prod exec b-pod-0 -- sh -c "ls -lha /static"
+```
+* Пустые директории на backend и на frontend
+
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "ls -lha /static"
+total 8.0K
+drwxr-xr-x 2 root root 4.0K Jul 26 04:57 .
+drwxr-xr-x 1 root root 4.0K Jul 26 04:57 ..
+controlplane $ 
+controlplane $ kubectl -n prod exec f-pod-0 -- sh -c "ls -lha /static"
+total 8.0K
+drwxr-xr-x 2 root root 4.0K Jul 26 04:57 .
+drwxr-xr-x 1 root root 4.0K Jul 26 04:57 ..
+```
+
+* Создаем файл 42.txt на backend
+
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "echo '42' > /static/42.txt"
+controlplane $ 
+```
+* Читаем файл 42.txt на frontend
+```
+controlplane $ kubectl -n prod exec f-pod-0 -- sh -c "cat /static/42.txt"
+42
+```
+* Создаем файл 43.txt на frontend
+```
+controlplane $ kubectl -n prod exec b-pod-0 -- sh -c "echo '43' > /static/43.txt"
+```
+* Читаем файл 43.txt на backend
+```
+controlplane $ kubectl -n prod exec f-pod-0 -- sh -c "cat /static/43.txt"
+43
+```
+
