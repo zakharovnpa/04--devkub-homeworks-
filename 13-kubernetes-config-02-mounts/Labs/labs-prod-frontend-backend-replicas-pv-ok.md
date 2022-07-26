@@ -20,7 +20,7 @@ apt install nfs-common -y && \
 kubectl create namespace prod && \
 mkdir -p My-Project && \
 cd My-Project && \
-touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
+touch prod-pv.yaml prod-pvc.yaml prod-frontend.yaml prod-backend.yaml && \
 ls -lha
 ```
 #### Манифесты для окружения prod. 
