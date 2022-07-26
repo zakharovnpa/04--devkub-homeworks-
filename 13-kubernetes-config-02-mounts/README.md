@@ -17,73 +17,14 @@
 * в поде подключена общая папка между контейнерами (например, /static);
 * после записи чего-либо в контейнере с беком файлы можно получить из контейнера с фронтом.
 
-
 ### Ход решения:
 
+#### Используемый манифест деплоя
 
-#### 1. Установка NFS
-* Команды на ControlNode
-```
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
-
-helm repo add stable https://charts.helm.sh/stable && helm repo update && \
-
-helm install nfs-server stable/nfs-server-provisioner && apt install nfs-common -y
-
-```
-* Команды на WorkerNode
-```
-apt install nfs-common -y
-```
-### 2. Создание namespace `stage`
-
-```
-kubectl create namespace stage
-```
-
-### 3. Тестирование кластера
-#### 3.1 StorageClass
-```
-controlplane $ kubectl get sc
-NAME   PROVISIONER                                       RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-nfs    cluster.local/nfs-server-nfs-server-provisioner   Delete          Immediate           true                   91s
-```
-#### 3.2 Services
-```
-controlplane $ kubectl get svc
-NAME                                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                                                                     AGE
-kubernetes                          ClusterIP   10.96.0.1      <none>        443/TCP                                                                                                     68d
-nfs-server-nfs-server-provisioner   ClusterIP   10.96.246.57   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   2m12s
-```
-#### 3.3 Pod
-```
-controlplane $ kubectl get po 
-NAME                                  READY   STATUS    RESTARTS   AGE
-nfs-server-nfs-server-provisioner-0   1/1     Running   0          3m13s
-```
-### 4. Создаем запрос (PVC) с именем pvc на том(volume) на основе storageClassName nfs. Режим доступа - ReadWriteMany. 
-
-* `pvc.yaml`
-```yml
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pvc
-spec:
-  storageClassName: nfs
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 2Gi
-```
-
-### 6. Создаем поды для Stage
-
-* Frontend и Backend [mount-stage-front-back.yaml](/13-kubernetes-config-02-mounts/Files/mount-stage-front-back.yaml)
+* fb-pod.yaml
 
 ```yml
+# Config Deployment Frontend & Backend with Volume
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -115,14 +56,12 @@ spec:
           imagePullPolicy: IfNotPresent
           name: backend
           volumeMounts:
-            - mountPath: "/static"
+            - mountPath: "/tmp/cache"
               name: my-volume
       volumes:
-       - name: my-volume
-         persistentVolumeClaim:
-           claimName: pvc
-      terminationGracePeriodSeconds: 30
-
+        - name: my-volume
+          emptyDir: {}
+ 
 ---
 # Config Service
 apiVersion: v1
@@ -139,67 +78,160 @@ spec:
     nodePort: 30080
   selector:
     app: fb-pod
-
-```
-```
-kubectl apply -f mount-stage-front-back.yaml
 ```
 
-#### 6.1 Проверяем доступность тома и возможность создания файлов в NFS
 
-#### 6.1.1 Создаем в контейнере nginx в директории монтирования /static файл 42.txt
+##### Создаем namespace "stage"
 ```
-controlplane $ kubectl exec pod -c nginx -it bash
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-root@pod:/# 
-root@pod:/# 
-root@pod:/# ls -lha | grep static
-drwxrwsrwx   2 root root 4.0K Jul 18 12:59 static
-root@pod:/# 
-root@pod:/# cd static/
-root@pod:/static# 
-root@pod:/static# ls -lha
-total 8.0K
-drwxrwsrwx 2 root root 4.0K Jul 18 12:59 .
-drwxr-xr-x 1 root root 4.0K Jul 18 13:00 ..
-root@pod:/static# 
-root@pod:/static# echo '42' > 42.txt
-root@pod:/static# 
-root@pod:/static# cat 42.txt 
+controlplane $ kubectl create namespace stage
+namespace/stage created
+```
+##### Разворачивание среды stage
+```
+controlplane $ kubectl apply -f fb-pod.yaml 
+deployment.apps/fb-pod created
+service/fb-pod created
+```
+##### Тестирование среды stage
+```
+controlplane $ kubectl -n stage get po,sc,pv,pvc,svc,deploy
+NAME                          READY   STATUS    RESTARTS   AGE
+pod/fb-pod-6464948946-lqhcc   2/2     Running   0          25s
+
+NAME             TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+service/fb-pod   NodePort   10.103.189.210   <none>        80:30080/TCP   25s
+
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fb-pod   1/1     1            1           25s
+```
+##### Работа с общими файлами и директориями
+* Общих файлов в общих директориях пока никаких нет
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- ls -la /static
+total 8
+drwxrwxrwx 2 root root 4096 Jul 26 01:46 .
+drwxr-xr-x 1 root root 4096 Jul 26 01:46 ..
+```
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c backend -- ls -la /tmp/cache
+total 8
+drwxrwxrwx 2 root root 4096 Jul 26 01:46 .
+drwxrwxrwt 1 root root 4096 Jul 26 01:46 ..
+```
+* Создаем на frontend файл 42.txt, в котором записано число 42
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- sh -c "echo '42' > /static/42.txt"
+```
+* На backend в общей директории появился файл 42.txt
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c backend -- ls -la /tmp/cache
+total 12
+drwxrwxrwx 2 root root 4096 Jul 26 01:49 .
+drwxrwxrwt 1 root root 4096 Jul 26 01:46 ..
+-rw-r--r-- 1 root root    3 Jul 26 01:49 42.txt
+```
+* Создаем на backend файл 43.txt, в котором записано число 43
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c backend -- sh -c "echo '43' > /tmp/cache/43.txt"
+```
+* На frontend в общей директории появился файл 43.txt. Теперь там два файла.
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- ls -la /static
+total 16
+drwxrwxrwx 2 root root 4096 Jul 26 01:51 .
+drwxr-xr-x 1 root root 4096 Jul 26 01:46 ..
+-rw-r--r-- 1 root root    3 Jul 26 01:49 42.txt
+-rw-r--r-- 1 root root    3 Jul 26 01:51 43.txt
+```
+* На frontend читаем содержимое общих файлов
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- cat /static/42.txt
 42
-root@pod:/static# 
-```
-#### 6.1.2 Ищем файл 42.txt на ноде, на которой запущен под и контейнер с NFS сервером
-```
-controlnode$ ssh node01
-node01 $
-node01 $ find / -name 42.txt
-/var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/42.txt
-```
-```
-node01 $ ls -lha /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/      
-total 16K
-drwxrwsrwx 2 root root 4.0K Jul 18 13:16 .
-drwxr-x--- 3 root root 4.0K Jul 18 13:00 ..
--rw-r--r-- 1 root root    3 Jul 18 13:03 42.txt
--rw-r--r-- 1 root root    3 Jul 18 13:16 43.txt
-node01 $ cat /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/42.txt
-42
-node01 $ 
-node01 $ cat /var/lib/kubelet/pods/027aa5b4-dd73-41bc-aaab-a9438a49c54a/volumes/kubernetes.io~nfs/pvc-bdba834f-9043-4096-87d0-e532abdff6a7/43.txt
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- cat /static/43.txt
 43
+```
+* На backend читаем содержимое общих файлов
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c backend -- cat /tmp/cache/42.txt 
+42
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c backend -- cat /tmp/cache/43.txt
+43
+```
+* Создаем на frontend файл 10mb.txt размером 10Мб
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- dd if=/dev/zero of=/static/10mb.txt bs=1M count=10
+10+0 records in
+10+0 records out
+10485760 bytes (10 MB, 10 MiB) copied, 0.00479298 s, 2.2 GB/s
+controlplane $ 
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c frontend -- ls -la /static
+total 10256
+drwxrwxrwx 2 root root     4096 Jul 26 01:54 .
+drwxr-xr-x 1 root root     4096 Jul 26 01:46 ..
+-rw-r--r-- 1 root root 10485760 Jul 26 01:54 10mb.txt
+-rw-r--r-- 1 root root        3 Jul 26 01:49 42.txt
+-rw-r--r-- 1 root root        3 Jul 26 01:51 43.txt
+```
+* На backend также появился файл 10mb.txt
+```
+controlplane $ kubectl -n stage exec fb-pod-6464948946-lqhcc -c backend -- ls -la /tmp/cache
+total 10256
+drwxrwxrwx 2 root root     4096 Jul 26 01:54 .
+drwxrwxrwt 1 root root     4096 Jul 26 01:46 ..
+-rw-r--r-- 1 root root 10485760 Jul 26 01:54 10mb.txt
+-rw-r--r-- 1 root root        3 Jul 26 01:49 42.txt
+-rw-r--r-- 1 root root        3 Jul 26 01:51 43.txt
+```
+#### Где на ноде расположены общие файлы
+
+```
+controlplane $ ssh node01
+Last login: Fri Oct  8 17:04:36 2021 from 10.32.0.22
+```
+* Ищем директорию с нашими файлми "42.txt" и "43.txt"
+```
+node01 $ find /var/lib/kubelet -name 42.txt
+/var/lib/kubelet/pods/70abe7ee-53b4-436e-b066-4a2e4ae342ee/volumes/kubernetes.io~empty-dir/my-volume/42.txt
+node01 $ 
+node01 $ find /var/lib/kubelet -name 43.txt
+/var/lib/kubelet/pods/70abe7ee-53b4-436e-b066-4a2e4ae342ee/volumes/kubernetes.io~empty-dir/my-volume/43.txt
+```
+* Просматриваем содержимое общей директории. Видим здесь все три файла.
+```
+node01 $ ls -lha /var/lib/kubelet/pods/70abe7ee-53b4-436e-b066-4a2e4ae342ee/volumes/kubernetes.io~empty-dir/my-volume/
+total 11M
+drwxrwxrwx 2 root root 4.0K Jul 26 01:54 .
+drwxr-xr-x 3 root root 4.0K Jul 26 01:46 ..
+-rw-r--r-- 1 root root  10M Jul 26 01:54 10mb.txt
+-rw-r--r-- 1 root root    3 Jul 26 01:49 42.txt
+-rw-r--r-- 1 root root    3 Jul 26 01:51 43.txt
+```
+* Другой вариант просмотра содержимого директории
+```
+node01 $ find /var/lib/kubelet -name my-volume | grep volumes
+/var/lib/kubelet/pods/70abe7ee-53b4-436e-b066-4a2e4ae342ee/volumes/kubernetes.io~empty-dir/my-volume
+```
+```
+node01 $ find /var/lib/kubelet -name my-volume | grep volumes | xargs ls -lha
+total 11M
+drwxrwxrwx 2 root root 4.0K Jul 26 01:54 .
+drwxr-xr-x 3 root root 4.0K Jul 26 01:46 ..
+-rw-r--r-- 1 root root  10M Jul 26 01:54 10mb.txt
+-rw-r--r-- 1 root root    3 Jul 26 01:49 42.txt
+-rw-r--r-- 1 root root    3 Jul 26 01:51 43.txt
+```
+```
+node01 $ 
+node01 $ find /var/lib/kubelet -name 43.txt
+node01 $ 
+node01 $ date
+Tue Jul 26 02:15:36 UTC 2022
 node01 $ 
 ```
-### Ответ: 
-
-#### 6.2 Результат:
-  - общая директория монтируется через запрос PVC только к тому PV? 
-  - подключение с одного контейнера к двум разным PVC, находящимся в разных Namespace - невозможно
-  - Подключение к одному PVC из контейнеров из разных Namespace - невозможно
-
-
-
-
+### Ответ:
+* в поде подключены общие папки для передачи данных между контейнерами (во frontend - /static, в backend - /tmp/cache);
+* после сохранения данных в контейнере backend файлы можно получить из контейнера frontend.
 
 
 
