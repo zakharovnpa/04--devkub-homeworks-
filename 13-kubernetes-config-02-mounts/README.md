@@ -221,14 +221,7 @@ drwxr-xr-x 3 root root 4.0K Jul 26 01:46 ..
 -rw-r--r-- 1 root root    3 Jul 26 01:49 42.txt
 -rw-r--r-- 1 root root    3 Jul 26 01:51 43.txt
 ```
-```
-node01 $ 
-node01 $ find /var/lib/kubelet -name 43.txt
-node01 $ 
-node01 $ date
-Tue Jul 26 02:15:36 UTC 2022
-node01 $ 
-```
+
 ### Ответ:
 * в поде подключены общие папки для передачи данных между контейнерами (во frontend - /static, в backend - /tmp/cache);
 * после сохранения данных в контейнере backend файлы можно получить из контейнера frontend.
