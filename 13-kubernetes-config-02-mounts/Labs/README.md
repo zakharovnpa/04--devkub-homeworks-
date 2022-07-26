@@ -35,3 +35,5 @@
 - ["Успешное подключение - 3" к PV через StorageClass Deployment in stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok-3.md)
 
 - ["Успешное подключение - 4" к PV не используя StorageClass для Deployment в окружении stage](/13-kubernetes-config-02-mounts/Labs/labs-mount-stage-pv-ok-4.md)
+
+- [Ответ на ДЗ 13.2-2 - frontend и backend в окружении prod подключаются к общему PV, при репликации остается возможность обмена данными между конейнерами всех frontend и между конейнерами всех backend в prod](/13-kubernetes-config-02-mounts/Labs/labs-prod-frontend-backend-replicas-pv-ok.md)
