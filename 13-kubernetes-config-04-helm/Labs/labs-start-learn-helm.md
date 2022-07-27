@@ -259,7 +259,7 @@ controlplane $
 controlplane $ cat NOTES.txt
 ```
 * NOTES.txt
-```yml
+```sh
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
