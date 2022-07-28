@@ -474,7 +474,7 @@ spec:
 controlplane $ cat serviceaccount.yaml
 ```
 * serviceaccount.yaml
-```
+```yml
 {{- if .Values.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
@@ -515,7 +515,4 @@ spec:
       command: ['wget']
       args: ['{{ include "My-chart.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
-```
-controlplane $ 
-controlplane $ 
 ```
