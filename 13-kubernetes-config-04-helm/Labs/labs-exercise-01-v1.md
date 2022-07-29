@@ -109,8 +109,6 @@ helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
 ```
 ### Технология сборки приложения.
 1. Создание в папке templates шаблонов `helm create first`
-  1.1 Задание: создать свои шаблоны для своих приложений
-
 2. Запуск сборки ресурсов из шаблона `helm template first`
   * после выполнения команды в терминале появятся содержимое файлов
 ```
@@ -129,7 +127,21 @@ helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
     |       `-- test-connection.yaml
     `-- values.yaml
 ```
-3. Деплой приложения
+
+### Задание: 
+Используя манифесты разработанного приложения frontend,backend, database
+создать шаблоны для упаковки в чарт составных частей приложений.
+
+В результате получить файлы:
+  * values.yaml
+  * NOTES.txt
+  * deployment.yaml
+  * service.yaml
+  * Chart.yaml
+  * 
+    
+
+### 3. Деплой приложения
   * `helm lint first`
   * `helm install first first` 
 
