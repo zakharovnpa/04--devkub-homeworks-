@@ -45,6 +45,7 @@ cd alertmanager && \
 helm install alertmanager prometheus-community/alertmanager && \
 cd ../nginx-ingress && \
 helm install nginx-ingress stable/nginx-ingress && \
+clear && \
 kubectl get po && \
 date
 ```
