@@ -107,3 +107,160 @@ helm list
 ```
 helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
 ```
+### Технология сборки приложения.
+1. Создание в папке templates шаблонов `helm create first`
+2. Запуск сборки ресурсов из шаблона `helm template first`
+  * после выполнения команды в терминале появятся содержимое файлов
+```
+-- first
+    |-- Chart.yaml
+    |-- charts
+    |-- templates
+    |   |-- NOTES.txt
+    |   |-- _helpers.tpl
+    |   |-- deployment.yaml
+    |   |-- hpa.yaml
+    |   |-- ingress.yaml
+    |   |-- service.yaml
+    |   |-- serviceaccount.yaml
+    |   `-- tests
+    |       `-- test-connection.yaml
+    `-- values.yaml
+```
+
+
+
+
+
+### Логи
+
+* Tab 1
+```
+controlplane $ pwd
+/root/My-Procect/stage/chart01
+controlplane $ 
+controlplane $ helm create first
+Creating first
+controlplane $ 
+```
+```
+controlplane $ helm template first
+```
+* serviceaccount.yaml
+```yml
+---
+# Source: first/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: release-name-first
+  labels:
+    helm.sh/chart: first-0.1.0
+    app.kubernetes.io/name: first
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+```
+* service.yaml
+```yml
+# Source: first/templates/service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-first
+  labels:
+    helm.sh/chart: first-0.1.0
+    app.kubernetes.io/name: first
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: first
+    app.kubernetes.io/instance: release-name
+---
+```
+* deployment.yaml
+```yml
+# Source: first/templates/deployment.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-first
+  labels:
+    helm.sh/chart: first-0.1.0
+    app.kubernetes.io/name: first
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: first
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: first
+        app.kubernetes.io/instance: release-name
+    spec:
+      serviceAccountName: release-name-first
+      securityContext:
+        {}
+      containers:
+        - name: first
+          securityContext:
+            {}
+          image: "nginx:1.16.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+---
+```
+* test-connection.yaml
+```yml
+# Source: first/templates/tests/test-connection.yaml
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "release-name-first-test-connection"
+  labels:
+    helm.sh/chart: first-0.1.0
+    app.kubernetes.io/name: first
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['release-name-first:80']
+  restartPolicy: Never
+---
+```
