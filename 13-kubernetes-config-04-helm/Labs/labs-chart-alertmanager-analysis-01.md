@@ -218,21 +218,11 @@ controlplane $ tree
 `-- values.yaml
 
 3 directories, 13 files
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ cat config-reload-values.yaml
-cat: config-reload-values.yaml: No such file or directory
-controlplane $ 
-controlplane $ cat NOTES.txt
-cat: NOTES.txt: No such file or directory
-controlplane $ 
 ```
+#### Chart.yaml
 ```
 controlplane $ cat Chart.yaml
 ```
-
-#### Chart.yaml
 ```
 apiVersion: v2
 appVersion: v0.23.0
@@ -321,12 +311,12 @@ $ helm inspect values prometheus-community/alertmanager
 # Helm 3
 $ helm show values prometheus-community/alertmanager
 ```
-
+#### values.yaml
 ```
 controlplane $ cat values.yaml
 ```
-#### values.yaml
-```
+```yml
+---
 # Default values for alertmanager.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -524,8 +514,6 @@ templates: {}
 ```
 
 ```
-controlplane $ 
-controlplane $ 
 controlplane $ tree
 .
 |-- Chart.yaml
@@ -565,12 +553,11 @@ controlplane $ tree
 1 directory, 9 files
 controlplane $ 
 ```
-
+#### NOTES.txt
 ```
 controlplane $ cat NOTES.txt
 ```
-#### NOTES.txt
-```
+```ps
 1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
@@ -593,12 +580,11 @@ controlplane $ cat NOTES.txt
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME {{ .Values.service.port }}:80
 {{- end }}
 ```
-
+####  _helpers.tpl
 ```
 controlplane $ cat _helpers.tpl
 ```
-####  _helpers.tpl
-```
+```tpl
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.
@@ -686,6 +672,7 @@ controlplane $ cat ingress.yaml
 ```
 #### ingress.yaml
 ```yml
+---
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "alertmanager.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
@@ -747,9 +734,13 @@ spec:
           {{- end }}
     {{- end }}
 {{- end }}
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ cat pdb.yaml
+```
+### pdb.yaml
+```yml
+---
 {{- if .Values.podDisruptionBudget -}}
 {{ if $.Capabilities.APIVersions.Has "policy/v1/PodDisruptionBudget" -}}
 apiVersion: policy/v1
@@ -767,11 +758,13 @@ spec:
       {{- include "alertmanager.selectorLabels" . | nindent 6 }}
 {{ toYaml .Values.podDisruptionBudget | indent 2 }}
 {{- end -}}
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+---
+```
+```
 controlplane $ cat serviceaccount.yaml
+```
+### serviceaccount.yaml
+```yml
 {{- if .Values.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
@@ -784,10 +777,14 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end -}}
-controlplane $ 
-controlplane $ 
-controlplane $ 
+---
+```
+```
 controlplane $ cat services.yaml
+```
+### services.yaml
+```yml
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -836,11 +833,14 @@ spec:
     {{- end }}
   selector:
     {{- include "alertmanager.selectorLabels" . | nindent 4 }}
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+---
+```
+```
 controlplane $ cat statefulset.yaml
+```
+### statefulset.yaml
+```yml
+---
 {{- $svcClusterPort := .Values.service.clusterPort -}}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -1011,6 +1011,9 @@ spec:
         - name: storage
           emptyDir: {}
 {{- end -}}
+---
+```
+```
 controlplane $ 
 controlplane $ 
 controlplane $ 
@@ -1021,7 +1024,13 @@ controlplane $ cat
 controlplane $ 
 controlplane $ cd tests/
 controlplane $ 
+```
+```
 controlplane $ cat test-connection.yaml 
+```
+### test-connection.yaml
+```yml
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1037,6 +1046,9 @@ spec:
       command: ['wget']
       args: ['{{ include "alertmanager.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
+---
+```
+```
 controlplane $ 
 controlplane $ 
 controlplane $ cd ..
@@ -1050,12 +1062,14 @@ controlplane $ cd ..
 controlplane $ 
 controlplane $ cd ci
 controlplane $ 
+```
+```
 controlplane $ cat config-reload-values.yaml 
+```
+### config-reload-values.yaml
+```
 configmapReload:
   enabled: true
-controlplane $ 
-controlplane $ 
-
 ```
 * Tab 2
 
