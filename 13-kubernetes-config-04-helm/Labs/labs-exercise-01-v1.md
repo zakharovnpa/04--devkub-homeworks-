@@ -268,3 +268,30 @@ spec:
   restartPolicy: Never
 ---
 ```
+```
+controlplane $ helm install first
+Error: INSTALLATION FAILED: must either provide a name or specify --generate-name
+controlplane $ 
+controlplane $ helm install first first
+NAME: first
+LAST DEPLOYED: Fri Jul 29 07:11:55 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=first,app.kubernetes.io/instance=first" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po
+NAME                                             READY   STATUS    RESTARTS      AGE
+alertmanager-0                                   0/1     Pending   0             37m
+first-5f9fd64764-2gsgw                           1/1     Running   0             10s
+nfs-server-nfs-server-provisioner-0              1/1     Running   0             37m
+nginx-ingress-controller-9b5c967bf-5jzbd         0/1     Running   15 (5s ago)   37m
+nginx-ingress-default-backend-85b4b4dd44-5wxm2   1/1     Running   0             37m
+controlplane $ 
+```
