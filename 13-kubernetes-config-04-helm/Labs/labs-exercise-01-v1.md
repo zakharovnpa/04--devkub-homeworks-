@@ -47,7 +47,8 @@ cd ../nginx-ingress && \
 helm install nginx-ingress stable/nginx-ingress && \
 clear && \
 kubectl get po && \
-date
+date && \
+pwd
 ```
 
 ### 2. Команды
