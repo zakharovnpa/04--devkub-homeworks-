@@ -21,13 +21,16 @@ kubectl create namespace stage && \
 mkdir -p My-Procect/stage && \
 cd My-Procect/stage && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
-helm create My-chart && \
+helm create chart01 && \
 ls -lha && \
-cd My-chart && \
+cd chart01 && \
 tree
 ```
 
 ### 2. Создание первого чарта
+```
+helm repo list
+```
 
 ```
 # Создание чарта first в папке charts
