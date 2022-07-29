@@ -15,7 +15,7 @@
 * Деплоим alertmanager
 * Деплоим nginx-ingress
 
-```
+```ps
 date && \
 curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
 helm repo add stable https://charts.helm.sh/stable && \
@@ -109,6 +109,8 @@ helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
 ```
 ### Технология сборки приложения.
 1. Создание в папке templates шаблонов `helm create first`
+  1.1 Задание: создать свои шаблоны для своих приложений
+
 2. Запуск сборки ресурсов из шаблона `helm template first`
   * после выполнения команды в терминале появятся содержимое файлов
 ```
@@ -127,9 +129,11 @@ helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
     |       `-- test-connection.yaml
     `-- values.yaml
 ```
+3. Деплой приложения
+  * `helm lint first`
+  * `helm install first first` 
 
-
-
+### Технология создания версий приложения
 
 
 ### Логи
