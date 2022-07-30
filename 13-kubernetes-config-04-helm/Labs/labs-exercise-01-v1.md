@@ -964,3 +964,166 @@ controlplane $ tree
 
 3 directories, 5 files
 ```
+```
+controlplane $ 
+controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+zakharovnpa/k8s-frontend:05.07.22controlplane $ 
+controlplane $ 
+controlplane $ helm upgrade fb-pod fb-pod
+Error: failed to download "fb-pod"
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts/fb-pod
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ helm upgrade fb-pod fb-pod
+Release "fb-pod" has been upgraded. Happy Helming!
+NAME: fb-pod
+LAST DEPLOYED: Sat Jul 30 07:47:17 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NOTES:
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to  namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Running             0          11m
+fb-pod-6f45f8798b-82wht   0/2     ContainerCreating   0          14s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          20s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          23s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          25s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          27s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          28s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          30s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          32s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          34s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          36s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          38s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          40s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          42s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          43s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
+fb-pod-6f45f8798b-82wht   2/2     Running       0          46s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-82wht   2/2     Running   0          49s
+controlplane $ 
+controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+zakharovnpa/k8s-frontend:12.07.22controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ helm upgrade fb-pod fb-pod
+Release "fb-pod" has been upgraded. Happy Helming!
+NAME: fb-pod
+LAST DEPLOYED: Sat Jul 30 07:49:31 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 3
+TEST SUITE: None
+NOTES:
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to  namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-69fc56646b-ncqdp   2/2     Running       0          8s
+fb-pod-6f45f8798b-82wht   2/2     Terminating   0          2m22s
+controlplane $ 
+controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+zakharovnpa/k8s-frontend:13.07.22controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-69fc56646b-ncqdp   2/2     Running   0          43s
+controlplane $ 
+controlplane $ cat fb-pod/values.yaml 
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "13.07.22"
+
+controlplane $ 
+controlplane $ date
+Sat Jul 30 07:51:01 UTC 2022
+controlplane $ 
+controlplane $ 
+```
+
+![screen-helm-upgrade-fb-pod.png](/13-kubernetes-config-04-helm/Files/screen-helm-upgrade-fb-pod.png)
