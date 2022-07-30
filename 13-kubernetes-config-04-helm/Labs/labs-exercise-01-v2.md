@@ -231,7 +231,7 @@ metadata:
   labels:
     app: fb-app
   name: fb-pod 
-  namespace: stage
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
