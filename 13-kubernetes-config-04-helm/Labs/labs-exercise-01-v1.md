@@ -35,8 +35,8 @@ apt install tree && \
 kubectl create namespace stage && \
 kubectl create namespace app1 && \
 kubectl create namespace app2 && \
-mkdir -p My-Procect/stage && \
-cd My-Procect/stage && \
+mkdir -p My-Project/stage && \
+cd My-Project/stage && \
 touch stage-pv.yaml stage-pvc.yaml stage-front-back.yaml && \
 helm create chart01 && \
 ls -lha && \
@@ -64,15 +64,15 @@ helm repo list
 ```
 * Создание чарта first в папке charts
 ```
-helm create first
+helm create fb-pod
 ```
 * Сборка ресурсов из шаблона 
 ```
-helm template first
+helm template fb-pod
 ```
 * Linter
 ```
-helm lint first
+helm lint fb-pod
 ```
 * Деплой Release deploy
 ```
@@ -566,4 +566,401 @@ nfs-server-nfs-server-provisioner-0              1/1     Running   0            
 nginx-ingress-controller-9b5c967bf-5jzbd         0/1     Running   15 (5s ago)   37m
 nginx-ingress-default-backend-85b4b4dd44-5wxm2   1/1     Running   0             37m
 controlplane $ 
+```
+### Логи - 2
+
+```
+controlplane $ date
+Sat Jul 30 07:23:10 UTC 2022
+
+NAME                                             READY   STATUS    RESTARTS   AGE
+alertmanager-0                                   0/1     Pending   0          2s
+nfs-server-nfs-server-provisioner-0              1/1     Running   0          24s
+nginx-ingress-controller-9b5c967bf-hxs2l         0/1     Pending   0          0s
+nginx-ingress-default-backend-85b4b4dd44-dv7ps   0/1     Pending   0          0s
+Sat Jul 30 07:04:21 UTC 2022
+/root/My-Procect/stage/chart01/charts/nginx-ingress
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts
+controlplane $ 
+controlplane $ helm create fb-pod
+Creating fb-pod
+controlplane $ 
+controlplane $ mc
+
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts
+controlplane $ 
+controlplane $ cd fb-pod/
+controlplane $ 
+controlplane $ tree
+.
+|-- Chart.yaml
+|-- charts
+|-- templates
+|   |-- NOTES.txt
+|   |-- _helpers.tpl
+|   |-- deployment.yaml
+|   `-- tests
+`-- values.yaml
+
+3 directories, 5 files
+controlplane $ 
+controlplane $ cat values.yaml 
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
+
+controlplane $ 
+controlplane $ cat templates/deployment.yaml 
+# Config Deployment Frontend & Backend with Volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+ 
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+controlplane $ 
+```
+```
+controlplane $ date
+Sat Jul 30 07:23:10 UTC 2022
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts/fb-pod
+controlplane $ 
+controlplane $ helm list
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                           APP VERSION
+alertmanager    default         1               2022-07-30 07:04:19.044655091 +0000 UTC deployed        alertmanager-0.19.0             v0.23.0    
+nfs-server      default         1               2022-07-30 07:03:56.095597041 +0000 UTC deployed        nfs-server-provisioner-1.1.3    2.3.0      
+nginx-ingress   default         1               2022-07-30 07:04:20.772116071 +0000 UTC deployed        nginx-ingress-1.41.3            v0.34.1    
+controlplane $ 
+controlplane $ helm template fb-pod
+Error: failed to download "fb-pod"
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ helm template fb-pod
+Error: template: fb-pod/templates/NOTES.txt:2:14: executing "fb-pod/templates/NOTES.txt" at <.Values.ingress.enabled>: nil pointer evaluating interface {}.enabled
+
+Use --debug flag to render out invalid YAML
+controlplane $ 
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts
+controlplane $ 
+controlplane $ helm lint fb-pod 
+==> Linting fb-pod
+[INFO] Chart.yaml: icon is recommended
+[ERROR] templates/: template: fb-pod/templates/NOTES.txt:2:14: executing "fb-pod/templates/NOTES.txt" at <.Values.ingress.enabled>: nil pointer evaluating interface {}.enabled
+
+Error: 1 chart(s) linted, 1 chart(s) failed
+controlplane $ 
+controlplane $ 
+controlplane $ helm lint fb-pod
+==> Linting fb-pod
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+controlplane $ 
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts
+controlplane $ 
+controlplane $ tree
+.
+|-- alertmanager
+|   |-- Chart.yaml
+|   |-- README.md
+|   |-- ci
+|   |   `-- config-reload-values.yaml
+|   |-- templates
+|   |   |-- NOTES.txt
+|   |   |-- _helpers.tpl
+|   |   |-- configmap.yaml
+|   |   |-- ingress.yaml
+|   |   |-- pdb.yaml
+|   |   |-- serviceaccount.yaml
+|   |   |-- services.yaml
+|   |   |-- statefulset.yaml
+|   |   `-- tests
+|   |       `-- test-connection.yaml
+|   `-- values.yaml
+|-- alertmanager-0.19.0.tgz
+|-- fb-pod
+|   |-- Chart.yaml
+|   |-- charts
+|   |-- templates
+|   |   |-- NOTES.txt
+|   |   |-- _helpers.tpl
+|   |   |-- deployment.yaml
+|   |   `-- tests
+|   `-- values.yaml
+|-- nginx-ingress
+|   |-- Chart.yaml
+|   |-- OWNERS
+|   |-- README.md
+|   |-- ci
+|   |   |-- daemonset-customconfig-values.yaml
+|   |   |-- daemonset-customnodeport-values.yaml
+|   |   |-- daemonset-headers-values.yaml
+|   |   |-- daemonset-internal-lb-values.yaml
+|   |   |-- daemonset-nodeport-values.yaml
+|   |   |-- daemonset-tcp-udp-configMapNamespace-values.yaml
+|   |   |-- daemonset-tcp-udp-values.yaml
+|   |   |-- daemonset-tcp-values.yaml
+|   |   |-- deamonset-default-values.yaml
+|   |   |-- deamonset-metrics-values.yaml
+|   |   |-- deamonset-psp-values.yaml
+|   |   |-- deamonset-webhook-and-psp-values.yaml
+|   |   |-- deamonset-webhook-values.yaml
+|   |   |-- deployment-autoscaling-values.yaml
+|   |   |-- deployment-customconfig-values.yaml
+|   |   |-- deployment-customnodeport-values.yaml
+|   |   |-- deployment-default-values.yaml
+|   |   |-- deployment-headers-values.yaml
+|   |   |-- deployment-internal-lb-values.yaml
+|   |   |-- deployment-metrics-values.yaml
+|   |   |-- deployment-nodeport-values.yaml
+|   |   |-- deployment-psp-values.yaml
+|   |   |-- deployment-tcp-udp-configMapNamespace-values.yaml
+|   |   |-- deployment-tcp-udp-values.yaml
+|   |   |-- deployment-tcp-values.yaml
+|   |   |-- deployment-webhook-and-psp-values.yaml
+|   |   `-- deployment-webhook-values.yaml
+|   |-- templates
+|   |   |-- NOTES.txt
+|   |   |-- _helpers.tpl
+|   |   |-- addheaders-configmap.yaml
+|   |   |-- admission-webhooks
+|   |   |   |-- job-patch
+|   |   |   |   |-- clusterrole.yaml
+|   |   |   |   |-- clusterrolebinding.yaml
+|   |   |   |   |-- job-createSecret.yaml
+|   |   |   |   |-- job-patchWebhook.yaml
+|   |   |   |   |-- psp.yaml
+|   |   |   |   |-- role.yaml
+|   |   |   |   |-- rolebinding.yaml
+|   |   |   |   `-- serviceaccount.yaml
+|   |   |   `-- validating-webhook.yaml
+|   |   |-- clusterrole.yaml
+|   |   |-- clusterrolebinding.yaml
+|   |   |-- controller-configmap.yaml
+|   |   |-- controller-daemonset.yaml
+|   |   |-- controller-deployment.yaml
+|   |   |-- controller-hpa.yaml
+|   |   |-- controller-metrics-service.yaml
+|   |   |-- controller-poddisruptionbudget.yaml
+|   |   |-- controller-prometheusrules.yaml
+|   |   |-- controller-psp.yaml
+|   |   |-- controller-role.yaml
+|   |   |-- controller-rolebinding.yaml
+|   |   |-- controller-service-internal.yaml
+|   |   |-- controller-service.yaml
+|   |   |-- controller-serviceaccount.yaml
+|   |   |-- controller-servicemonitor.yaml
+|   |   |-- controller-webhook-service.yaml
+|   |   |-- default-backend-deployment.yaml
+|   |   |-- default-backend-hpa.yaml
+|   |   |-- default-backend-poddisruptionbudget.yaml
+|   |   |-- default-backend-psp.yaml
+|   |   |-- default-backend-role.yaml
+|   |   |-- default-backend-rolebinding.yaml
+|   |   |-- default-backend-service.yaml
+|   |   |-- default-backend-serviceaccount.yaml
+|   |   |-- proxyheaders-configmap.yaml
+|   |   |-- tcp-configmap.yaml
+|   |   `-- udp-configmap.yaml
+|   `-- values.yaml
+`-- nginx-ingress-1.41.3.tgz
+
+13 directories, 91 files
+controlplane $ 
+controlplane $ cat   
+^C
+controlplane $ 
+controlplane $ cat fb-pod/templates/NOTES.txt 
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to {{ .Values.namespace }} namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts
+controlplane $ 
+controlplane $ helm template fb-pod 
+---
+# Source: fb-pod/templates/deployment.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "zakharovnpa/k8s-frontend:05.07.22"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "zakharovnpa/k8s-backend:05.07.22"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ helm install fb-pod fb-pod
+NAME: fb-pod
+LAST DEPLOYED: Sat Jul 30 07:36:16 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to  namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get po
+NAME                                             READY   STATUS             RESTARTS       AGE
+alertmanager-0                                   0/1     Pending            0              32m
+nfs-server-nfs-server-provisioner-0              1/1     Running            0              32m
+nginx-ingress-controller-9b5c967bf-hxs2l         0/1     CrashLoopBackOff   13 (64s ago)   32m
+nginx-ingress-default-backend-85b4b4dd44-dv7ps   1/1     Running            0              32m
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-qtrww   0/2     ContainerCreating   0          28s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Running   0          31s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6464948946-qtrww   2/2     Running   0          33s
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ pwd
+/root/My-Procect/stage/chart01/charts
+controlplane $ 
+controlplane $ cd fb-pod/
+controlplane $ 
+controlplane $ tree
+.
+|-- Chart.yaml
+|-- charts
+|-- templates
+|   |-- NOTES.txt
+|   |-- _helpers.tpl
+|   |-- deployment.yaml
+|   `-- tests
+`-- values.yaml
+
+3 directories, 5 files
 ```
