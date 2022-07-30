@@ -46,8 +46,18 @@ touch app1-pv.yaml app1-pvc.yaml app1-front-back.yaml && \
 cd ../app2 && \
 touch app2-pv.yaml app2-pvc.yaml app2-front.yaml app2-back.yaml && \
 cd ../stage && \
-
-
+clear && \
+date && \
+pwd && \
+helm create fb-pod && \
+cd fb-pod && \
+rm values.yaml && \
+cd templates && \
+rm -r * && \
+touch NOTES.txt deployment.yaml service.yaml && \
+vi NOTES.txt
+```
+```
 helm create chart01 && \
 ls -lha && \
 cd chart01 && \
@@ -61,14 +71,95 @@ cd alertmanager && \
 helm install alertmanager prometheus-community/alertmanager && \
 cd ../nginx-ingress && \
 helm install nginx-ingress stable/nginx-ingress && \
-
-
-cd .. && \
-clear && \
 kubectl get po && \
-date && \
-pwd && \
-helm create fb-pod && \
-cd fb-pod && \
-rm 
+```
+#### Notes.txt
+```
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to {{ .Values.namespace }} namespace.
+
+---------------------------------------------------------
+```
+#### файл шаблона `values.yaml`
+
+```yml
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+
+namespace: stage
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
+```
+
+#### файл шаблона `service.yaml`
+```yml
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+controlplane $ 
+
+```
+#### файл шаблона `deployment.yaml`
+
+```
+# Config Deployment Frontend & Backend with Volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: "{{ .Values.replicaCount }}"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+ 
 ```
