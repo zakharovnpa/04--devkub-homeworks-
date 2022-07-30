@@ -932,7 +932,10 @@ controlplane $
 controlplane $ cd ..
 controlplane $ cd ..
 controlplane $ 
-controlplane $ pwd/root/My-Project/stage/chart01controlplane $ controlplane $ helm create fb-podCreating fb-pod
+controlplane $ pwd/root/My-Project/stage/chart01
+controlplane $ 
+controlplane $ helm create fb-pod
+Creating fb-pod
 controlplane $ 
 controlplane $ cd fb-pod/
 controlplane $ 
