@@ -79,12 +79,12 @@ helm lint fb-pod
 ```
 * Деплой Release deploy
 ```
-helm install demo-release charts/01-simple
+helm install fb-pod fb-pod
 kubectl get ns
 ```
 * Версия образа
 ```
-kubectl get deploy demo -o jsonpath={.spec.template.spec.containers[0].image}
+kubectl get fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
 ```
 * Обновление приложения после изменения версии. Upgrade release
 ```
@@ -913,5 +913,369 @@ fb-pod-69fc56646b-ncqdp   2/2     Terminating   0          9m37s
 controlplane $ 
 controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
 zakharovnpa/k8s-frontend:05.07.22controlplane $ 
+controlplane $ 
+```
+### Логи - 3
+
+```
+NAME                                             READY   STATUS              RESTARTS   AGE
+alertmanager-0                                   0/1     Pending             0          3s
+nfs-server-nfs-server-provisioner-0              1/1     Running             0          28s
+nginx-ingress-controller-9b5c967bf-6hqxc         0/1     ContainerCreating   0          1s
+nginx-ingress-default-backend-85b4b4dd44-tnzt9   0/1     Pending             0          1s
+Sat Jul 30 09:19:23 UTC 2022
+/root/My-Project/stage/chart01/charts/nginx-ingress
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/stage/chart01/charts/nginx-ingress
+controlplane $ 
+controlplane $ cd ..
+controlplane $ cd ..
+controlplane $ 
+controlplane $ pwd/root/My-Project/stage/chart01controlplane $ controlplane $ helm create fb-podCreating fb-pod
+controlplane $ 
+controlplane $ cd fb-pod/
+controlplane $ 
+controlplane $ date
+Sat Jul 30 09:26:31 UTC 2022
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/stage/chart01/fb-pod
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ helm template fb-pod
+Error: YAML parse error on fb-pod/templates/service.yaml: error converting YAML to JSON: yaml: line 17: could not find expected ':'
+
+Use --debug flag to render out invalid YAML
+controlplane $ 
+controlplane $ helm template fb-pod
+---
+# Source: fb-pod/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: "1"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "zakharovnpa/k8s-frontend:05.07.22"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "zakharovnpa/k8s-backend:05.07.22"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+controlplane $ 
+controlplane $ 
+controlplane $ helm lint fb-pod
+==> Linting fb-pod
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+controlplane $ 
+controlplane $ helm install fb-pod fb-pod
+Error: INSTALLATION FAILED: unable to build kubernetes objects from release manifest: error validating "": error validating data: ValidationError(Deployment.spec.replicas): invalid type for io.k8s.api.apps.v1.DeploymentSpec.replicas: got "string", expected "integer"
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+No resources found in stage namespace.
+controlplane $ 
+controlplane $ helm install fb-pod fb-pod
+NAME: fb-pod
+LAST DEPLOYED: Sat Jul 30 09:35:23 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to stage namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-trh6r   0/2     ContainerCreating   0          25s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-trh6r   0/2     ContainerCreating   0          28s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6464948946-trh6r   2/2     Running   0          49s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+error: the server doesn't have a resource type "fb-pod"
+controlplane $ 
+controlplane $ kubectl -n stage get pod fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+Error from server (NotFound): pods "fb-pod" not found
+controlplane $ 
+controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+zakharovnpa/k8s-frontend:05.07.22controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ helm upgrade fb-pod fb-pod
+Release "fb-pod" has been upgraded. Happy Helming!
+NAME: fb-pod
+LAST DEPLOYED: Sat Jul 30 09:40:50 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+NOTES:
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to stage namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-mdf25   0/2     ContainerCreating   0          8s
+fb-pod-6464948946-trh6r   2/2     Running             0          5m34s
+fb-pod-6f45f8798b-x9q7f   0/2     ContainerCreating   0          8s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-mdf25   0/2     Terminating         0          29s
+fb-pod-6464948946-trh6r   2/2     Running             0          5m55s
+fb-pod-6f45f8798b-jcmf2   0/2     ContainerCreating   0          20s
+fb-pod-6f45f8798b-x9q7f   2/2     Running             0          29s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-mdf25   2/2     Terminating         0          37s
+fb-pod-6464948946-trh6r   2/2     Running             0          6m3s
+fb-pod-6f45f8798b-jcmf2   0/2     ContainerCreating   0          28s
+fb-pod-6f45f8798b-x9q7f   2/2     Running             0          37s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-mdf25   2/2     Terminating   0          53s
+fb-pod-6464948946-trh6r   2/2     Terminating   0          6m19s
+fb-pod-6f45f8798b-jcmf2   2/2     Pending       0          44s
+fb-pod-6f45f8798b-x9q7f   2/2     Running       0          53s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-mdf25   2/2     Terminating   0          60s
+fb-pod-6464948946-trh6r   2/2     Terminating   0          6m26s
+fb-pod-6f45f8798b-jcmf2   2/2     Pending       0          51s
+fb-pod-6f45f8798b-x9q7f   2/2     Running       0          60s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-trh6r   2/2     Terminating   0          6m38s
+fb-pod-6f45f8798b-jcmf2   2/2     Pending       0          63s
+fb-pod-6f45f8798b-x9q7f   2/2     Running       0          72s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-jcmf2   0/2     Error     1          73s
+fb-pod-6f45f8798b-x9q7f   2/2     Running   0          82s
+fb-pod-6f45f8798b-zl9c6   2/2     Running   0          6s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-jcmf2   0/2     Error     1          90s
+fb-pod-6f45f8798b-x9q7f   2/2     Running   0          99s
+fb-pod-6f45f8798b-zl9c6   2/2     Running   0          23s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-jcmf2   0/2     Error     1          101s
+fb-pod-6f45f8798b-x9q7f   2/2     Running   0          110s
+fb-pod-6f45f8798b-zl9c6   2/2     Running   0          34s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-jcmf2   0/2     Error     1          2m3s
+fb-pod-6f45f8798b-x9q7f   2/2     Running   0          2m12s
+fb-pod-6f45f8798b-zl9c6   2/2     Running   0          56s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-jcmf2   0/2     Error     1          2m15s
+fb-pod-6f45f8798b-x9q7f   2/2     Running   0          2m24s
+fb-pod-6f45f8798b-zl9c6   2/2     Running   0          68s
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6f45f8798b-jcmf2   0/2     Error     1          2m23s
+fb-pod-6f45f8798b-x9q7f   2/2     Running   0          2m32s
+fb-pod-6f45f8798b-zl9c6   2/2     Running   0          76s
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/stage/chart01
+controlplane $ 
+controlplane $ cd fb-pod/
+controlplane $ 
+controlplane $ ls
+Chart.yaml  charts  templates  values.yaml
+controlplane $ 
+controlplane $ cat values.yaml 
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "2"
+
+namespace: stage
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "12.07.22"
+
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat Chart.yaml 
+apiVersion: v2
+name: fb-pod
+description: A Helm chart for Kubernetes
+
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "1.16.0"
+controlplane $ 
+controlplane $ cat templates/deployment.yaml 
+# Config Deployment Frontend & Backend with Volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+ 
+controlplane $ 
+controlplane $ cat templates/service.yaml    
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat templates/NOTES.txt    
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to {{ .Values.namespace }} namespace.
+
+---------------------------------------------------------
+controlplane $ 
 controlplane $ 
 ```
