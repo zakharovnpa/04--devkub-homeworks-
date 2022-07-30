@@ -118,7 +118,7 @@ metadata:
   name: fb-pod 
   namespace: stage
 spec:
-  replicas: "{{ .Values.replicaCount }}"
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: fb-app
