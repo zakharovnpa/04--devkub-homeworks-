@@ -52,6 +52,7 @@ pwd && \
 helm create fb-pod && \
 cd fb-pod && \
 rm values.yaml && \
+touch values.yaml && \
 cd templates && \
 rm -r * && \
 touch NOTES.txt deployment.yaml service.yaml && \
@@ -82,23 +83,6 @@ Deployed to {{ .Values.namespace }} namespace.
 
 ---------------------------------------------------------
 ```
-#### файл шаблона `values.yaml`
-
-```yml
-# Default values for fb-pod.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: "1"
-
-namespace: stage
-
-image:
-  repository: zakharovnpa
-  name_front: k8s-frontend
-  name_back: k8s-backend
-  tag: "05.07.22"
-```
 
 #### файл шаблона `service.yaml`
 ```yml
@@ -123,7 +107,7 @@ controlplane $
 ```
 #### файл шаблона `deployment.yaml`
 
-```
+```yml
 # Config Deployment Frontend & Backend with Volume
 ---
 apiVersion: apps/v1
@@ -163,3 +147,21 @@ spec:
           emptyDir: {}
  
 ```
+#### файл шаблона `values.yaml`
+
+```yml
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+
+namespace: stage
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
+```
+
