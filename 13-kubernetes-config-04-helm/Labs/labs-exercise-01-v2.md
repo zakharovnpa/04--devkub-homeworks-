@@ -102,8 +102,6 @@ spec:
     nodePort: 30080
   selector:
     app: fb-pod
-controlplane $ 
-
 ```
 #### файл шаблона `deployment.yaml`
 
