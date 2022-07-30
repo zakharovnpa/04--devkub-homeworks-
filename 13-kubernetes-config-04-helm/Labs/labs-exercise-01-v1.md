@@ -1127,3 +1127,48 @@ controlplane $
 ```
 
 ![screen-helm-upgrade-fb-pod.png](/13-kubernetes-config-04-helm/Files/screen-helm-upgrade-fb-pod.png)
+
+```
+controlplane $ 
+controlplane $ helm upgrade fb-pod fb-pod
+Release "fb-pod" has been upgraded. Happy Helming!
+NAME: fb-pod
+LAST DEPLOYED: Sat Jul 30 07:58:47 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 4
+TEST SUITE: None
+NOTES:
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to stage namespace.
+
+---------------------------------------------------------
+controlplane $ 
+controlplane $ 
+controlplane $ cat fb-pod/values.yaml 
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+namespace: stage
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
+
+controlplane $ 
+controlplane $ kubectl -n stage get po
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-ch5xk   2/2     Running       0          21s
+fb-pod-69fc56646b-ncqdp   2/2     Terminating   0          9m37s
+controlplane $ 
+controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+zakharovnpa/k8s-frontend:05.07.22controlplane $ 
+controlplane $ 
+```
