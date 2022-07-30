@@ -1,6 +1,15 @@
 ## Задание 1: подготовить helm чарт для приложения. Вариант 1
 
 ### 1. Подготовка рабочего пространства
+
+#### Установка Helm
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
+chmod 700 get_helm.sh && \
+./get_helm.sh
+```
+#### Скрипт разворачивания окружения
+
 * Устанавливаем Helm
 * Включаем автодополнение для Helm
 * Добавляем репозиторий чартов stable
@@ -14,12 +23,6 @@
 * Создаем чарт chart01
 * Деплоим alertmanager
 * Деплоим nginx-ingress
-
-```
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
-chmod 700 get_helm.sh && \
-./get_helm.sh
-```
 
 ```ps
 date && \
@@ -133,6 +136,8 @@ helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
     |       `-- test-connection.yaml
     `-- values.yaml
 ```
+3. Запуск линтера `helm lint fb-pod`
+
 
 ### Задание: 
 Используя манифесты разработанного приложения frontend,backend, database
@@ -144,10 +149,10 @@ helm install --dry-run --debug aaa --set namespace=aaa charts/01-simple
   * deployment.yaml
   * service.yaml
   * Chart.yaml
-  * 
+ 
     
 ### Процесс заполнения шаблона
-* Источник - манифест `fb-pod.yaml`
+#### Источник - манифест `fb-pod.yaml`
 ```yml
 # Config Deployment Frontend & Backend with Volume
 ---
@@ -205,205 +210,105 @@ spec:
     app: fb-pod
 ```
 
-* Приемник - файл шаблона `deployment.yaml`
-```yml
+#### Приемник - файл шаблона `deployment.yaml`
+
+```
+# Config Deployment Frontend & Backend with Volume
 ---
-{{- $svcClusterPort := .Values.service.clusterPort -}}
 apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: {{ include "alertmanager.fullname" . }}
-  labels:
-    {{- include "alertmanager.labels" . | nindent 4 }}
-{{- if .Values.statefulSet.annotations }}
-  annotations:
-    {{ toYaml .Values.statefulSet.annotations | nindent 4 }}
-{{- end }}
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      {{- include "alertmanager.selectorLabels" . | nindent 6 }}
-  serviceName: {{ include "alertmanager.fullname" . }}-headless
-  template:
-    metadata:
-      labels:
-        {{- include "alertmanager.selectorLabels" . | nindent 8 }}
-{{- if .Values.podLabels }}
-        {{ toYaml .Values.podLabels | nindent 8 }}
-{{- end }}
-      annotations:
-      {{- if not .Values.configmapReload.enabled }}
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-      {{- end }}
-{{- if .Values.podAnnotations }}
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
-{{- end }}
-    spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-      serviceAccountName: {{ include "alertmanager.serviceAccountName" . }}
-    {{- with .Values.dnsConfig }}
-      dnsConfig:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.topologySpreadConstraints }}
-      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      containers:
-        {{- if and (.Values.configmapReload.enabled) (.Values.config) }}
-        - name: {{ .Chart.Name }}-{{ .Values.configmapReload.name }}
-          image: "{{ .Values.configmapReload.image.repository }}:{{ .Values.configmapReload.image.tag }}"
-          imagePullPolicy: "{{ .Values.configmapReload.image.pullPolicy }}"
-          args:
-            - --volume-dir=/etc/alertmanager
-            - --webhook-url=http://127.0.0.1:{{ .Values.service.port }}/-/reload
-          resources:
-            {{- toYaml .Values.configmapReload.resources | nindent 12 }}
-          {{- if .Values.configmapReload.containerPort }}
-          ports:
-            - containerPort: {{ .Values.configmapReload.containerPort }}
-          {{- end }}
-          volumeMounts:
-            - name: config
-              mountPath: /etc/alertmanager
-        {{- end }}
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: status.podIP
-{{- if .Values.command }}
-          command:
-            {{- toYaml .Values.command | nindent 12 }}
-{{- end }}
-          args:
-            - --storage.path=/alertmanager
-            - --config.file=/etc/alertmanager/alertmanager.yml
-            {{- if or (gt (int .Values.replicaCount) 1) (.Values.additionalPeers) }}
-            - --cluster.advertise-address=[$(POD_IP)]:{{ $svcClusterPort }}
-            - --cluster.listen-address=0.0.0.0:{{ $svcClusterPort }}
-            {{- end }}
-            {{- if gt (int .Values.replicaCount) 1}}
-            {{- $fullName := include "alertmanager.fullname" . }}
-            {{- range $i := until (int .Values.replicaCount) }}
-            - --cluster.peer={{ $fullName }}-{{ $i }}.{{ $fullName }}-headless:{{ $svcClusterPort }}
-            {{- end }}
-            {{- end }}
-            {{- if .Values.additionalPeers }}
-            {{- range $item := .Values.additionalPeers }}
-            - --cluster.peer={{ $item }}
-            {{- end }}
-            {{- end }}
-            {{- range $key, $value := .Values.extraArgs }}
-            - --{{ $key }}={{ $value }}
-            {{- end }}
-          ports:
-            - name: http
-              containerPort: 9093
-              protocol: TCP
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-            {{- if .Values.config }}
-            - name: config
-              mountPath: /etc/alertmanager
-            {{- end }}
-            {{- range .Values.extraSecretMounts }}
-            - name: {{ .name }}
-              mountPath: {{ .mountPath }}
-              subPath: {{ .subPath }}
-              readOnly: {{ .readOnly }}
-            {{- end }}
-            - name: storage
-              mountPath: /alertmanager
-      volumes:
-        {{- if .Values.config }}
-        - name: config
-          configMap:
-            name: {{ include "alertmanager.fullname" . }}
-        {{- end }}
-        {{- range .Values.extraSecretMounts }}
-        - name: {{ .name }}
-          secret:
-            secretName: {{ .secretName }}
-            {{- with .optional }}
-            optional: {{ . }}
-            {{- end }}
-        {{- end }}
-      {{- if .Values.persistence.enabled }}
-  volumeClaimTemplates:
-    - metadata:
-        name: storage
-      spec:
-        accessModes:
-          {{- toYaml .Values.persistence.accessModes | nindent 10 }}
-        resources:
-          requests:
-            storage: {{ .Values.persistence.size }}
-      {{- if .Values.persistence.storageClass }}
-      {{- if (eq "-" .Values.persistence.storageClass) }}
-        storageClassName: ""
-      {{- else }}
-        storageClassName: {{ .Values.persistence.storageClass }}
-      {{- end }}
-      {{- end }}
-{{- else }}
-        - name: storage
-          emptyDir: {}
-{{- end -}}
----
-```
-
-* Приемник - файл шаблона `service.yaml`
-```yml
-
-```
-* Приемник - файл шаблона `values.yaml`
-```yml
----
-
+kind: Deployment
 metadata:
   labels:
     app: fb-app
-
-
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: "{{ .Values.replicaCount }}"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+ 
+```
+#### Приемник - файл шаблона `service.yaml`
+```yml
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+controlplane $ 
 
 ```
 
+#### Приемник - файл шаблона `values.yaml`
+
+```yml
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+
+namespace: stage
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
+
+
+```
+#### Notes.txt
+```
+---------------------------------------------------------
+
+Content of NOTES.txt appears after deploy.
+Deployed to {{ .Values.namespace }} namespace.
+
+---------------------------------------------------------
+```
 
 
 
 
 ### 3. Деплой приложения
-  * `helm lint first`
-  * `helm install first first` 
+  * `helm lint fb-pod`
+  * `helm install fb-pod fb-pod` 
 
 ### Технология создания версий приложения
 
@@ -609,11 +514,16 @@ controlplane $ tree
 
 3 directories, 5 files
 controlplane $ 
+```
+#### values.yaml 
+```
 controlplane $ cat values.yaml 
+```
+```yml
 # Default values for fb-pod.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
+---
 replicaCount: 1
 
 image:
@@ -622,8 +532,12 @@ image:
   name_back: k8s-backend
   tag: "05.07.22"
 
-controlplane $ 
+```
+#### deployment.yaml
+```
 controlplane $ cat templates/deployment.yaml 
+```
+```
 # Config Deployment Frontend & Backend with Volume
 ---
 apiVersion: apps/v1
@@ -725,118 +639,6 @@ controlplane $
 controlplane $ pwd
 /root/My-Procect/stage/chart01/charts
 controlplane $ 
-controlplane $ tree
-.
-|-- alertmanager
-|   |-- Chart.yaml
-|   |-- README.md
-|   |-- ci
-|   |   `-- config-reload-values.yaml
-|   |-- templates
-|   |   |-- NOTES.txt
-|   |   |-- _helpers.tpl
-|   |   |-- configmap.yaml
-|   |   |-- ingress.yaml
-|   |   |-- pdb.yaml
-|   |   |-- serviceaccount.yaml
-|   |   |-- services.yaml
-|   |   |-- statefulset.yaml
-|   |   `-- tests
-|   |       `-- test-connection.yaml
-|   `-- values.yaml
-|-- alertmanager-0.19.0.tgz
-|-- fb-pod
-|   |-- Chart.yaml
-|   |-- charts
-|   |-- templates
-|   |   |-- NOTES.txt
-|   |   |-- _helpers.tpl
-|   |   |-- deployment.yaml
-|   |   `-- tests
-|   `-- values.yaml
-|-- nginx-ingress
-|   |-- Chart.yaml
-|   |-- OWNERS
-|   |-- README.md
-|   |-- ci
-|   |   |-- daemonset-customconfig-values.yaml
-|   |   |-- daemonset-customnodeport-values.yaml
-|   |   |-- daemonset-headers-values.yaml
-|   |   |-- daemonset-internal-lb-values.yaml
-|   |   |-- daemonset-nodeport-values.yaml
-|   |   |-- daemonset-tcp-udp-configMapNamespace-values.yaml
-|   |   |-- daemonset-tcp-udp-values.yaml
-|   |   |-- daemonset-tcp-values.yaml
-|   |   |-- deamonset-default-values.yaml
-|   |   |-- deamonset-metrics-values.yaml
-|   |   |-- deamonset-psp-values.yaml
-|   |   |-- deamonset-webhook-and-psp-values.yaml
-|   |   |-- deamonset-webhook-values.yaml
-|   |   |-- deployment-autoscaling-values.yaml
-|   |   |-- deployment-customconfig-values.yaml
-|   |   |-- deployment-customnodeport-values.yaml
-|   |   |-- deployment-default-values.yaml
-|   |   |-- deployment-headers-values.yaml
-|   |   |-- deployment-internal-lb-values.yaml
-|   |   |-- deployment-metrics-values.yaml
-|   |   |-- deployment-nodeport-values.yaml
-|   |   |-- deployment-psp-values.yaml
-|   |   |-- deployment-tcp-udp-configMapNamespace-values.yaml
-|   |   |-- deployment-tcp-udp-values.yaml
-|   |   |-- deployment-tcp-values.yaml
-|   |   |-- deployment-webhook-and-psp-values.yaml
-|   |   `-- deployment-webhook-values.yaml
-|   |-- templates
-|   |   |-- NOTES.txt
-|   |   |-- _helpers.tpl
-|   |   |-- addheaders-configmap.yaml
-|   |   |-- admission-webhooks
-|   |   |   |-- job-patch
-|   |   |   |   |-- clusterrole.yaml
-|   |   |   |   |-- clusterrolebinding.yaml
-|   |   |   |   |-- job-createSecret.yaml
-|   |   |   |   |-- job-patchWebhook.yaml
-|   |   |   |   |-- psp.yaml
-|   |   |   |   |-- role.yaml
-|   |   |   |   |-- rolebinding.yaml
-|   |   |   |   `-- serviceaccount.yaml
-|   |   |   `-- validating-webhook.yaml
-|   |   |-- clusterrole.yaml
-|   |   |-- clusterrolebinding.yaml
-|   |   |-- controller-configmap.yaml
-|   |   |-- controller-daemonset.yaml
-|   |   |-- controller-deployment.yaml
-|   |   |-- controller-hpa.yaml
-|   |   |-- controller-metrics-service.yaml
-|   |   |-- controller-poddisruptionbudget.yaml
-|   |   |-- controller-prometheusrules.yaml
-|   |   |-- controller-psp.yaml
-|   |   |-- controller-role.yaml
-|   |   |-- controller-rolebinding.yaml
-|   |   |-- controller-service-internal.yaml
-|   |   |-- controller-service.yaml
-|   |   |-- controller-serviceaccount.yaml
-|   |   |-- controller-servicemonitor.yaml
-|   |   |-- controller-webhook-service.yaml
-|   |   |-- default-backend-deployment.yaml
-|   |   |-- default-backend-hpa.yaml
-|   |   |-- default-backend-poddisruptionbudget.yaml
-|   |   |-- default-backend-psp.yaml
-|   |   |-- default-backend-role.yaml
-|   |   |-- default-backend-rolebinding.yaml
-|   |   |-- default-backend-service.yaml
-|   |   |-- default-backend-serviceaccount.yaml
-|   |   |-- proxyheaders-configmap.yaml
-|   |   |-- tcp-configmap.yaml
-|   |   `-- udp-configmap.yaml
-|   `-- values.yaml
-`-- nginx-ingress-1.41.3.tgz
-
-13 directories, 91 files
-controlplane $ 
-controlplane $ cat   
-^C
-controlplane $ 
 controlplane $ cat fb-pod/templates/NOTES.txt 
 ---------------------------------------------------------
 
@@ -847,8 +649,11 @@ Deployed to {{ .Values.namespace }} namespace.
 controlplane $ 
 controlplane $ pwd
 /root/My-Procect/stage/chart01/charts
-controlplane $ 
+```
+```
 controlplane $ helm template fb-pod 
+```
+```yml
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Service
@@ -906,9 +711,9 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+#### helm install fb-pod fb-pod
+```
 controlplane $ helm install fb-pod fb-pod
 NAME: fb-pod
 LAST DEPLOYED: Sat Jul 30 07:36:16 2022
@@ -967,16 +772,17 @@ controlplane $ tree
 ```
 controlplane $ 
 controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
-zakharovnpa/k8s-frontend:05.07.22controlplane $ 
+zakharovnpa/k8s-frontend:05.07.22
+controlplane $ 
 controlplane $ 
 controlplane $ helm upgrade fb-pod fb-pod
 Error: failed to download "fb-pod"
 controlplane $ 
 controlplane $ pwd
 /root/My-Procect/stage/chart01/charts/fb-pod
-controlplane $ 
-controlplane $ cd ..
-controlplane $ 
+```
+#### helm upgrade fb-pod fb-pod
+```
 controlplane $ helm upgrade fb-pod fb-pod
 Release "fb-pod" has been upgraded. Happy Helming!
 NAME: fb-pod
@@ -1005,78 +811,14 @@ fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
 fb-pod-6f45f8798b-82wht   2/2     Running       0          20s
 controlplane $ 
 controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          23s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          25s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          27s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          28s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          30s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          32s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          34s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          36s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          38s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          40s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          42s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          43s
-controlplane $ 
-controlplane $ kubectl -n stage get po
-NAME                      READY   STATUS        RESTARTS   AGE
-fb-pod-6464948946-qtrww   2/2     Terminating   0          11m
-fb-pod-6f45f8798b-82wht   2/2     Running       0          46s
-controlplane $ 
-controlplane $ kubectl -n stage get po
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6f45f8798b-82wht   2/2     Running   0          49s
 controlplane $ 
 controlplane $ kubectl -n stage get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
 zakharovnpa/k8s-frontend:12.07.22controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+#### helm upgrade fb-pod fb-pod
+```
 controlplane $ helm upgrade fb-pod fb-pod
 Release "fb-pod" has been upgraded. Happy Helming!
 NAME: fb-pod
@@ -1128,6 +870,7 @@ controlplane $
 
 ![screen-helm-upgrade-fb-pod.png](/13-kubernetes-config-04-helm/Files/screen-helm-upgrade-fb-pod.png)
 
+#### helm upgrade fb-pod fb-pod
 ```
 controlplane $ 
 controlplane $ helm upgrade fb-pod fb-pod
