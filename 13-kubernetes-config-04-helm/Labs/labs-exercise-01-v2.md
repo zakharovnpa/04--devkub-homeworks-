@@ -189,7 +189,7 @@ kubectl get po && \
 5. Установить приложение поод другим именем `helm install fb-pod-app1 fb-pod`
 
 
-### Исподьзуемые манифесты
+### Используемые манифесты
 
 #### Notes.txt
 ```
@@ -199,6 +199,23 @@ Content of NOTES.txt appears after deploy.
 Deployed to {{ .Values.namespace }} namespace.
 
 ---------------------------------------------------------
+```
+#### файл шаблона с переменными `values.yaml`
+
+```yml
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+
+namespace: app1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
 ```
 
 #### файл шаблона `service.yaml`
@@ -262,23 +279,7 @@ spec:
           emptyDir: {}
  
 ```
-#### файл шаблона `values.yaml`
 
-```yml
-# Default values for fb-pod.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: "1"
-
-namespace: app1
-
-image:
-  repository: zakharovnpa
-  name_front: k8s-frontend
-  name_back: k8s-backend
-  tag: "05.07.22"
-```
 
 ###  Ход выполнения
 
