@@ -299,16 +299,16 @@ spec:
 ```
 echo 
 ```
+### Логи - 4
+
+- [Лог 4. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs4-helm-chart-fb-pod-app1-app2.md)
 
 ### Логи - 3
 - [Лог 3. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs3-helm-chart-fb-pod-app1-app2.md)
 
 
-
-
 ### Логи - 2
 - [Лог 2. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs2-helm-chart-fb-pod-app1-app2.md)
-
 
 
 ### Логи - 1
