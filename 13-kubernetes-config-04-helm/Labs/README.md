@@ -7,3 +7,4 @@
 
 ### Ход выполнения ДЗ
 - [Задание 1: подготовить helm чарт для приложения. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-exercise-01-v1.md)
+- [Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Labs/labs-exercise-01-v2.md)
