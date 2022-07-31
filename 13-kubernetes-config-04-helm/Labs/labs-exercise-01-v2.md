@@ -161,6 +161,59 @@ helm template fb-pod-app1 && \
 helm install fb-pod-app1 fb-pod-app1 && \
 cp -r fb-pod-app1 fb-pod-app2 && \
 cp -r fb-pod-app1 fb-pod-app3 && \
+
+echo "
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+
+name: fb-pod-app2
+
+namespace: app1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "12.07.22"
+nodePort: 30081
+" > fb-pod-app2/values.yaml && \
+echo "
+apiVersion: v2
+name: fb-pod-app3
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: "13.07.22"
+" > f-pod-app3/Chart.yaml && \
+echo "
+apiVersion: v2
+name: fb-pod-app2
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: "12.07.22"
+" > f-pod-app2/Chart.yaml && \
+echo "
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+
+name: fb-pod-app3
+
+namespace: app2
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "13.07.22"
+nodePort: 30082
+" > fb-pod-app3/values.yaml && \
 kubectl -n app1 get po && \
 echo "kubectl -n app1 get po"
 ```
