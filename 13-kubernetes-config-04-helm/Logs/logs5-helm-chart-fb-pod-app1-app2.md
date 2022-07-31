@@ -149,8 +149,9 @@ version: 0.1.0
 appVersion: "05.07.22"
 controlplane $ 
 controlplane $ vi values.yaml 
-controlplane $ 
-controlplane $ cat values.yaml 
+```
+```yml
+# controlplane $ cat values.yaml 
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -167,11 +168,12 @@ image:
   name_front: k8s-frontend
   name_back: k8s-backend
   tag: 05.07.22
-
-controlplane $ 
+```
+```
 controlplane $ vi templates/deployment.yaml 
-controlplane $ 
-controlplane $ cat templates/deployment.yaml 
+```
+```yml
+# controlplane $ cat templates/deployment.yaml 
 
 # Config Deployment Frontend & Backend with Volume
 ---
@@ -210,7 +212,8 @@ spec:
       volumes:
         - name: my-volume
           emptyDir: {}
-
+```
+```
 controlplane $ 
 controlplane $ 
 controlplane $ pwd
@@ -219,8 +222,9 @@ controlplane $
 controlplane $ cd ../fb-pod
 controlplane $ 
 controlplane $ vi Chart.yaml 
-controlplane $ 
-controlplane $ cat Chart.yaml 
+```
+```yml
+# controlplane $ cat Chart.yaml 
 apiVersion: v2
 name: fb-pod
 description: A Helm chart for Kubernetes
@@ -229,8 +233,9 @@ version: 0.1.0
 appVersion: "05.07.22"
 controlplane $ 
 controlplane $ vi values.yaml 
-controlplane $ 
-controlplane $ cat values.yaml 
+```
+```yml
+# controlplane $ cat values.yaml 
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -248,10 +253,13 @@ image:
   name_back: k8s-backend
   tag: 05.07.22
 
-controlplane $ 
+```
+```
 controlplane $ vi templates/deployment.yaml 
-controlplane $ 
-controlplane $ cat templates/deployment.yaml 
+```
+* Исправленный файл `templates/deployment.yaml`
+```yml
+# controlplane $ cat templates/deployment.yaml 
 
 # Config Deployment Frontend & Backend with Volume
 ---
@@ -291,10 +299,13 @@ spec:
         - name: my-volume
           emptyDir: {}
 
-controlplane $ 
+```
+```
 controlplane $ vi templates/service.yaml 
-controlplane $ 
-controlplane $ cat templates/service.yaml 
+```
+* Исправленный файл `templates/service.yaml`
+```yml
+# controlplane $ cat templates/service.yaml 
 
 ---
 # Config Service
@@ -312,7 +323,8 @@ spec:
     nodePort: 30080
   selector:
     app: fb-pod
-
+```
+```
 controlplane $ 
 controlplane $ 
 controlplane $ pwd
@@ -332,22 +344,24 @@ controlplane $ pwd
 controlplane $ 
 controlplane $ helm template --set name=fb-pod-app2 fb-pod-app2
 Error: failed to download "fb-pod-app2"
-controlplane $                                                      
-controlplane $ 
-controlplane $ 
+```
+* Переходим на 1 уровень каталогов выше
+```
 controlplane $ cd ..
 controlplane $ 
 controlplane $ pwd
 /root/My-Project/stage
-controlplane $ 
-controlplane $ helm template --set name=fb-pod-app2 fb-pod-app2
+```
+* Сборка объектов с пререопределением имени приложения с "fb-pod" на "fb-pod-app2"
+```yml
+# controlplane $ helm template --set name=fb-pod-app2 fb-pod-app2
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: fb-pod-app2
+  name: fb-pod-app2     # имя переопределено
   namespace: app1
   labels:
     app: fb
@@ -365,7 +379,7 @@ kind: Deployment
 metadata:
   labels:
     app: fb-app
-  name: fb-pod-app2 
+  name: fb-pod-app2      # имя переопределено
   namespace: app1
 spec:
   replicas: 1
@@ -398,17 +412,21 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
+```
+* Запущенный скриптом при старте pod в окружении "app1"
+```
 controlplane $ kubectl -n app1 get po
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6464948946-g42f7   2/2     Running   0          16m
-controlplane $ 
-controlplane $ 
+```
+* Неуспешная установка приложения под другим именем "fb-pod-app2" в окружении "app1"
+```
 controlplane $ helm install fb-pod-app2 fb-pod-app2 
 Error: INSTALLATION FAILED: rendered manifests contain a resource that already exists. Unable to continue with install: Service "fb-pod" in namespace "app1" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "fb-pod-app2": current value is "fb-pod-app1"
-controlplane $ 
-controlplane $ 
-controlplane $ helm template --set namespace=app2 fb-pod-app2
+```
+* Запускаем создание объектов с переопределением окружения на "app2"
+```yml
+# controlplane $ helm template --set namespace=app2 fb-pod-app2
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -416,7 +434,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: fb-pod
-  namespace: app2
+  namespace: app2   # окружение переопределилось
   labels:
     app: fb
 spec:
@@ -434,7 +452,7 @@ metadata:
   labels:
     app: fb-app
   name: fb-pod 
-  namespace: app2
+  namespace: app2    # окружение переопределилось
 spec:
   replicas: 1
   selector:
@@ -466,12 +484,15 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+* Неуспешная попытка установки (не отредактирован файл чарта Chart.yml)
+```ps
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: rendered manifests contain a resource that already exists. Unable to continue with install: Service "fb-pod" in namespace "app1" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "fb-pod-app2": current value is "fb-pod-app1"
 controlplane $ 
-controlplane $ 
+```
+* редакрируем чарт
+```
 controlplane $ pwd
 /root/My-Project/stage
 controlplane $ 
@@ -483,19 +504,30 @@ controlplane $ pwd
 /root/My-Project/stage/fb-pod-app2
 controlplane $ 
 controlplane $ vi Chart.yaml 
-controlplane $ 
+```
+* Неуспешная команда запуска установки (неверный контекст запуска)
+```
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: failed to download "fb-pod-app2"
-controlplane $ 
+```
+* Поднимаемся выше на один уровень
+```
 controlplane $ cd ..
-controlplane $ 
+```
+* Неуспешная попытка установки 
+```
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: rendered manifests contain a resource that already exists. Unable to continue with install: Service "fb-pod" in namespace "app1" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "fb-pod-app2": current value is "fb-pod-app1"
-controlplane $ 
+```
+* Неуспешная попытка установки с переопределением тега (неверная команда --set tag=13.07.22)
+```
 controlplane $ helm install --set tag=13.07.22 fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: rendered manifests contain a resource that already exists. Unable to continue with install: Service "fb-pod" in namespace "app1" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "fb-pod-app2": current value is "fb-pod-app1"
 controlplane $ 
-controlplane $ helm template --set tag=13.07.22 fb-pod-app2            
+```
+* Неуспешное переопределение тега приложения при сборке объекта (неверная команда --set tag=13.07.22)
+```yml
+# controlplane $ helm template --set tag=13.07.22 fb-pod-app2            
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -533,7 +565,7 @@ spec:
         app: fb-app
     spec:
       containers:
-        - image: zakharovnpa/k8s-frontend:05.07.22  
+        - image: zakharovnpa/k8s-frontend:05.07.22  # тег не переопределился
           imagePullPolicy: IfNotPresent
           name: frontend
           ports:
@@ -541,7 +573,7 @@ spec:
           volumeMounts:
             - mountPath: /static
               name: my-volume
-        - image: zakharovnpa/k8s-backend:05.07.22
+        - image: zakharovnpa/k8s-backend:05.07.22  # тег не переопределился
           imagePullPolicy: IfNotPresent
           name: backend
           volumeMounts:
@@ -553,8 +585,10 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ helm template --set image.tag=13.07.22 fb-pod-app2
+```
+* Успешное переопределение тега приложения при сборке объекта 
+```yml
+# controlplane $ helm template --set image.tag=13.07.22 fb-pod-app2
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -592,7 +626,7 @@ spec:
         app: fb-app
     spec:
       containers:
-        - image: zakharovnpa/k8s-frontend:13.07.22  
+        - image: zakharovnpa/k8s-frontend:13.07.22    # тег переопределился
           imagePullPolicy: IfNotPresent
           name: frontend
           ports:
@@ -600,7 +634,7 @@ spec:
           volumeMounts:
             - mountPath: /static
               name: my-volume
-        - image: zakharovnpa/k8s-backend:13.07.22
+        - image: zakharovnpa/k8s-backend:13.07.22    # тег переопределился
           imagePullPolicy: IfNotPresent
           name: backend
           volumeMounts:
@@ -612,16 +646,41 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+* Попытка установки разных версий приложения под одним и тем же именем "fb-pod", в одно окружение "app1"
+```
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: rendered manifests contain a resource that already exists. Unable to continue with install: Service "fb-pod" in namespace "app1" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "fb-pod-app2": current value is "fb-pod-app1"
+```
+```
 controlplane $ 
 controlplane $ 
 controlplane $ pwd
 /root/My-Project/stage
-controlplane $ 
-controlplane $ cat fb-pod/values.yaml 
+```
+
+```yml
+#controlplane $ cat fb-pod/values.yaml 
+
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+name: fb-pod
+
+namespace: app1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: 05.07.22
+```
+
+```yml
+#controlplane $ cat fb-pod-app2/values.yaml 
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -639,35 +698,18 @@ image:
   name_back: k8s-backend
   tag: 05.07.22
 
-controlplane $ 
-controlplane $ cat fb-pod-app2/values.yaml 
-
-# Default values for fb-pod.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
-
-name: fb-pod
-
-namespace: app1
-
-image:
-  repository: zakharovnpa
-  name_front: k8s-frontend
-  name_back: k8s-backend
-  tag: 05.07.22
-
-controlplane $ 
-controlplane $ cat fb-pod/Chart.yaml   
+```
+```yml
+#controlplane $ cat fb-pod/Chart.yaml   
 apiVersion: v2
 name: fb-pod
 description: A Helm chart for Kubernetes
 type: application
 version: 0.1.0
 appVersion: "05.07.22"
-controlplane $ 
-controlplane $ cat fb-pod-app2/Chart.yaml 
+```
+```yml
+#controlplane $ cat fb-pod-app2/Chart.yaml 
 apiVersion: v2
 name: fb-pod
 description: A Helm chart for Kubernetes
@@ -675,9 +717,12 @@ type: application
 version: 0.1.0
 appVersion: "13.07.22"
 controlplane $ 
+```
+```
 controlplane $ vi fb-pod-app2/values.yaml 
-controlplane $ 
-controlplane $ cat fb-pod-app2/values.yaml
+```
+```yml
+#controlplane $ cat fb-pod-app2/values.yaml
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -694,29 +739,30 @@ image:
   name_front: k8s-frontend
   name_back: k8s-backend
   tag: 12.07.22
-
+```
+```
 controlplane $ 
 controlplane $ vi fb-pod-app2/Chart.yaml 
 controlplane $ 
 controlplane $ pwd
 /root/My-Project/stage
-controlplane $ 
-controlplane $ kebtctl -n app1 get po
-kebtctl: command not found
-controlplane $ kebetctl -n app1 get po
-kebetctl: command not found
-controlplane $ 
-controlplane $ kubetctl -n app1 get po
-kubetctl: command not found
-controlplane $ 
+```
+* В окружении "app1" запущен под
+```
 controlplane $ kubectl -n app1 get po
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6464948946-g42f7   2/2     Running   0          56m
-controlplane $ 
+```
+* В окружении "app2" ничего не установлено
+```
 controlplane $ kubectl -n app2 get po
 No resources found in app2 namespace.
 controlplane $ 
+```
+```
 controlplane $ helm template fb-pod-app2
+```
+```yml
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -836,14 +882,18 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+* Вторая попытка установки неуспешная, не проверив, что при первой попытке приложение установилось, но была ошибка в неуникальности порта сетевого сервиса
+```
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+```
 controlplane $ 
 controlplane $ kubectl -n app2 get po
 No resources found in app2 namespace.
-controlplane $ 
+```
+* Обе версии приложения установлены в одном окружкении "app1"
+```
 controlplane $ kubectl -n app1 get po
 NAME                           READY   STATUS    RESTARTS   AGE
 fb-pod-6464948946-g42f7        2/2     Running   0          58m
