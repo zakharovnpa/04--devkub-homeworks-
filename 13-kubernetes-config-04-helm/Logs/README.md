@@ -9,3 +9,5 @@
 - [Лог 3. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs3-helm-chart-fb-pod-app1-app2.md)
 
 - [Лог 4. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs4-helm-chart-fb-pod-app1-app2.md)
+
+- [Лог 5. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs5-helm-chart-fb-pod-app1-app2.md)
