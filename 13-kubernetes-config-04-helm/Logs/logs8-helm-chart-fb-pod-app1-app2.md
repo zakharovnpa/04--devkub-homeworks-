@@ -558,3 +558,29 @@ nodePort: 30085
 controlplane $ 
 controlplane $ 
 ```
+```
+controlplane $ 
+controlplane $ helm delete fb-pod-app3 fb-pod-app3
+release "fb-pod-app3" uninstalled
+Error: uninstall: Release not loaded: fb-pod-app3: release: not found
+controlplane $ 
+controlplane $ helm delete fb-pod-app2 fb-pod-app2
+release "fb-pod-app2" uninstalled
+Error: uninstall: Release not loaded: fb-pod-app2: release: not found
+controlplane $ 
+controlplane $ helm delete fb-pod-app1 fb-pod-app1
+release "fb-pod-app1" uninstalled
+Error: uninstall: Release not loaded: fb-pod-app1: release: not found
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n app1 get po
+NAME                           READY   STATUS        RESTARTS   AGE
+fb-pod-app1-6464948946-prb9r   2/2     Terminating   0          57m
+fb-pod-app2-6f45f8798b-xzc58   2/2     Terminating   0          48m
+controlplane $ 
+controlplane $ kubectl -n app1 get deploy
+No resources found in app1 namespace.
+controlplane $ 
+controlplane $ kubectl -n app2 get deploy
+No resources found in app2 namespace.
+```
