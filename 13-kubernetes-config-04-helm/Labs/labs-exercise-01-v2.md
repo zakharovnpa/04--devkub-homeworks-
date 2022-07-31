@@ -160,6 +160,7 @@ cd .. && \
 helm template fb-pod-app1 && \
 helm install fb-pod-app1 fb-pod-app1 && \
 cp -r fb-pod-app1 fb-pod-app2 && \
+cp -r fb-pod-app1 fb-pod-app3 && \
 kubectl -n app1 get po && \
 echo "kubectl -n app1 get po"
 ```
@@ -216,8 +217,13 @@ kubectl get po && \
 ---------------------------------------------------------
 
 Content of NOTES.txt appears after deploy.
+
 Deployed to {{ .Values.namespace }} namespace.
 NodePort is {{ .Values.nodePort }}.
+nodePort is port= {{ .Values.nodePort }}.
+Application name={{ .Values.name }}.
+Image tag: {{ .Values.image.tag }}.
+ReplicaCount: {{ .Values.replicaCount }}.
 
 ---------------------------------------------------------
 ```
@@ -312,6 +318,10 @@ spec:
 ```
 echo 
 ```
+### Логи - 7
+
+- [Лог 7. Задание 1, вопрос 2, часть 3. Неуспешная установка `fb-pod-app3` в окружение `app1` и потом успешная установка в окружение `app2` ](/13-kubernetes-config-04-helm/Logs/logs7-helm-chart-fb-pod-app1-app2.md)
+
 ### Логи - 6
 
 - [Лог 6. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs6-helm-chart-fb-pod-app1-app2.md)
