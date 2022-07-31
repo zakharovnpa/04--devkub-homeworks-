@@ -376,3 +376,79 @@ fb-pod-app2-6f45f8798b-xzc58   2/2     Running                  0          25m  
 controlplane $ 
 controlplane $ 
 ```
+* Попытка установить приложение с тем же именем в тот же неймспейс, но с другой версей образа приложения
+```
+controlplane $ 
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/stage
+controlplane $ 
+controlplane $ vi fb-pod-app3/Chart.yaml 
+controlplane $ 
+controlplane $ vi fb-pod-app3/values.yaml 
+controlplane $ 
+controlplane $ helm template fb-pod-app3
+---
+# Source: fb-pod-app3/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app3
+  namespace: app2
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30085
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app3/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app3
+  namespace: app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:12.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:12.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app3/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+controlplane $ 
+controlplane $ 
+controlplane $ helm install fb-pod-app3 fb-pod-app3
+Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+controlplane $ 
+controlplane $ 
+```
