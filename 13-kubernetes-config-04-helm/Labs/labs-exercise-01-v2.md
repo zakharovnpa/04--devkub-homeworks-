@@ -71,9 +71,13 @@ rm -r * && \
 touch NOTES.txt deployment.yaml service.yaml && \
 echo "--------------------------------------------------------- 
 
-Content of NOTES.txt appears after deploy. 
+Content of NOTES.txt appears after deploy.
+
 Deployed to {{ .Values.namespace }} namespace. 
-NodePort is {{ .Values.nodePort }}.
+nodePort is port= {{ .Values.nodePort }}.
+Application name={{ .Values.name }}.
+Image tag: {{ .Values.image.tag }}.
+ReplicaCount: {{ .Values.replicaCount }}.
 
 ---------------------------------------------------------" > NOTES.txt && \
 echo "
