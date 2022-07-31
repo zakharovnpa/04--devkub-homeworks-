@@ -497,6 +497,8 @@ image:
   name_back: k8s-backend
   tag: 05.07.22
 ```
+- [Лог 7. Задание 1, вопрос 2 часть-3. Неуспешная установка `fb-pod-app3` в окружение `app1` и потом успешная установка в окружение `app2` ](/13-kubernetes-config-04-helm/Logs/logs7-helm-chart-fb-pod-app1-app2.md)
+
 
 
 ## Задание 3 (*): повторить упаковку на jsonnet
