@@ -61,8 +61,8 @@ cd ../stage && \
 clear && \
 date && \
 pwd && \
-helm create fb-pod && \
-cd fb-pod && \
+helm create fb-pod-app1 && \
+cd fb-pod-app1 && \
 rm values.yaml && \
 touch values.yaml && \
 echo "" > values.yaml && \
@@ -151,8 +151,8 @@ image:
   tag: "05.07.22"
 " > values.yaml && \
 cd .. && \
-helm template fb-pod && \
-helm install fb-pod-app1 fb-pod && \
+helm template fb-pod-app1 && \
+helm install fb-pod-app1 fb-pod-app1 && \
 kubectl -n app1 get po && \
 echo "kubectl -n app1 get po"
 ```
@@ -222,6 +222,8 @@ Deployed to {{ .Values.namespace }} namespace.
 
 replicaCount: "1"
 
+name: fb-pod-app1
+
 namespace: app1
 
 image:
@@ -238,7 +240,7 @@ image:
 apiVersion: v1
 kind: Service
 metadata:
-  name: fb-pod
+  name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
     app: fb
@@ -260,7 +262,7 @@ kind: Deployment
 metadata:
   labels:
     app: fb-app
-  name: fb-pod 
+  name: {{ .Values.name }} 
   namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
