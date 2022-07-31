@@ -83,7 +83,7 @@ kind: Deployment
 metadata:
   labels:
     app: fb-app
-  name: fb-pod 
+  name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -120,7 +120,7 @@ echo "
 apiVersion: v1
 kind: Service
 metadata:
-  name: fb-pod
+  name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
     app: fb
@@ -139,6 +139,8 @@ echo "
 # Declare variables to be passed into your templates.
 
 replicaCount: "1"
+
+name: fb-pod-app1
 
 namespace: app1
 
@@ -162,7 +164,7 @@ echo "
 apiVersion: v1
 kind: Service
 metadata:
-  name: fb-pod
+  name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
     app: fb
