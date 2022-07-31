@@ -452,3 +452,109 @@ Error: INSTALLATION FAILED: cannot re-use a name that is still in use
 controlplane $ 
 controlplane $ 
 ```
+* неуспешная попытка запустить приложение в другом окружении. 
+> Вывод: с одним и тем же именем установить приложение в один кластер в разные окружения не удается.
+> Можно установить любые версии образа приложения даже в одно окружение, но под различными именами.
+
+```
+controlplane $ 
+controlplane $ vi fb-pod-app3/values.yaml 
+controlplane $ 
+controlplane $ vi fb-pod-app3/Chart.yaml  
+controlplane $ 
+controlplane $ helm template fb-pod-app3
+---
+# Source: fb-pod-app3/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app3
+  namespace: app1
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30085
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app3/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app3
+  namespace: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:12.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:12.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app3/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+controlplane $ 
+controlplane $ 
+controlplane $ helm install fb-pod-app3 fb-pod-app3
+Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+controlplane $ 
+controlplane $ 
+controlplane $ cat fb-pod-app3/Chart.yaml 
+
+apiVersion: v2
+name: fb-pod-app3
+description: A Helm chart for Kubernetes
+type: application
+version: 0.1.3
+appVersion: 12.07.22
+
+controlplane $ 
+controlplane $ cat fb-pod-app3/values.yaml 
+
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+name: fb-pod-app3
+
+namespace: app1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: 12.07.22
+nodePort: 30085
+
+controlplane $ 
+controlplane $ 
+```
