@@ -363,5 +363,16 @@ zakharovnpa/k8s-frontend:13.07.22controlplane $
 controlplane $ 
 controlplane $ 
 
-
+controlplane $ kubectl -n app2 get po -o wide
+NAME                           READY   STATUS    RESTARTS   AGE     IP            NODE           NOMINATED NODE   READINESS GATES
+fb-pod-app3-69fc56646b-6nxg9   0/2     Error     1          9m2s    192.168.0.7   controlplane   <none>           <none>
+fb-pod-app3-69fc56646b-h7pcz   2/2     Running   0          7m48s   192.168.1.7   node01         <none>           <none>
+controlplane $ 
+controlplane $ kubectl -n app1 get po -o wide
+NAME                           READY   STATUS                   RESTARTS   AGE   IP            NODE           NOMINATED NODE   READINESS GATES
+fb-pod-app1-6464948946-prb9r   2/2     Running                  0          33m   192.168.1.5   node01         <none>           <none>
+fb-pod-app2-6f45f8798b-rcfdw   0/2     ContainerStatusUnknown   2          26m   192.168.0.6   controlplane   <none>           <none>
+fb-pod-app2-6f45f8798b-xzc58   2/2     Running                  0          25m   192.168.1.6   node01         <none>           <none>
+controlplane $ 
+controlplane $ 
 ```
