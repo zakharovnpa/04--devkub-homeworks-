@@ -161,7 +161,6 @@ helm template fb-pod-app1 && \
 helm install fb-pod-app1 fb-pod-app1 && \
 cp -r fb-pod-app1 fb-pod-app2 && \
 cp -r fb-pod-app1 fb-pod-app3 && \
-
 echo "
 # Default values for fb-pod.
 # This is a YAML-formatted file.
