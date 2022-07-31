@@ -888,6 +888,7 @@ spec:
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
 ```
+```
 controlplane $ 
 controlplane $ kubectl -n app2 get po
 No resources found in app2 namespace.
