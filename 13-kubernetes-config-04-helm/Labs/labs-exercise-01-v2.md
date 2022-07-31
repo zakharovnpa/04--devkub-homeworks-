@@ -73,6 +73,7 @@ echo "---------------------------------------------------------
 
 Content of NOTES.txt appears after deploy. 
 Deployed to {{ .Values.namespace }} namespace. 
+NodePort is {{ .Values.nodePort }}.
 
 ---------------------------------------------------------" > NOTES.txt && \
 echo "
@@ -128,7 +129,7 @@ spec:
   type: NodePort
   ports:
   - port: 80
-    nodePort: 30080
+    nodePort: {{ .Values.nodePort }}
   selector:
     app: fb-pod
 " > service.yaml && \
@@ -149,6 +150,7 @@ image:
   name_front: k8s-frontend
   name_back: k8s-backend
   tag: "05.07.22"
+nodePort: 30080
 " > values.yaml && \
 cd .. && \
 helm template fb-pod-app1 && \
@@ -211,6 +213,7 @@ kubectl get po && \
 
 Content of NOTES.txt appears after deploy.
 Deployed to {{ .Values.namespace }} namespace.
+NodePort is {{ .Values.nodePort }}.
 
 ---------------------------------------------------------
 ```
@@ -232,6 +235,7 @@ image:
   name_front: k8s-frontend
   name_back: k8s-backend
   tag: "05.07.22"
+nodePort: 30080
 ```
 
 #### файл шаблона `service.yaml`
@@ -249,7 +253,7 @@ spec:
   type: NodePort
   ports:
   - port: 80
-    nodePort: 30080
+    nodePort: {{ .Values.nodePort }}
   selector:
     app: fb-pod
 ```
@@ -304,6 +308,10 @@ spec:
 ```
 echo 
 ```
+### Логи - 6
+
+- [Лог 6. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs6-helm-chart-fb-pod-app1-app2.md)
+
 ### Логи - 5
 
 - [Лог 5. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs5-helm-chart-fb-pod-app1-app2.md)
