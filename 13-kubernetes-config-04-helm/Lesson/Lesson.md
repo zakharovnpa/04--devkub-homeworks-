@@ -106,7 +106,7 @@ spec:
         - name: my-volume
           emptyDir: {}
 ```
-```
+```ps
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
@@ -127,19 +127,12 @@ NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6464948946-tsp4f   0/2     Pending   0          0s
 kubectl -n app1 get po
 ```
-* Создаем копию каталога fb-pod для запуска его в том же namespace app1 под другим менем
-```
-controlplane $ pwd
-/root/My-Project/stage
-controlplane $ 
-controlplane $ ls
-fb-pod  stage-front-back.yaml  stage-pv.yaml  stage-pvc.yaml
-controlplane $ 
-controlplane $ cp -r fb-pod fb-pod-app2
-```
-* После изменения версии приложения с 05.07.22 на 13.07.22 создаем новые объекты для деплоя в app1
+
+* После изменения версии образа приложения с "05.07.22" на "13.07.22" создаем новые объекты для деплоя в окружении "app1"
 ```
 controlplane $ helm template fb-pod
+```
+```yml
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -157,6 +150,8 @@ spec:
     nodePort: 30080
   selector:
     app: fb-pod
+```
+```yml
 ---
 # Source: fb-pod/templates/deployment.yaml
 apiVersion: apps/v1
@@ -197,11 +192,16 @@ spec:
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ helm template fb-pod-app-2
-Error: failed to download "fb-pod-app-2"
-controlplane $ 
+```
+* Создаем копию каталога "fb-pod" для запуска его в том же окружении "app1" под другим менем "fb-pod-app2"
+```
+controlplane $ cp -r fb-pod fb-pod-app2
+```
+* Собираем приложение с версией образа "13.07.22" под именем "fb-pod-app2" для установки в окружении "app1"
+```
 controlplane $ helm template fb-pod-app2
+```
+```yml
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -219,6 +219,8 @@ spec:
     nodePort: 30081
   selector:
     app: fb-pod
+```
+```yml
 ---
 # Source: fb-pod/templates/deployment.yaml
 apiVersion: apps/v1
@@ -260,22 +262,13 @@ spec:
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
 ```
-* Неуспешная попытка апгрейда приложеня версии 05.07.22 на версию 13.07.22
+* Неуспешная попытка апгрейда приложения с версией "05.07.22", запущенного в окружении "app1" на версию "13.07.22". Helm не считает изменение версии образа причиной для апгрейда работающего приложения
 ```
-controlplane $ helm upgrade fb-pod
-Error: "helm upgrade" requires 2 arguments
-
-Usage:  helm upgrade [RELEASE] [CHART] [flags]
-controlplane $ 
 controlplane $ helm upgrade fb-pod fb-pod
 Error: UPGRADE FAILED: "fb-pod" has no deployed releases
-controlplane $ 
-controlplane $ pwd
-/root/My-Project/stage
-controlplane $ 
-controlplane $ ls
-fb-pod  fb-pod-app2  stage-front-back.yaml  stage-pv.yaml  stage-pvc.yaml
-controlplane $ 
+```
+* Запущенные деплои и поды в среде "app1"
+```
 controlplane $ kubectl -n app1 get deploy
 NAME     READY   UP-TO-DATE   AVAILABLE   AGE
 fb-pod   1/1     1            1           9m21s
@@ -283,21 +276,17 @@ controlplane $
 controlplane $ kubectl -n app1 get pod   
 NAME                      READY   STATUS    RESTARTS   AGE
 fb-pod-6464948946-tsp4f   2/2     Running   0          9m26s
-controlplane $ 
+```
+* Неуспешная попытка инсталяции приложения с другой версии образа и под другим именем "fb-pod-app2" в среде "app1" рядом с первой версией приложения
+```
 controlplane $ helm install fb-pod-app2 fb-pod-app2 
 Error: INSTALLATION FAILED: rendered manifests contain a resource that already exists. Unable to continue with install: Service "fb-pod" in namespace "app1" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "fb-pod-app2": current value is "fb-pod-app1"
-controlplane $ 
-controlplane $ ls -lha
-total 16K
-drwxr-xr-x 4 root root 4.0K Jul 30 19:04 .
-drwxr-xr-x 5 root root 4.0K Jul 30 19:03 ..
-drwxr-xr-x 4 root root 4.0K Jul 30 19:09 fb-pod
-drwxr-xr-x 4 root root 4.0K Jul 30 19:09 fb-pod-app2
--rw-r--r-- 1 root root    0 Jul 30 19:03 stage-front-back.yaml
--rw-r--r-- 1 root root    0 Jul 30 19:03 stage-pv.yaml
--rw-r--r-- 1 root root    0 Jul 30 19:03 stage-pvc.yaml
-controlplane $ 
+```
+* Переменные для первой версии приложения
+```
 controlplane $ cat fb-pod/values.yaml 
+```
+```yml
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -313,8 +302,12 @@ image:
   name_back: k8s-backend
   tag: 05.07.22
 
-controlplane $ 
+```
+* Переменные для второй версии приложения
+```
 controlplane $ cat fb-pod-app2/values.yaml 
+```
+```yml
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -330,62 +323,38 @@ image:
   name_back: k8s-backend
   tag: 13.07.22
 
-controlplane $ 
+```
+* Файл чарта для первой версии приложения
+```
 controlplane $ cat fb-pod/Chart.yaml   
+```
+```ps
 apiVersion: v2
 name: fb-pod
 description: A Helm chart for Kubernetes
 
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.1.0
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
 appVersion: "05.07.22"
-controlplane $ 
+```
+```
 controlplane $ cat fb-pod-app2/Chart.yaml 
+```
+* Файл чарта для второй версии приложения
+```ps
 apiVersion: v2
 name: fb-pod
 description: A Helm chart for Kubernetes
 
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.1.0
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
 appVersion: "13.07.22"
-controlplane $ 
-controlplane $ vi fb-pod-app2/values.yaml 
-controlplane $ 
+```
+* Собираем вторую версию приложения "13.07.22" для инсталляции в окружение "app2"
+```
 controlplane $ helm template fb-pod-app2 
+```
+```yml
 ---
 # Source: fb-pod/templates/service.yaml
 # Config Service
@@ -403,6 +372,8 @@ spec:
     nodePort: 30081
   selector:
     app: fb-pod
+```
+```yml
 ---
 # Source: fb-pod/templates/deployment.yaml
 apiVersion: apps/v1
@@ -440,11 +411,14 @@ spec:
       volumes:
         - name: my-volume
           emptyDir: {}
+```
+```
 ---
 # Source: fb-pod/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+* Успешная инсталляция второй версии приложения "13.07.22" в окружении "app2"
+```
 controlplane $ helm install fb-po-app2 fb-pod-app2 
 NAME: fb-po-app2
 LAST DEPLOYED: Sat Jul 30 19:18:31 2022
@@ -459,9 +433,9 @@ Content of NOTES.txt appears after deploy.
 Deployed to app2 namespace. 
 
 ---------------------------------------------------------
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+* Результат инсталляции первой версии приложения "05.07.22" в окружение "app1"
+```
 controlplane $ kubectl -n app1 get po,svc
 NAME                          READY   STATUS    RESTARTS   AGE
 pod/fb-pod-6464948946-tsp4f   2/2     Running   0          15m
@@ -469,6 +443,12 @@ pod/fb-pod-6464948946-tsp4f   2/2     Running   0          15m
 NAME             TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod   NodePort   10.97.166.222   <none>        80:30080/TCP   15m
 controlplane $ 
+controlplane $ kubectl -n app1 get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
+zakharovnpa/k8s-frontend:05.07.22
+controlplane $ 
+```
+* Результат инсталляции второй версии приложения "13.07.22" в окружение "app2"
+```
 controlplane $ kubectl -n app2 get po,svc
 NAME                          READY   STATUS    RESTARTS   AGE
 pod/fb-pod-69fc56646b-w5qbq   2/2     Running   0          42s
@@ -476,17 +456,13 @@ pod/fb-pod-69fc56646b-w5qbq   2/2     Running   0          42s
 NAME             TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod   NodePort   10.105.126.146   <none>        80:30081/TCP   42s
 controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ kubectl -n app1 get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
-zakharovnpa/k8s-frontend:05.07.22controlplane $ 
-controlplane $ 
 controlplane $ kubectl -n app2 get deploy fb-pod -o jsonpath={.spec.template.spec.containers[0].image}
 zakharovnpa/k8s-frontend:13.07.22controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ cat fb-pod-app2/values.yaml 
-
+```
+```yml
 # Default values for fb-pod.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -501,8 +477,11 @@ image:
   name_back: k8s-backend
   tag: 13.07.22
 
-controlplane $ 
+```
+```
 controlplane $ cat fb-pod/values.yaml 
+```
+```yml
 
 # Default values for fb-pod.
 # This is a YAML-formatted file.
@@ -517,8 +496,6 @@ image:
   name_front: k8s-frontend
   name_back: k8s-backend
   tag: 05.07.22
-
-controlplane $ 
 ```
 
 
