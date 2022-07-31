@@ -153,6 +153,7 @@ image:
 cd .. && \
 helm template fb-pod-app1 && \
 helm install fb-pod-app1 fb-pod-app1 && \
+cp -r fb-pod-app1 fb-pod-app2
 kubectl -n app1 get po && \
 echo "kubectl -n app1 get po"
 ```
