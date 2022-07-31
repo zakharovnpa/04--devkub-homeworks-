@@ -186,7 +186,7 @@ description: A Helm chart for Kubernetes
 type: application
 version: 0.1.0
 appVersion: "13.07.22"
-" > f-pod-app3/Chart.yaml && \
+" > fb-pod-app3/Chart.yaml && \
 echo "
 apiVersion: v2
 name: fb-pod-app2
@@ -194,7 +194,7 @@ description: A Helm chart for Kubernetes
 type: application
 version: 0.1.0
 appVersion: "12.07.22"
-" > f-pod-app2/Chart.yaml && \
+" > fb-pod-app2/Chart.yaml && \
 echo "
 # Default values for fb-pod.
 # This is a YAML-formatted file.
