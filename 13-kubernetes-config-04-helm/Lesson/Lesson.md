@@ -509,6 +509,7 @@ image:
 
 Выполнене идет здесь:
 - [Задание 3(*): Работа с Jsonnet. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-jsonnet-01-v1.md)
+- [Задание 3(*): Работа с Jsonnet. Создание из файла jsonnet шаблона jsonnet для создания манифестов. Группировка по объектам и категорям](/13-kubernetes-config-04-helm/Labs/labs-jsonnet-02-v1.md)
 
 
 ---
