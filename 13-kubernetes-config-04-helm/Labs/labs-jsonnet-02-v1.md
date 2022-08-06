@@ -197,37 +197,39 @@ containers:
 ```
 * Преобразование с помощью jsonnetfmt
 ```
-jsonnetfmt -i pod-spec.jsonnet 
+jsonnetfmt -i pod-spec.yaml 
 ```
-* cat pod-spec.jsonnet 
+* cat pod-spec.yaml 
 ```
-local utils = import 'utils.libsonnet';
-
-local PodSpec = {
-  containersObj:: {
-    foo: {
-      envObj:: {
-        var1: 'somevalue',
-        var2: 'somevalue',
-      },
-      env: utils.pairList(self.envObj),
+{
+  containers: [
+    {
+      env: [
+        {
+          name: 'var2',
+          value: 'somevalue',
+        },
+        {
+          name: 'var3',
+          value: 'othervalue',
+        },
+      ],
+      name: 'bar',
     },
-    bar: {
-      envObj:: {
-        var2: 'somevalue',
-        var3: 'somevalue',
-      },
-      env: utils.pairList(self.envObj),
+    {
+      env: [
+        {
+          name: 'var1',
+          value: 'somevalue',
+        },
+        {
+          name: 'var2',
+          value: 'somevalue',
+        },
+      ],
+      name: 'foo',
     },
-  },
-  containers:
-    utils.namedObjectList(self.containersObj),
-};
-
-PodSpec {
-  containersObj+: {
-    bar+: { envObj+: { var3: 'othervalue' } },
-  },
+  ],
 }
 
 ```
