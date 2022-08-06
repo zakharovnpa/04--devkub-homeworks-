@@ -21,7 +21,7 @@
 
 #### Используемый манифест деплоя
 
-* fb-pod.yaml
+* [fb-pod.yaml](/13-kubernetes-config-02-mounts/Files/fb-pod.yaml)
 
 ```yml
 # Config Deployment Frontend & Backend with Volume
