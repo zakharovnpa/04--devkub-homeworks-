@@ -136,6 +136,12 @@ PodSpec {
   ],
 }
 ```
+##### Запускаем jsonnet
+```
+jsonnet pod-spec.jsonnet 
+```
+
+
 ##### 2. Полученный манфест
 * pod-spec.yaml 
 
