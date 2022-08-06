@@ -177,3 +177,21 @@ jsonnet pod-spec.jsonnet
    ]
 }
 ```
+* pod-spec.uaml
+```yml
+---
+containers:
+- env:
+  - name: var2
+    value: somevalue
+  - name: var3
+    value: othervalue
+  name: bar
+- env:
+  - name: var1
+    value: somevalue
+  - name: var2
+    value: somevalue
+  name: foo
+
+```
