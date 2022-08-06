@@ -92,3 +92,6 @@ spec:
 }
 
 ```
+* Конвертируем в формат json файл [fb-pod.yaml](/13-kubernetes-config-02-mounts/Files/fb-pod.yaml)
+* Результат [fb-pod.json]()
+
