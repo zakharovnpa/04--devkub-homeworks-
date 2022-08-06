@@ -7,19 +7,17 @@
 
 #### 1. создать файлы `.jsonnet` для создания из них файлов манифестов для деплойментов, сервсов и прочее.
 
-```
+
 Используем инструмент преобразования фалов манифестов Kubernetes в файлы jsonnet.
 
 [Conversion Tool](https://jsonnet.org/articles/kubernetes.html)
 
-Не разобрался что это за нструмент.
+Не разобрался что это за инструмент.
 
-[Онлайн конвертер](https://www.json2yaml.com/convert-yaml-to-json)
-
-
-```
+Но есть [Онлайн конвертер](https://www.json2yaml.com/convert-yaml-to-json)
 
 * Результат работы конвертера
+* kube.yaml
 ```yml
 kind: ReplicationController
 apiVersion: v1
@@ -46,6 +44,7 @@ spec:
               cpu: 100m
 ```
 
+* kube.json
 ```json
 {
   "kind": "ReplicationController",
