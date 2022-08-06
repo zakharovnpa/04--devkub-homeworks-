@@ -252,7 +252,7 @@ yaml2jsonnet trivial.yaml | jsonnetfmt - -o trivial.jsonnet
 ```
 jsonnet pod.jsonnet > 2-pod.yaml
 ```
-##### Двлее добавляем атрибуты файлов yaml. Открытие файла --- и закрытие файла ... 
+##### Далее добавляем атрибуты файлов yaml. Открытие файла --- и закрытие файла ... 
 * 2-pod.yaml
 ```yaml
 ---
@@ -651,6 +651,42 @@ controlplane $
 controlplane $ 
 controlplane $ 
 controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get deployments.apps 
+NAME     READY   UP-TO-DATE   AVAILABLE   AGE
+fb-pod   1/1     1            1           3m23s
+controlplane $ 
+controlplane $ kubectl delete -f fb-pod.yaml 
+deployment.apps "fb-pod" deleted
+controlplane $ 
+controlplane $ kubectl -n stage get deployments.apps 
+No resources found in stage namespace.
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-wx74w   2/2     Terminating   0          3m59s
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS        RESTARTS   AGE
+fb-pod-6464948946-wx74w   2/2     Terminating   0          4m12s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+No resources found in stage namespace.
+controlplane $ 
+controlplane $ vi fb-pod.yaml 
+controlplane $ 
+controlplane $ kubectl apply -f fb-pod.yaml 
+deployment.apps/fb-pod created
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6464948946-h6c6s   2/2     Running   0          9s
+controlplane $ 
+controlplane $ 
+controlplane $ 
+
 ```
 
 * Tab 1
