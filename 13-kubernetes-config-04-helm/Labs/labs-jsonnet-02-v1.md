@@ -200,7 +200,7 @@ containers:
 jsonnetfmt -i pod-spec.yaml 
 ```
 * cat pod-spec.yaml 
-```
+```yml
 {
   containers: [
     {
