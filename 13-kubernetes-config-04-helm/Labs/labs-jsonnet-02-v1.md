@@ -87,3 +87,87 @@ echo "
 cat pod.yaml
 
 ```
+#### Примеры
+##### 1. Файлы из которых создаются манфесты
+* pod-spec.jsonnet
+``` 
+local utils = import 'utils.libsonnet';
+
+local PodSpec = {
+  containersObj:: {
+    foo: {
+      envObj:: {
+        var1: 'somevalue',
+        var2: 'somevalue',
+      },
+      env: utils.pairList(self.envObj),
+    },
+    bar: {
+      envObj:: {
+        var2: 'somevalue',
+        var3: 'somevalue',
+      },
+      env: utils.pairList(self.envObj),
+    },
+  },
+  containers:
+    utils.namedObjectList(self.containersObj),
+};
+
+PodSpec {
+  containersObj+: {
+    bar+: { envObj+: { var3: 'othervalue' } }
+  }
+}
+```
+* cat utils.libsonnet 
+```
+// utils.libsonnet
+{
+  pairList(tab, kfield='name',
+           vfield='value'):: [
+    { [kfield]: k, [vfield]: tab[k] }
+    for k in std.objectFields(tab)
+  ],
+
+  namedObjectList(tab, name_field='name'):: [
+    tab[name] + { [name_field]: name }
+    for name in std.objectFields(tab)
+  ],
+}
+```
+##### 2. Полученный манфест
+* pod-spec.yaml 
+
+```yml
+{
+   "containers": [
+      {
+         "env": [
+            {
+               "name": "var2",
+               "value": "somevalue"
+            },
+            {
+               "name": "var3",
+               "value": "othervalue"
+            }
+         ],
+         "name": "bar"
+      },
+      {
+         "env": [
+            {
+               "name": "var1",
+               "value": "somevalue"
+            },
+            {
+               "name": "var2",
+               "value": "somevalue"
+            }
+         ],
+         "name": "foo"
+      }
+   ]
+}
+```
