@@ -8,4 +8,4 @@
 ### Ход выполнения ДЗ
 - [Задание 1: подготовить helm чарт для приложения. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-exercise-01-v1.md)
 - [Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Labs/labs-exercise-01-v2.md)
-- [Задание 3(*): Работа с Jsonnet. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-jsonnet-01-v1.md)
+- [Задание 3(*): Работа с Jsonnet. Преобразование файлов yaml в jsonnet. Деплой файлов jsonnet в Kubernetes. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-jsonnet-01-v1.md)
