@@ -544,6 +544,114 @@ controlplane $ cat 2-pod.yaml
 ...
 controlplane $ 
 ```
+```
+controlplane $ 
+controlplane $ 
+controlplane $ vi fb-pod.yaml
+controlplane $ 
+controlplane $ kubectl delete -f 2-pod.yaml 
+pod "nginx" deleted
+controlplane $ 
+controlplane $ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   89d
+controlplane $ 
+controlplane $ kubectl apply -f f           
+fb-pod.yaml  filesystem/  
+controlplane $ kubectl apply -f fb-pod.yaml 
+Error from server (NotFound): error when creating "fb-pod.yaml": namespaces "stage" not found
+controlplane $ kubectl create ns stage
+namespace/stage created
+controlplane $ 
+controlplane $ kubectl apply -f fb-pod.yaml 
+deployment.apps/fb-pod created
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl get pod
+No resources found in default namespace.
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS              RESTARTS   AGE
+fb-pod-6464948946-wx74w   0/2     ContainerCreating   0          25s
+controlplane $ 
+controlplane $ kubectl -n stage get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+fb-pod-6464948946-wx74w   2/2     Running   0          35s
+controlplane $ 
+controlplane $ 
+controlplane $ cat fb-pod.yaml 
+
+---
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "labels": {
+      "app": "fb-app"
+    },
+    "name": "fb-pod",
+    "namespace": "stage"
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "matchLabels": {
+        "app": "fb-app"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "fb-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "zakharovnpa/k8s-frontend:05.07.22",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "frontend",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ],
+            "volumeMounts": [
+              {
+                "mountPath": "/static",
+                "name": "my-volume"
+              }
+            ]
+          },
+          {
+            "image": "zakharovnpa/k8s-backend:05.07.22",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "backend",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp/cache",
+                "name": "my-volume"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "my-volume",
+            "emptyDir": {
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+...
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ 
+```
 
 * Tab 1
 ```
