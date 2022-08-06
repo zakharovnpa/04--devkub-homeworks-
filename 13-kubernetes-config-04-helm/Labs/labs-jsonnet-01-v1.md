@@ -94,6 +94,7 @@ spec:
 ```
 * Конвертируем в формат json файл [fb-pod.yaml](/13-kubernetes-config-02-mounts/Files/fb-pod.yaml)
 * Результат [fb-pod.json]()
+* 
 ```json
 {
   "apiVersion": "apps/v1",
@@ -247,7 +248,302 @@ yaml2jsonnet trivial.yaml | jsonnetfmt - -o trivial.jsonnet
   },
 }
 ```
+##### Далее из jsonnet создаем yaml
+```
+jsonnet pod.jsonnet > 2-pod.yaml
+```
+##### Двлее добавляем атрибуты файлов yaml. Открытие файла --- и закрытие файла ... 
+* 2-pod.yaml
+```yaml
+---
+{
+   "apiVersion": "v1",
+   "kind": "Pod",
+   "metadata": {
+      "labels": {
+         "app": "nginx"
+      },
+      "name": "nginx",
+      "namespace": "default"
+   },
+   "spec": {
+      "containers": [
+         {
+            "image": "nginx:1.20",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "nginx"
+         }
+      ]
+   }
+}
+...
+```
+##### Деплоим файл 2-pod.yaml
+
+```
+controlplane $ kubectl apply -f 2-pod.yaml 
+pod/nginx created
+controlplane $ 
+controlplane $ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   89d
+controlplane $ 
+```
+##### Вывод: 
+1. Из манифеста можно создать шаблон jsonnet с помощью yaml2jsonnet
+2. Из шаблона jsonnet можно сделать файл yaml и задепдлоить его
+
+
 #### Логи ЛР-1
+
+* Tab 1
+
+```
+Initialising Kubernetes... done
+
+controlplane $ 
+controlplane $ apt install jsonnet
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following NEW packages will be installed:
+  jsonnet
+0 upgraded, 1 newly installed, 0 to remove and 197 not upgraded.
+Need to get 378 kB of archives.
+After this operation, 1964 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal/universe amd64 jsonnet amd64 0.15.0+ds-1build1 [378 kB]
+Fetched 378 kB in 1s (536 kB/s)
+Selecting previously unselected package jsonnet.
+(Reading database ... 72097 files and directories currently installed.)
+Preparing to unpack .../jsonnet_0.15.0+ds-1build1_amd64.deb ...
+Unpacking jsonnet (0.15.0+ds-1build1) ...
+Setting up jsonnet (0.15.0+ds-1build1) ...
+controlplane $ 
+controlplane $ 
+controlplane $ apt install python3-pip -y
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following additional packages will be installed:
+  libexpat1 libexpat1-dev libpython3-dev libpython3.8 libpython3.8-dev libpython3.8-minimal
+  libpython3.8-stdlib python-pip-whl python3-dev python3-wheel python3.8 python3.8-dev
+  python3.8-minimal
+Suggested packages:
+  python3.8-venv python3.8-doc binfmt-support
+The following NEW packages will be installed:
+  libexpat1-dev libpython3-dev libpython3.8-dev python-pip-whl python3-dev python3-pip python3-wheel
+  python3.8-dev
+The following packages will be upgraded:
+  libexpat1 libpython3.8 libpython3.8-minimal libpython3.8-stdlib python3.8 python3.8-minimal
+6 upgraded, 8 newly installed, 0 to remove and 191 not upgraded.
+Need to get 13.0 MB of archives.
+After this operation, 25.0 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8 amd64 3.8.10-0ubuntu1~20.04.5 [387 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8 amd64 3.8.10-0ubuntu1~20.04.5 [1625 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-stdlib amd64 3.8.10-0ubuntu1~20.04.5 [1675 kB]
+Get:4 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8-minimal amd64 3.8.10-0ubuntu1~20.04.5 [1905 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-minimal amd64 3.8.10-0ubuntu1~20.04.5 [717 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libexpat1 amd64 2.2.9-1ubuntu0.4 [74.4 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libexpat1-dev amd64 2.2.9-1ubuntu0.4 [117 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-dev amd64 3.8.10-0ubuntu1~20.04.5 [3951 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 libpython3-dev amd64 3.8.2-0ubuntu2 [7236 B]
+Get:10 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python-pip-whl all 20.0.2-5ubuntu1.6 [1805 kB]
+Get:11 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8-dev amd64 3.8.10-0ubuntu1~20.04.5 [514 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 python3-dev amd64 3.8.2-0ubuntu2 [1212 B]
+Get:13 http://archive.ubuntu.com/ubuntu focal/universe amd64 python3-wheel all 0.34.2-1 [23.8 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python3-pip all 20.0.2-5ubuntu1.6 [231 kB]
+Fetched 13.0 MB in 0s (32.3 MB/s) 
+(Reading database ... 72165 files and directories currently installed.)
+Preparing to unpack .../00-python3.8_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking python3.8 (3.8.10-0ubuntu1~20.04.5) over (3.8.10-0ubuntu1~20.04.1) ...
+Preparing to unpack .../01-libpython3.8_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking libpython3.8:amd64 (3.8.10-0ubuntu1~20.04.5) over (3.8.10-0ubuntu1~20.04.1) ...
+Preparing to unpack .../02-libpython3.8-stdlib_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking libpython3.8-stdlib:amd64 (3.8.10-0ubuntu1~20.04.5) over (3.8.10-0ubuntu1~20.04.1) ...
+Preparing to unpack .../03-python3.8-minimal_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking python3.8-minimal (3.8.10-0ubuntu1~20.04.5) over (3.8.10-0ubuntu1~20.04.1) ...
+Preparing to unpack .../04-libpython3.8-minimal_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking libpython3.8-minimal:amd64 (3.8.10-0ubuntu1~20.04.5) over (3.8.10-0ubuntu1~20.04.1) ...
+Preparing to unpack .../05-libexpat1_2.2.9-1ubuntu0.4_amd64.deb ...
+Unpacking libexpat1:amd64 (2.2.9-1ubuntu0.4) over (2.2.9-1build1) ...
+Selecting previously unselected package libexpat1-dev:amd64.
+Preparing to unpack .../06-libexpat1-dev_2.2.9-1ubuntu0.4_amd64.deb ...
+Unpacking libexpat1-dev:amd64 (2.2.9-1ubuntu0.4) ...
+Selecting previously unselected package libpython3.8-dev:amd64.
+Preparing to unpack .../07-libpython3.8-dev_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking libpython3.8-dev:amd64 (3.8.10-0ubuntu1~20.04.5) ...
+Selecting previously unselected package libpython3-dev:amd64.
+Preparing to unpack .../08-libpython3-dev_3.8.2-0ubuntu2_amd64.deb ...
+Unpacking libpython3-dev:amd64 (3.8.2-0ubuntu2) ...
+Selecting previously unselected package python-pip-whl.
+Preparing to unpack .../09-python-pip-whl_20.0.2-5ubuntu1.6_all.deb ...
+Unpacking python-pip-whl (20.0.2-5ubuntu1.6) ...
+Selecting previously unselected package python3.8-dev.
+Preparing to unpack .../10-python3.8-dev_3.8.10-0ubuntu1~20.04.5_amd64.deb ...
+Unpacking python3.8-dev (3.8.10-0ubuntu1~20.04.5) ...
+Selecting previously unselected package python3-dev.
+Preparing to unpack .../11-python3-dev_3.8.2-0ubuntu2_amd64.deb ...
+Unpacking python3-dev (3.8.2-0ubuntu2) ...
+Selecting previously unselected package python3-wheel.
+Preparing to unpack .../12-python3-wheel_0.34.2-1_all.deb ...
+Unpacking python3-wheel (0.34.2-1) ...
+Selecting previously unselected package python3-pip.
+Preparing to unpack .../13-python3-pip_20.0.2-5ubuntu1.6_all.deb ...
+Unpacking python3-pip (20.0.2-5ubuntu1.6) ...
+Setting up libexpat1:amd64 (2.2.9-1ubuntu0.4) ...
+Setting up libpython3.8-minimal:amd64 (3.8.10-0ubuntu1~20.04.5) ...
+Setting up python3-wheel (0.34.2-1) ...
+Setting up libexpat1-dev:amd64 (2.2.9-1ubuntu0.4) ...
+Setting up python3.8-minimal (3.8.10-0ubuntu1~20.04.5) ...
+Setting up python-pip-whl (20.0.2-5ubuntu1.6) ...
+Setting up libpython3.8-stdlib:amd64 (3.8.10-0ubuntu1~20.04.5) ...
+Setting up python3.8 (3.8.10-0ubuntu1~20.04.5) ...
+Setting up libpython3.8:amd64 (3.8.10-0ubuntu1~20.04.5) ...
+Setting up python3-pip (20.0.2-5ubuntu1.6) ...
+Setting up libpython3.8-dev:amd64 (3.8.10-0ubuntu1~20.04.5) ...
+Setting up python3.8-dev (3.8.10-0ubuntu1~20.04.5) ...
+Setting up libpython3-dev:amd64 (3.8.2-0ubuntu2) ...
+Setting up python3-dev (3.8.2-0ubuntu2) ...
+Processing triggers for libc-bin (2.31-0ubuntu9.2) ...
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for mime-support (3.64ubuntu1) ...
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ pip install yaml2jsonnet
+Collecting yaml2jsonnet
+  Downloading yaml2jsonnet-1.0.1-py3-none-any.whl (19 kB)
+Collecting ruamel.yaml<0.17.0,>=0.16.10
+  Downloading ruamel.yaml-0.16.13-py2.py3-none-any.whl (111 kB)
+     |████████████████████████████████| 111 kB 10.5 MB/s 
+Collecting ruamel.yaml.clib>=0.1.2; platform_python_implementation == "CPython" and python_version < "3.10"
+  Downloading ruamel.yaml.clib-0.2.6-cp38-cp38-manylinux1_x86_64.whl (570 kB)
+     |████████████████████████████████| 570 kB 68.5 MB/s 
+Installing collected packages: ruamel.yaml.clib, ruamel.yaml, yaml2jsonnet
+Successfully installed ruamel.yaml-0.16.13 ruamel.yaml.clib-0.2.6 yaml2jsonnet-1.0.1
+controlplane $ 
+controlplane $ 
+controlplane $ vi pod.yaml
+controlplane $ 
+controlplane $ ls -l
+total 4
+lrwxrwxrwx 1 root root   1 May  2 10:23 filesystem -> /
+-rw-r--r-- 1 root root 188 Aug  6 13:57 pod.yaml
+controlplane $  
+controlplane $ 
+controlplane $ yaml2jsonnet pod.yaml | jsonnetfmt - -o pod.jsonnet
+controlplane $ 
+controlplane $ cat pod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+  namespace: default
+spec:
+  containers:
+  - image: nginx:1.20
+    imagePullPolicy: IfNotPresent
+    name: nginx
+
+controlplane $ 
+controlplane $ 
+controlplane $ cat pod.jsonnet 
+{
+  apiVersion: 'v1',
+  kind: 'Pod',
+  metadata: {
+    labels: {
+      app: 'nginx',
+    },
+    name: 'nginx',
+    namespace: 'default',
+  },
+  spec: {
+    containers: [
+      {
+        image: 'nginx:1.20',
+        imagePullPolicy: 'IfNotPresent',
+        name: 'nginx',  //
+      },
+    ],
+  },
+}
+controlplane $ 
+controlplane $ 
+controlplane $ jsonnet -y pod.jsonnet 
+RUNTIME ERROR: stream mode: top-level object was a object, should be an array whose elements hold the JSON for each document in the stream.
+        During manifestation
+controlplane $ 
+controlplane $ jsonnet pod.jsonnet 
+{
+   "apiVersion": "v1",
+   "kind": "Pod",
+   "metadata": {
+      "labels": {
+         "app": "nginx"
+      },
+      "name": "nginx",
+      "namespace": "default"
+   },
+   "spec": {
+      "containers": [
+         {
+            "image": "nginx:1.20",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "nginx"
+         }
+      ]
+   }
+}
+controlplane $ 
+controlplane $ 
+controlplane $ jsonnet pod.jsonnet > 2-pod.yaml
+controlplane $ 
+controlplane $ vi 2-pod.yaml 
+controlplane $ 
+controlplane $ kubectl apply -f 2-pod.yaml 
+pod/nginx created
+controlplane $ 
+controlplane $ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   89d
+controlplane $ 
+controlplane $ 
+controlplane $ ls -l
+total 12
+-rw-r--r-- 1 root root 359 Aug  6 14:01 2-pod.yaml
+lrwxrwxrwx 1 root root   1 May  2 10:23 filesystem -> /
+-rw-r--r-- 1 root root 298 Aug  6 13:59 pod.jsonnet
+-rw-r--r-- 1 root root 188 Aug  6 13:57 pod.yaml
+controlplane $ 
+controlplane $
+controlplane $ cat 2-pod.yaml 
+---
+{
+   "apiVersion": "v1",
+   "kind": "Pod",
+   "metadata": {
+      "labels": {
+         "app": "nginx"
+      },
+      "name": "nginx",
+      "namespace": "default"
+   },
+   "spec": {
+      "containers": [
+         {
+            "image": "nginx:1.20",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "nginx"
+         }
+      ]
+   }
+}
+...
+controlplane $ 
+```
 
 * Tab 1
 ```
