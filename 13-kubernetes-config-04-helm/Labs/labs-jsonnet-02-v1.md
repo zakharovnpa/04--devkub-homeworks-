@@ -142,7 +142,7 @@ jsonnet pod-spec.jsonnet
 ```
 
 
-##### 2. Полученный манфест
+##### 2. Полученный манифест
 * pod-spec.yaml 
 
 ```yml
@@ -199,7 +199,7 @@ containers:
 ```
 jsonnetfmt -i pod-spec.yaml 
 ```
-* cat pod-spec.yaml 
+* cat pod-spec.jsonnet
 ```yml
 {
   containers: [
@@ -232,4 +232,53 @@ jsonnetfmt -i pod-spec.yaml
   ],
 }
 
+```
+
+##### Преобразуем вид строк 
+* cat pod-spec.jsonnet
+```yml
+{
+  containers: [ name: 'bar',
+    {
+      env: [
+        { name: 'var2', value: 'somevalue',},
+        { name: 'var3', value: 'othervalue',},
+      ],
+    },
+    {
+      env: [
+        { name: 'var1', value: 'somevalue',},
+        { name: 'var2', value: 'somevalue',},
+      ],
+      name: 'foo',
+    },
+  ],
+}
+
+```
+```
+{
+  containers: [ name: 'bar',
+    {
+      env: [
+        { name: 'var2', value: 'somevalue'},
+        { name: 'var3',
+          value: 'othervalue'},
+      ],
+    },
+    {
+      env: [
+        {
+          name: 'var1',
+          value: 'somevalue',
+        },
+        {
+          name: 'var2',
+          value: 'somevalue',
+        },
+      ],
+      name: 'foo',
+    },
+  ],
+}
 ```
