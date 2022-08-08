@@ -372,7 +372,7 @@ spec:
 $ jsonnetfmt -i fb-pod.json 
 ```
 * fb-pod.json
-```json
+```js
 {
   apiVersion: 'apps/v1',
   kind: 'Deployment',
@@ -441,7 +441,7 @@ $ jsonnetfmt -i fb-pod.json
 ```
 ##### Преобразуем вид строк в теле файла. Так мы получим файл для запуска в jsonnet
 * fb-pod.jsonnet
-```json
+```js
 {
   apiVersion: 'apps/v1',
   kind: 'Deployment',
