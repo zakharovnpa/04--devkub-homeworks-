@@ -238,47 +238,21 @@ jsonnetfmt -i pod-spec.yaml
 * cat pod-spec.jsonnet
 ```yml
 {
-  containers: [ name: 'bar',
-    {
+  containers: [ 
+    { name: 'bar',
       env: [
         { name: 'var2', value: 'somevalue',},
         { name: 'var3', value: 'othervalue',},
       ],
     },
-    {
+    { name: 'foo',
       env: [
         { name: 'var1', value: 'somevalue',},
         { name: 'var2', value: 'somevalue',},
       ],
-      name: 'foo',
     },
   ],
 }
 
 ```
-```
-{
-  containers: [ name: 'bar',
-    {
-      env: [
-        { name: 'var2', value: 'somevalue'},
-        { name: 'var3',
-          value: 'othervalue'},
-      ],
-    },
-    {
-      env: [
-        {
-          name: 'var1',
-          value: 'somevalue',
-        },
-        {
-          name: 'var2',
-          value: 'somevalue',
-        },
-      ],
-      name: 'foo',
-    },
-  ],
-}
-```
+
