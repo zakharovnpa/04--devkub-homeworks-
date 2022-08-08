@@ -255,4 +255,255 @@ jsonnetfmt -i pod-spec.yaml
 }
 
 ```
+##### Преобразование в шаблон jsonnet реального манифеста
 
+* fb-pod.yaml
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:13.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:13.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+...
+
+```
+После преобразованя [в этом конвертере](https://www.json2yaml.com/convert-yaml-to-json) получим файл в формате json
+* fb-pod.json
+```json
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "labels": {
+      "app": "fb-app"
+    },
+    "name": "fb-pod",
+    "namespace": "app2"
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "matchLabels": {
+        "app": "fb-app"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "fb-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "zakharovnpa/k8s-frontend:13.07.22",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "frontend",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ],
+            "volumeMounts": [
+              {
+                "mountPath": "/static",
+                "name": "my-volume"
+              }
+            ]
+          },
+          {
+            "image": "zakharovnpa/k8s-backend:13.07.22",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "backend",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp/cache",
+                "name": "my-volume"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "my-volume",
+            "emptyDir": {
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+##### Преобразуем файл в формат jsonnet
+
+```
+$ jsonnetfmt -i fb-pod.json 
+```
+* fb-pod.json
+```json
+{
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: {
+    labels: {
+      app: 'fb-app',
+    },
+    name: 'fb-pod',
+    namespace: 'app2',
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: {
+        app: 'fb-app',
+      },
+    },
+    template: {
+      metadata: {
+        labels: {
+          app: 'fb-app',
+        },
+      },
+      spec: {
+        containers: [
+          {
+            image: 'zakharovnpa/k8s-frontend:13.07.22',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'frontend',
+            ports: [
+              {
+                containerPort: 80,
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/static',
+                name: 'my-volume',
+              },
+            ],
+          },
+          {
+            image: 'zakharovnpa/k8s-backend:13.07.22',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'backend',
+            volumeMounts: [
+              {
+                mountPath: '/tmp/cache',
+                name: 'my-volume',
+              },
+            ],
+          },
+        ],
+        volumes: [
+          {
+            name: 'my-volume',
+            emptyDir: {
+            },
+          },
+        ],
+      },
+    },
+  },
+}
+
+```
+##### Преобразуем вид строк в теле файла. Так мы получим файл для запуска в jsonnet
+* fb-pod.jsonnet
+```json
+{
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: {
+    labels: {
+      app: 'fb-app',
+    },
+    name: 'fb-pod',
+    namespace: 'app2',
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: {
+        app: 'fb-app',
+      },
+    },
+    template: {
+      metadata: {
+        labels: {
+          app: 'fb-app',
+        },
+      },
+      spec: {
+        containers: [
+          {
+            image: 'zakharovnpa/k8s-frontend:13.07.22',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'frontend',
+            ports: [
+              {
+                containerPort: 80,
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/static',
+                name: 'my-volume',
+              },
+            ],
+          },
+          {
+            image: 'zakharovnpa/k8s-backend:13.07.22',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'backend',
+            volumeMounts: [
+              {
+                mountPath: '/tmp/cache',
+                name: 'my-volume',
+              },
+            ],
+          },
+        ],
+        volumes: [
+          {
+            name: 'my-volume',
+            emptyDir: {
+            },
+          },
+        ],
+      },
+    },
+  },
+}
+```
