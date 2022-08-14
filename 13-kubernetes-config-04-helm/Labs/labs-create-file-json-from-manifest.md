@@ -985,6 +985,345 @@ WARNING: File "/root/My-Project/stage/fb-pod-app1/templates/_helpers.tpl" alread
 WARNING: File "/root/My-Project/stage/fb-pod-app1/templates/tests/test-connection.yaml" already exists. Overwriting.
 controlplane $ 
 ```
+
+#### Логи-2
+```
+Sun Aug 14 12:29:17 UTC 2022
+/root/My-Project/stage
+Creating fb-pod-app1
+---
+# Source: fb-pod-app1/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app1
+  namespace: app1
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app1
+  namespace: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+NAME: fb-pod-app1
+LAST DEPLOYED: Sun Aug 14 12:29:17 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+--------------------------------------------------------- 
+
+Content of NOTES.txt appears after deploy.
+
+Deployed to app1 namespace. 
+nodePort is port= 30080.
+Application name=fb-pod-app1.
+Image tag: 05.07.22.
+ReplicaCount: 1.
+
+---------------------------------------------------------
+NAME                           READY   STATUS    RESTARTS   AGE
+fb-pod-app1-6464948946-qkhrb   0/2     Pending   0          0s
+kubectl -n app1 get po
+controlplane $ 
+controlplane $ kubectl get pod
+NAME                                  READY   STATUS    RESTARTS   AGE
+nfs-server-nfs-server-provisioner-0   1/1     Running   0          73s
+controlplane $ 
+controlplane $ kubectl -n app1 get pod
+NAME                           READY   STATUS    RESTARTS   AGE
+fb-pod-app1-6464948946-qkhrb   2/2     Running   0          61s
+controlplane $ 
+controlplane $ kubectl -n app1 get deployments.apps 
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+fb-pod-app1   1/1     1            1           71s
+controlplane $ 
+controlplane $ kubectl -n app1 delete deployments.apps 
+error: resource(s) were provided, but no name was specified
+controlplane $ 
+controlplane $ kubectl -n app1 delete deployments.apps fb-pod-app1 
+deployment.apps "fb-pod-app1" deleted
+controlplane $ 
+controlplane $ kubectl -n app1 get pod
+NAME                           READY   STATUS        RESTARTS   AGE
+fb-pod-app1-6464948946-qkhrb   2/2     Terminating   0          2m8s
+controlplane $ 
+controlplane $ cd fb-pod-app1/templates/
+controlplane $ 
+controlplane $ ls -l
+total 12
+-rw-r--r-- 1 root root 368 Aug 14 12:29 NOTES.txt
+-rw-r--r-- 1 root root 998 Aug 14 12:29 deployment.yaml
+-rw-r--r-- 1 root root 258 Aug 14 12:29 service.yaml
+controlplane $ 
+controlplane $ cd ..
+controlplane $ cd ..
+controlplane $ 
+controlplane $ cd fb-pod-app1/templates/
+controlplane $ 
+controlplane $ ls -l
+total 12
+-rw-r--r-- 1 root root 368 Aug 14 12:29 NOTES.txt
+-rw-r--r-- 1 root root 998 Aug 14 12:29 deployment.yaml
+-rw-r--r-- 1 root root 258 Aug 14 12:29 service.yaml
+controlplane $ 
+controlplane $ vi deployment.yaml 
+controlplane $ 
+controlplane $ vi deployment.yaml 
+controlplane $ 
+controlplane $ cat deployment.yaml 
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "replicas": "{{ .Values.replicaCount }}",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": "{}",
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+controlplane $ 
+controlplane $ 
+controlplane $ vi service.yaml 
+controlplane $ 
+controlplane $ cat service.yaml 
+{
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+      "labels": {
+         "app": "fb"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "ports": [
+         {
+            "nodePort": "{{ .Values.nodePort }}",
+            "port": 80
+         }
+      ],
+      "selector": {
+         "app": "fb-pod"
+      },
+      "type": "NodePort"
+   }
+}
+
+controlplane $ 
+controlplane $ 
+controlplane $ ls -l
+total 12
+-rw-r--r-- 1 root root  368 Aug 14 12:29 NOTES.txt
+-rw-r--r-- 1 root root 1737 Aug 14 12:38 deployment.yaml
+-rw-r--r-- 1 root root  420 Aug 14 12:39 service.yaml
+controlplane $ 
+controlplane $ cd ..
+controlplane $ cd ..
+controlplane $ 
+controlplane $ helm template fb-app fb-pod-app1
+---
+# Source: fb-pod-app1/templates/service.yaml
+{
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+      "labels": {
+         "app": "fb"
+      },
+      "name": "fb-pod-app1",
+      "namespace": "app1"
+   },
+   "spec": {
+      "ports": [
+         {
+            "nodePort": "30080",
+            "port": 80
+         }
+      ],
+      "selector": {
+         "app": "fb-pod"
+      },
+      "type": "NodePort"
+   }
+}
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "fb-pod-app1",
+      "namespace": "app1"
+   },
+   "spec": {
+      "replicas": "1",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "zakharovnpa/k8s-frontend:05.07.22",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "zakharovnpa/k8s-backend:05.07.22",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": "{}",
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+controlplane $ 
+controlplane $ 
+controlplane $ helm install fb-app fb-pod-app1
+Error: INSTALLATION FAILED: unable to build kubernetes objects from release manifest: error validating "": error validating data: ValidationError(Service.spec.ports[0].nodePort): invalid type for io.k8s.api.core.v1.ServicePort.nodePort: got "string", expected "integer"
+controlplane $ 
+controlplane $ helm install fb-pod-app1 fb-pod-app1
+Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+controlplane $ 
+controlplane $ helm install fb-pod-app1            
+Error: INSTALLATION FAILED: must either provide a name or specify --generate-name
+controlplane $ 
+controlplane $ 
+controlplane $ 
+```
 ## Подготовить helm чарт для приложения. 
 
 
