@@ -1,4 +1,101 @@
 ## ЛР-4. Создание файлов в формате json из готовых манфестов чарта Helm.
+
+### Готовые конвертированные файлы из yaml в jsonnet и иопять в yaml
+
+* deployment.yaml
+```yml
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "replicas": "{{ .Values.replicaCount }}",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": "{}",
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+```
+
+* service.yaml 
+```yml
+{
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+      "labels": {
+         "app": "fb"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "ports": [
+         {
+            "nodePort": "{{ .Values.nodePort }}",
+            "port": 80
+         }
+      ],
+      "selector": {
+         "app": "fb-pod"
+      },
+      "type": "NodePort"
+   }
+}
+```
+
 ### Логи
 ```
 Sun Aug 14 11:01:44 UTC 2022
