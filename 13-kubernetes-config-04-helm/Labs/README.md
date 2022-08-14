@@ -5,6 +5,8 @@
 - [ЛР-2. Шаблонизатор Helm](/13-kubernetes-config-04-helm/Labs/labs-create-chart-nginx-busybox-02.md)
 - [ЛР-3. Чарт Alertmanager. Разбор файлов конфигураций](/13-kubernetes-config-04-helm/Labs/labs-chart-alertmanager-analysis-01.md)
 - [ЛР-4. Создание файлов в формате json из готовых манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-create-file-json-from-manifest.md)
+- [ЛР-5. Инсталляция из конвертрованных манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-install-helm-from-convert-manifest.md)
+
 
 ### Ход выполнения ДЗ
 - [Задание 1: подготовить helm чарт для приложения. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-exercise-01-v1.md)
