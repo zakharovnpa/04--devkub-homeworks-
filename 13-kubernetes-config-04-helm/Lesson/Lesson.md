@@ -514,7 +514,8 @@ image:
 Попытка конвертнуть в формат json готовые манифесты, подготовленные для разворачвания приложения но основе чарта Helm.
 - [ЛР-4. Создание файлов в формате json из готовых манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-create-file-json-from-manifest.md)
 
-
+Попытка инсталляци приложения через чарт Helm
+- [ЛР-5. Инсталляция из конвертрованных манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-install-helm-from-convert-manifest.md)
 ---
 
 ### Как оформить ДЗ?
