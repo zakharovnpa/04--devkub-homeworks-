@@ -511,6 +511,9 @@ image:
 - [Задание 3(*): Работа с Jsonnet. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-jsonnet-01-v1.md)
 - [Задание 3(*): Работа с Jsonnet. Создание из файла jsonnet шаблона jsonnet для создания манифестов. Группировка по объектам и категорям](/13-kubernetes-config-04-helm/Labs/labs-jsonnet-02-v1.md)
 
+Попытка конвертнуть в формат json готовые манифесты, подготовленные для разворачвания приложения но основе чарта Helm.
+- [ЛР-4. Создание файлов в формате json из готовых манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-create-file-json-from-manifest.md)
+
 
 ---
 
