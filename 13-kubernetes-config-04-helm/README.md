@@ -26,7 +26,7 @@
 Sat Jul 30 19:03:55 UTC 2022
 /root/My-Project/stage
 ```
-* Создание деплоя
+##### Создание деплоя c 
 ```
 helm creating f-pod
 Creating fb-pod
