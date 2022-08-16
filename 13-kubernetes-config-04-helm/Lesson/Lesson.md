@@ -25,7 +25,7 @@
 [Логи отсюда](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Logs/logs6-helm-chart-fb-pod-app1-app2.md#%D0%BB%D0%BE%D0%B3-6-%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-1-%D0%BF%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%B8%D1%82%D1%8C-helm-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B2%D0%B0%D1%80%D0%B8%D0%B0%D0%BD%D1%82-2)
 
 #### Таблица версий чартов, приложений и образов
-Версия Chart.yaml|Версия Application|namespace|Версия images|Log installation
+Версия Chart.yaml|Name Application|namespace|appVersion|Log installation
 |-|-|-|-|-|
 [0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app1-appversion-050722)|fb-pod-app1|app2|05.07.22|
 [0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app1-appversion-120522)|fb-pod-app1|app|12.07.22|
@@ -111,7 +111,7 @@ drwxr-xr-x 4 root root 4096 Jul 31 13:29 fb-pod-app2
 -rw-r--r-- 1 root root    0 Jul 31 13:29 stage-pv.yaml
 -rw-r--r-- 1 root root    0 Jul 31 13:29 stage-pvc.yaml
 ```
-
+* В namespace app1 запущены:
 ```
 controlplane $ kubectl -n app1 get po,svc,deploy
 NAME                               READY   STATUS              RESTARTS   AGE
@@ -123,12 +123,12 @@ service/fb-pod-app1   NodePort   10.107.178.87   <none>        80:30080/TCP   26
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/fb-pod-app1   0/1     1            0           26s
 ```
-
+* В namespace app2 пока нет никаких инсталляций:
 ```
 controlplane $ kubectl -n app2 get po,svc,deploy
 No resources found in app2 namespace.
 ```
-* Результат инсталляции приложения.  
+* В namespace default запущены:
 ```
 controlplane $ kubectl get po,svc,deploy
 NAME                                      READY   STATUS    RESTARTS   AGE
@@ -142,41 +142,25 @@ service/nfs-server-nfs-server-provisioner   ClusterIP   10.102.92.84   <none>   
 ```
 controlplane $ pwd                
 /root/My-Project/stage
-controlplane $ 
+```
+* Файлы в в директории чарта fb-pod-app1
+```
 controlplane $ ls fb-pod-app1
 Chart.yaml  charts  templates  values.yaml
-controlplane $ 
-controlplane $ cat fb-pod-app1/Chart.yaml 
+```
+* Созданный helm файл fb-pod-app1/Chart.yaml 
+```yml
 apiVersion: v2
 name: fb-pod-app1
 description: A Helm chart for Kubernetes
-
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.1.0
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
 appVersion: "1.16.0"
 ```
-##### Создаем чарт для приложения fb-pod-app1, appVersion: "05.07.22"
-```
-controlplane $ vi fb-pod-app1/Chart.yaml 
-controlplane $ 
-controlplane $ cat fb-pod-app1/Chart.yaml 
+##### Создаем файл Chart.yaml для приложения fb-pod-app1, appVersion: "05.07.22"
+
+* fb-pod-app1/Chart.yaml 
+```yml
 apiVersion: v2
 name: fb-pod-app1
 description: A Helm chart for Kubernetes
@@ -185,7 +169,7 @@ version: 0.1.0
 appVersion: "05.07.22"
 ```
 [Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
-##### Создаем чарт для приложения fb-pod-app1, appVersion: "12.05.22"
+##### Создаем файл Chart.yaml для приложения fb-pod-app1, appVersion: "12.07.22"
 ```
 controlplane $ vi fb-pod-app2/Chart.yaml 
 controlplane $ 
@@ -198,7 +182,7 @@ version: 0.1.0
 appVersion: "12.05.22"
 ```
 [Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
-##### Создаем чарт для приложения fb-pod-app2, appVersion: "12.05.22"
+##### Создаем чарт для приложения fb-pod-app2, appVersion: "12.07.22"
 ```
 controlplane $ vi fb-pod-app2/Chart.yaml 
 controlplane $ 
