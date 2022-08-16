@@ -25,10 +25,13 @@
 [Логи отсюда](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Logs/logs6-helm-chart-fb-pod-app1-app2.md#%D0%BB%D0%BE%D0%B3-6-%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-1-%D0%BF%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%B8%D1%82%D1%8C-helm-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-%D0%B2%D0%B0%D1%80%D0%B8%D0%B0%D0%BD%D1%82-2)
 
 #### Таблица версий чартов, приложений и образов
-Chart.yaml|Value.yaml|Version-images
-|-|-|-|
-01|02|03
+Версия Chart.yaml|Версия Application|namespace|Версия images|Log installation
+|-|-|-|-|-|
+[0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app1-appversion-050722)|fb-pod-app1|app2|05.07.22|
+[0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app1-appversion-120522)|fb-pod-app1|app|12.07.22|
+[0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app2-appversion-120522)|fb-pod-app2|app|13.07.22|[fb-pod-app2](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA%D0%B0%D0%B5%D0%BC-%D0%B8%D0%BD%D1%81%D1%82%D0%B0%D0%BB%D0%BB%D1%8F%D1%86%D0%B8%D1%8E-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app2)
 
+* Обрывки логов команды `helm install fb-pod-app1` при работе стартового скрипта
 ```
 spec:
   type: NodePort
@@ -93,8 +96,8 @@ Deployed to app1 namespace.
 NAME                           READY   STATUS    RESTARTS   AGE
 fb-pod-app1-6464948946-lljvq   0/2     Pending   0          0s
 kubectl -n app1 get po
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ ls -l
 total 8
 drwxr-xr-x 4 root root 4096 Jul 31 13:29 fb-pod-app1
@@ -102,7 +105,9 @@ drwxr-xr-x 4 root root 4096 Jul 31 13:29 fb-pod-app2
 -rw-r--r-- 1 root root    0 Jul 31 13:29 stage-front-back.yaml
 -rw-r--r-- 1 root root    0 Jul 31 13:29 stage-pv.yaml
 -rw-r--r-- 1 root root    0 Jul 31 13:29 stage-pvc.yaml
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app1 get po,svc,deploy
 NAME                               READY   STATUS              RESTARTS   AGE
 pod/fb-pod-app1-6464948946-lljvq   0/2     ContainerCreating   0          25s
@@ -112,11 +117,14 @@ service/fb-pod-app1   NodePort   10.107.178.87   <none>        80:30080/TCP   26
 
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/fb-pod-app1   0/1     1            0           26s
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app2 get po,svc,deploy
 No resources found in app2 namespace.
-controlplane $ 
+```
+* Результат инсталляции приложения.  
+```
 controlplane $ kubectl get po,svc,deploy
 NAME                                      READY   STATUS    RESTARTS   AGE
 pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          58s
@@ -124,9 +132,9 @@ pod/nfs-server-nfs-server-provisioner-0   1/1     Running   0          58s
 NAME                                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                                                                     AGE
 service/kubernetes                          ClusterIP   10.96.0.1      <none>        443/TCP                                                                                                     83d
 service/nfs-server-nfs-server-provisioner   ClusterIP   10.102.92.84   <none>        2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   58s
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ pwd                
 /root/My-Project/stage
 controlplane $ 
@@ -159,7 +167,7 @@ version: 0.1.0
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
 ```
-* Создаем чарт для приложения fb-pod-app1, appVersion: "05.07.22"
+##### Создаем чарт для приложения fb-pod-app1, appVersion: "05.07.22"
 ```
 controlplane $ vi fb-pod-app1/Chart.yaml 
 controlplane $ 
@@ -171,7 +179,8 @@ type: application
 version: 0.1.0
 appVersion: "05.07.22"
 ```
-* Создаем чарт для приложения fb-pod-app1, appVersion: "12.05.22"
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+##### Создаем чарт для приложения fb-pod-app1, appVersion: "12.05.22"
 ```
 controlplane $ vi fb-pod-app2/Chart.yaml 
 controlplane $ 
@@ -183,7 +192,8 @@ type: application
 version: 0.1.0
 appVersion: "12.05.22"
 ```
-* Создаем чарт для приложения fb-pod-app2, appVersion: "12.05.22"
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+##### Создаем чарт для приложения fb-pod-app2, appVersion: "12.05.22"
 ```
 controlplane $ vi fb-pod-app2/Chart.yaml 
 controlplane $ 
@@ -195,7 +205,9 @@ type: application
 version: 0.1.0
 appVersion: "12.05.22"
 ```
-* Создаем файл с переменными values.yaml для приложения fb-pod-app1, appVersion: "15.05.22"
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+
+##### Создаем файл с переменными values.yaml для приложения fb-pod-app1, appVersion: "05.07.22", namespace: app1
 ```
 controlplane $ cat fb-pod-app1/values.yaml  
 
@@ -216,7 +228,9 @@ image:
   tag: 05.07.22
 
 ```
-* Создаем файл с переменными values.yaml для приложения fb-pod-app2, appVersion: "05.05.22"
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+
+##### Создаем файл с переменными values.yaml для приложения fb-pod-app2, appVersion: "05.07.22", namespace: app1
 ```
 controlplane $ cat fb-pod-app2/values.yaml 
 
@@ -226,7 +240,7 @@ controlplane $ cat fb-pod-app2/values.yaml
 
 replicaCount: 1
 
-name: fb-pod-app1
+name: fb-pod-app2
 
 namespace: app1
 
@@ -237,7 +251,9 @@ image:
   tag: 05.07.22
 
 ```
-* Создаем файл с переменными values.yaml для приложения fb-pod-app1, appVersion: "12.05.22"
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+
+##### Создаем файл с переменными values.yaml для приложения fb-pod-app2, appVersion: "12.07.22", namespace: app1
 ```
 controlplane $ vi fb-pod-app2/values.yaml 
 controlplane $ 
@@ -260,27 +276,8 @@ image:
   tag: 12.07.22
 
 ```
-* Создаем файл с переменными values.yaml для приложения fb-pod-app1, appVersion: "05.05.22"
-```
-controlplane $ cat fb-pod-app1/values.yaml 
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
-# Default values for fb-pod.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
-
-name: fb-pod-app1
-
-namespace: app1
-
-image:
-  repository: zakharovnpa
-  name_front: k8s-frontend
-  name_back: k8s-backend
-  tag: 05.07.22
-
-```
 #### Подготовка к инсталляции. Получаем текст манифестов, основанных на шаблонах
 ```
 controlplane $ helm template fb-pod-app2
@@ -370,6 +367,7 @@ controlplane $
 controlplane $ date
 Sun Jul 31 13:40:40 UTC 2022
 ```
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
 ```
 controlplane $ v itoge pomenyali versiyu Chart.yml i nomer porta servisa na 30081
@@ -480,7 +478,7 @@ spec:
 # Source: fb-pod-app2/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
 ```
-##### Запускаем установку версии приложения с образом 13.07.22. Неуспешно. Причина - 
+##### Запускаем установку версии приложения с образом 13.07.22. Неуспешно. Причина - одинаковые настройки  NodePort
 ```
 controlplane $ helm install fb-pod-app2 fb-pod-app2
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
@@ -550,12 +548,12 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ helm install fb-pod-app3 fb-pod-app3
 Error: INSTALLATION FAILED: Service "fb-pod-app3" is invalid: spec.ports[0].nodePort: Invalid value: 30081: provided port is already allocated
-controlplane $ 
-controlplane $ 
+```
+```
 controlplane $ helm template fb-pod-app3
 ---
 # Source: fb-pod-app3/templates/service.yaml
@@ -614,25 +612,29 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm install fb-pod-app3 fb-pod-app3
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app1 get po
 NAME                           READY   STATUS    RESTARTS   AGE
 fb-pod-app1-6464948946-lljvq   2/2     Running   0          21m
 fb-pod-app2-6f45f8798b-fg4zq   0/2     Error     1          12m
 fb-pod-app2-6f45f8798b-jvffr   2/2     Running   0          11m
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app2 get po
 NAME                           READY   STATUS                   RESTARTS   AGE
 fb-pod-app3-69fc56646b-jbx4w   0/2     ContainerStatusUnknown   2          66s
 fb-pod-app3-69fc56646b-n7bxv   2/2     Running                  0          10s
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm template fb-pod-app3
 ---
 # Source: fb-pod-app3/templates/service.yaml
@@ -691,8 +693,9 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+##### Меняем номер порта сетевого сервиса во избежание ошибок при запуске
+```
 controlplane $ helm template --set nodePort=30088 fb-pod-app3
 ---
 # Source: fb-pod-app3/templates/service.yaml
@@ -751,8 +754,9 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ cat fb-pod-app3/values.yaml 
 
 # Default values for fb-pod.
