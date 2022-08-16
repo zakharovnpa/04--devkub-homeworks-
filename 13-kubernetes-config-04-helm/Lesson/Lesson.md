@@ -31,6 +31,11 @@
 [0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app1-appversion-120522)|fb-pod-app1|app|12.07.22|
 [0.1.0](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%B5%D0%BC-%D1%87%D0%B0%D1%80%D1%82-%D0%B4%D0%BB%D1%8F-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app2-appversion-120522)|fb-pod-app2|app|13.07.22|[fb-pod-app2](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA%D0%B0%D0%B5%D0%BC-%D0%B8%D0%BD%D1%81%D1%82%D0%B0%D0%BB%D0%BB%D1%8F%D1%86%D0%B8%D1%8E-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D1%8F-fb-pod-app2)
 
+
+
+
+
+
 * Обрывки логов команды `helm install fb-pod-app1` при работе стартового скрипта
 ```
 spec:
