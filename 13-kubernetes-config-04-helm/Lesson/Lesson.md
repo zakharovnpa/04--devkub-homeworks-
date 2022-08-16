@@ -179,7 +179,7 @@ type: application
 version: 0.1.0
 appVersion: "05.07.22"
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 ##### Создаем чарт для приложения fb-pod-app1, appVersion: "12.05.22"
 ```
 controlplane $ vi fb-pod-app2/Chart.yaml 
@@ -192,7 +192,7 @@ type: application
 version: 0.1.0
 appVersion: "12.05.22"
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 ##### Создаем чарт для приложения fb-pod-app2, appVersion: "12.05.22"
 ```
 controlplane $ vi fb-pod-app2/Chart.yaml 
@@ -205,7 +205,7 @@ type: application
 version: 0.1.0
 appVersion: "12.05.22"
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
 ##### Создаем файл с переменными values.yaml для приложения fb-pod-app1, appVersion: "05.07.22", namespace: app1
 ```
@@ -228,7 +228,7 @@ image:
   tag: 05.07.22
 
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
 ##### Создаем файл с переменными values.yaml для приложения fb-pod-app2, appVersion: "05.07.22", namespace: app1
 ```
@@ -251,7 +251,7 @@ image:
   tag: 05.07.22
 
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
 ##### Создаем файл с переменными values.yaml для приложения fb-pod-app2, appVersion: "12.07.22", namespace: app1
 ```
@@ -276,7 +276,7 @@ image:
   tag: 12.07.22
 
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
 #### Подготовка к инсталляции. Получаем текст манифестов, основанных на шаблонах
 ```
@@ -367,7 +367,7 @@ controlplane $
 controlplane $ date
 Sun Jul 31 13:40:40 UTC 2022
 ```
-[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/edit/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
+[Назад к таблице версий чартов](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-04-helm/Lesson/Lesson.md#%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B9-%D1%87%D0%B0%D1%80%D1%82%D0%BE%D0%B2-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2)
 
 ```
 controlplane $ v itoge pomenyali versiyu Chart.yml i nomer porta servisa na 30081
