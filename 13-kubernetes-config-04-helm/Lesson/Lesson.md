@@ -776,7 +776,9 @@ image:
   tag: 13.07.22
 
 nodePort: 30085
-controlplane $ 
+```
+
+```
 controlplane $ cat fb-pod-app3/templates/service.yaml 
 
 ---
@@ -796,11 +798,13 @@ spec:
   selector:
     app: fb-pod
 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ vi fb-pod-app3/templates/NOTES.txt 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm template --set nodePort=30089 fb-pod-app3
 ---
 # Source: fb-pod-app3/templates/service.yaml
@@ -859,8 +863,9 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app2 get po,svc,deploy
 NAME                               READY   STATUS                   RESTARTS   AGE
 pod/fb-pod-app3-69fc56646b-jbx4w   0/2     ContainerStatusUnknown   2          27m
@@ -868,25 +873,29 @@ pod/fb-pod-app3-69fc56646b-n7bxv   2/2     Running                  0          2
 
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/fb-pod-app3   1/1     1            1           27m
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app2 delete pod fb-pod-app3-69fc56646b-jbx4w 
 pod "fb-pod-app3-69fc56646b-jbx4w" deleted
 controlplane $ 
 controlplane $ kubectl -n app2 delete pod fb-pod-app3-69fc56646b-n7bxv 
 pod "fb-pod-app3-69fc56646b-n7bxv" deleted
-controlplane $ 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app2 get po,svc,deploy
 NAME                               READY   STATUS    RESTARTS   AGE
 pod/fb-pod-app3-69fc56646b-rvs95   2/2     Running   0          52s
 
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/fb-pod-app3   1/1     1            1           29m
-controlplane $ 
+```
+
+```
 controlplane $ kubectl -n app2 delete deployments.apps fb-pod-app3     
 deployment.apps "fb-pod-app3" deleted
-controlplane $ 
+controlplane $
 controlplane $ kubectl -n app2 get po,svc,deploy
 NAME                               READY   STATUS        RESTARTS   AGE
 pod/fb-pod-app3-69fc56646b-55rx2   2/2     Terminating   0          12s
@@ -905,8 +914,9 @@ pod/fb-pod-app3-69fc56646b-55rx2   2/2     Terminating   0          37s
 controlplane $ 
 controlplane $ kubectl -n app2 get po,svc,deploy
 No resources found in app2 namespace.
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm install fb-pod-app3 fb-pod-app3
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
 controlplane $ 
@@ -971,14 +981,16 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm install fb-pod-app3 fb-pod-app3
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
 controlplane $ 
 controlplane $ vi fb-pod-app3/Chart.yaml 
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm template fb-pod-app3
 ---
 # Source: fb-pod-app3/templates/service.yaml
@@ -1037,15 +1049,12 @@ spec:
 ---
 # Source: fb-pod-app3/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
-controlplane $ 
-controlplane $ 
+```
+
+```
 controlplane $ helm install fb-pod-app3 fb-pod-app3
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
-controlplane $ 
+
 ```
 
 ## Задание 2: запустить 2 версии в разных неймспейсах
