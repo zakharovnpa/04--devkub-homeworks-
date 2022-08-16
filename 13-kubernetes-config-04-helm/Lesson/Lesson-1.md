@@ -1,6 +1,6 @@
 ## Ход выполнения ДЗ вопрос 1
 
-[Скрипт развертывания окружения и запуска приложения в app1]()
+[Скрипт развертывания окружения и запуска приложения в app1](13-kubernetes-config-04-helm/Files/start-script.sh)
 
 ```
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
