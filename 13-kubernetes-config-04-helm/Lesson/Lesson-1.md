@@ -2,6 +2,297 @@
 
 [Скрипт развертывания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script.sh)
 
+* Tab 1
+```
+Tue Aug 16 17:36:29 UTC 2022
+/root/My-Project/stage
+Creating fb-pod-app1
+---
+# Source: fb-pod-app1/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app1
+  namespace: app1
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app1
+  namespace: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+NAME: fb-pod-app1
+LAST DEPLOYED: Tue Aug 16 17:36:30 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+--------------------------------------------------------- 
+
+Content of NOTES.txt appears after deploy.
+
+Deployed to app1 namespace. 
+nodePort is port= 30080.
+Application name=fb-pod-app1.
+Image tag: 05.07.22.
+ReplicaCount: 1.
+
+---------------------------------------------------------
+
+```
+* Запущенное в неймспейс app1:
+```
+controlplane $ kubectl -n app1 get deployments.apps,pod,svc
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fb-pod-app1   1/1     1            1           93s
+
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/fb-pod-app1-6464948946-t7g74   2/2     Running   0          93s
+
+NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/fb-pod-app1   NodePort   10.99.80.142   <none>        80:30080/TCP   93s
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n app2 get deployments.apps,pod,svc
+No resources found in app2 namespace.
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/stage
+controlplane $ 
+controlplane $   
+controlplane $ 
+controlplane $ kubectl template fb-pod-app1 fb-pod-app1
+error: unknown command "template" for "kubectl"
+controlplane $ 
+controlplane $ helm template fb-pod-app1 fb-pod-app1
+---
+# Source: fb-pod-app1/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app1
+  namespace: app1
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app1
+  namespace: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+```
+* Неуспешная установка того же самого приложения в тот же неймспейс app1. Имя деплоя уже используется.
+```
+controlplane $ helm install fb-pod-app1 fb-pod-app1
+Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+```
+* Helm создает манифесты из шаблонов. Замечаний нет.
+```
+controlplane $ helm template fb-pod-app1 fb-pod-app1 --set namespace=app2 --set nodePort=30082
+---
+# Source: fb-pod-app1/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app1
+  namespace: app2
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30082
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app1
+  namespace: app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+```
+* Устанавливаем приложение с помощью деплоя с тем же именем. Неуспешная установка, т.к. есть повтор имени деплоя
+```
+controlplane $ helm install fb-pod-app1 fb-pod-app1 --set namespace=app2 --set nodePort=30082
+Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+```
+* В неймспейс app2 пока ничего не запущено
+```
+controlplane $ kubectl -n app2 get deployments.apps,pod,svc
+No resources found in app2 namespace.
+```
+* Устанавливаем приложение в неймспейс app2 с помощью деплоя с другим именем и с другим портом nodePort
+```
+controlplane $ helm install fb-pod-app1-v2 fb-pod-app1 --set namespace=app2 --set nodePort=30082
+NAME: fb-pod-app1-v2
+LAST DEPLOYED: Tue Aug 16 17:44:31 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+--------------------------------------------------------- 
+
+Content of NOTES.txt appears after deploy.
+
+Deployed to app2 namespace. 
+nodePort is port= 30082.
+Application name=fb-pod-app1.
+Image tag: 05.07.22.
+ReplicaCount: 1.
+
+---------------------------------------------------------
+```
+* Запущенное приложение в namespace app1
+```
+
+controlplane $ kubectl -n app1 get deployments.apps,pod,svc
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fb-pod-app1   1/1     1            1           13m
+
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/fb-pod-app1-6464948946-t7g74   2/2     Running   0          13m
+
+NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/fb-pod-app1   NodePort   10.99.80.142   <none>        80:30080/TCP   13m
+```
+* Запущенное приложение в namespace app2
+```
+controlplane $ kubectl -n app2 get deployments.apps,pod,svc
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fb-pod-app1   1/1     1            1           4m57s
+
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/fb-pod-app1-6464948946-pxbsr   2/2     Running   0          4m57s
+
+NAME                  TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/fb-pod-app1   NodePort   10.99.240.179   <none>        80:30082/TCP   4m57s
+```
+
+
+### Стартовый скрипт
 ```
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
 chmod 700 get_helm.sh && ./get_helm.sh && \
