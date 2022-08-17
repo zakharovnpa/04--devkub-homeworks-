@@ -18,3 +18,4 @@
 
 - [Лог 8. Задание 1, вопрос 2, часть 2. Успешная установка `fb-pod-app2` в окружение `app1`](/13-kubernetes-config-04-helm/Logs/logs8-helm-chart-fb-pod-app1-app2.md)
 - [Лог 9. Выполнение ДЗ вопрос 1](/13-kubernetes-config-04-helm/Logs/logs9-helm-install-chart-in-app1-and-app2.md)
+- [Лог 10. Успешное ДЗ вопрос 2](/13-kubernetes-config-04-helm/Logs/logs10-helm-install-chart-in-app1-and-app2.md)
