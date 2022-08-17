@@ -25,8 +25,8 @@
 Chart ver.|App Name|NS|Image tag
 |-|-|-|-|
 0.1.0|fb-pod-app1|app1|05.07.22
-0.2.0|fb-pod-app1|app1|12.07.22
-0.3.1|fb-pod-app2|app2|13.07.22
+0.2.0|fb-pod-app1-v2|app1|12.07.22
+0.3.1|fb-pod-app1-v3|app2|13.07.22
 
 ```
 Sat Jul 30 19:03:55 UTC 2022
