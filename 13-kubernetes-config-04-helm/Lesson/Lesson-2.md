@@ -17,6 +17,7 @@
 [Скрипт развертывания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script.md)
 
 - [Лог 4. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs4-helm-chart-fb-pod-app1-app2.md)
+- [Лог 10. Успешное ДЗ вопрос 2](/13-kubernetes-config-04-helm/Logs/logs10-helm-install-chart-in-app1-and-app2.md)
 
 ### Выполнение задания 2
 
