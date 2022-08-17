@@ -13,6 +13,7 @@
   * скорее всего придется отследить чтобы не было совпадения портов в разных версиях приложения 
  
 [Скрипт развертывания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script.sh)
+
 [Скрипт развертывания окружения и запуска приложения в app1](13-kubernetes-config-04-helm/Files/start-script.md)
 
 - [Лог 4. Задание 1: подготовить helm чарт для приложения. Вариант 2](/13-kubernetes-config-04-helm/Logs/logs4-helm-chart-fb-pod-app1-app2.md)
