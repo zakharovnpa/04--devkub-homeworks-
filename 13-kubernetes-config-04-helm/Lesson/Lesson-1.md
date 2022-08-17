@@ -84,7 +84,7 @@ ReplicaCount: 1.
 ---------------------------------------------------------
 
 ```
-* Запущенное в неймспейс app1:
+* В результате отработки стартового скрипта в неймспейс app1 запустились деплоймент, под и сервис:
 ```
 controlplane $ kubectl -n app1 get deployments.apps,pod,svc
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
@@ -95,19 +95,52 @@ pod/fb-pod-app1-6464948946-t7g74   2/2     Running   0          93s
 
 NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod-app1   NodePort   10.99.80.142   <none>        80:30080/TCP   93s
-controlplane $ 
-controlplane $ 
+```
+* в неймспейс app2 пока ничего не запущено:
+```
 controlplane $ kubectl -n app2 get deployments.apps,pod,svc
 No resources found in app2 namespace.
-controlplane $ 
+```
+* Определяем рабочий каталог. Для дальнейших действий надо находиться в каталоге, на уровень выше каталога с чартом Helm,
+```
 controlplane $ pwd
 /root/My-Project/stage
 controlplane $ 
-controlplane $   
-controlplane $ 
-controlplane $ kubectl template fb-pod-app1 fb-pod-app1
-error: unknown command "template" for "kubectl"
-controlplane $ 
+controlplane $ tree
+.
+|-- fb-pod-app1
+|   |-- Chart.yaml
+|   |-- charts
+|   |-- templates
+|   |   |-- NOTES.txt
+|   |   |-- deployment.yaml
+|   |   `-- service.yaml
+|   `-- values.yaml
+|-- fb-pod-app2
+|   |-- Chart.yaml
+|   |-- charts
+|   |-- templates
+|   |   |-- NOTES.txt
+|   |   |-- deployment.yaml
+|   |   `-- service.yaml
+|   `-- values.yaml
+|-- fb-pod-app3
+|   |-- Chart.yaml
+|   |-- charts
+|   |-- templates
+|   |   |-- NOTES.txt
+|   |   |-- deployment.yaml
+|   |   `-- service.yaml
+|   `-- values.yaml
+|-- stage-front-back.yaml
+|-- stage-pv.yaml
+`-- stage-pvc.yaml
+
+9 directories, 18 files
+```
+* Попытка развернуть приложение в том же самом неймспейс app1.
+* Собираем из шаблонов манифесты деплоя с именем fb-pod-app1, неймспейс app1. Замечаний у Kubernetes на этом этапе нет.
+```
 controlplane $ helm template fb-pod-app1 fb-pod-app1
 ---
 # Source: fb-pod-app1/templates/service.yaml
@@ -167,82 +200,12 @@ spec:
 # Source: fb-pod-app1/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
 ```
-* Неуспешная установка того же самого приложения в тот же неймспейс app1. Имя деплоя уже используется.
+* Установка того же самого приложения в тот же неймспейс app1 неуспешная. Причина неудачи - имя деплоя уже используется в рамках этого кластера.
 ```
 controlplane $ helm install fb-pod-app1 fb-pod-app1
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
 ```
-* Helm создает манифесты из шаблонов. Замечаний нет.
-```
-controlplane $ helm template fb-pod-app1 fb-pod-app1 --set namespace=app2 --set nodePort=30082
----
-# Source: fb-pod-app1/templates/service.yaml
-# Config Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: fb-pod-app1
-  namespace: app2
-  labels:
-    app: fb
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: 30082
-  selector:
-    app: fb-pod
----
-# Source: fb-pod-app1/templates/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: fb-app
-  name: fb-pod-app1
-  namespace: app2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: fb-app
-  template:
-    metadata:
-      labels:
-        app: fb-app
-    spec:
-      containers:
-        - image: zakharovnpa/k8s-frontend:05.07.22  
-          imagePullPolicy: IfNotPresent
-          name: frontend
-          ports:
-          - containerPort: 80
-          volumeMounts:
-            - mountPath: /static
-              name: my-volume
-        - image: zakharovnpa/k8s-backend:05.07.22
-          imagePullPolicy: IfNotPresent
-          name: backend
-          volumeMounts:
-            - mountPath: /tmp/cache
-              name: my-volume
-      volumes:
-        - name: my-volume
-          emptyDir: {}
----
-# Source: fb-pod-app1/templates/deployment.yaml
-# Config Deployment Frontend & Backend with Volume
-```
-* Устанавливаем приложение с помощью деплоя с тем же именем. Неуспешная установка, т.к. есть повтор имени деплоя
-```
-controlplane $ helm install fb-pod-app1 fb-pod-app1 --set namespace=app2 --set nodePort=30082
-Error: INSTALLATION FAILED: cannot re-use a name that is still in use
-```
-* В неймспейс app2 пока ничего не запущено
-```
-controlplane $ kubectl -n app2 get deployments.apps,pod,svc
-No resources found in app2 namespace.
-```
+
 * Устанавливаем приложение в неймспейс app2 с помощью деплоя с другим именем и с другим портом nodePort
 ```
 controlplane $ helm install fb-pod-app1-v2 fb-pod-app1 --set namespace=app2 --set nodePort=30082
@@ -290,7 +253,9 @@ pod/fb-pod-app1-6464948946-pxbsr   2/2     Running   0          4m57s
 NAME                  TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod-app1   NodePort   10.99.240.179   <none>        80:30082/TCP   4m57s
 ```
+### Ответ: запустили тоже самое приложение в том же самом неймспейс, но для этого необходимо изменить имя деплоя и номер порта в nodePort сетевого сервиса.
 
+### Окончание выполнения ДЗ вопрос 1.
 
 ### Стартовый скрипт
 ```
@@ -478,7 +443,7 @@ kubectl -n app1 get po && \
 echo "kubectl -n app1 get po"
 ```
 
-### Запущено приложение fv-pod-app1 в namespace app1
+### Запущено приложение fb-pod-app1 в namespace app1
 ```
 controlplane $ kubectl -n app1 get po,deployments.apps,svc
 NAME                               READY   STATUS    RESTARTS   AGE
