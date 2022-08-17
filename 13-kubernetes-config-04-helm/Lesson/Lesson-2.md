@@ -25,8 +25,8 @@
 Chart ver.|App Name|NS|Image tag
 |-|-|-|-|
 0.1.0|fb-pod-app1|app1|05.07.22
-0.1.1|fb-pod-app1|app1|12.07.22
-0.2.1|fb-pod-app2|app2|13.07.22
+0.2.0|fb-pod-app1|app1|12.07.22
+0.3.1|fb-pod-app2|app2|13.07.22
 
 ```
 Sat Jul 30 19:03:55 UTC 2022
@@ -34,15 +34,16 @@ Sat Jul 30 19:03:55 UTC 2022
 ```
 #### 1. Создание деплоя. При этом создаются директория и файлы манифесты приложения
 ```
-helm creating f-pod
-Creating fb-pod
+Wed Aug 17 13:04:37 UTC 2022
+/root/My-Project/stage
+Creating fb-pod-app1
 ---
-# Source: fb-pod/templates/service.yaml
+# Source: fb-pod-app1/templates/service.yaml
 # Config Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: fb-pod
+  name: fb-pod-app1
   namespace: app1
   labels:
     app: fb
@@ -54,13 +55,13 @@ spec:
   selector:
     app: fb-pod
 ---
-# Source: fb-pod/templates/deployment.yaml
+# Source: fb-pod-app1/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: fb-app
-  name: fb-pod 
+  name: fb-pod-app1
   namespace: app1
 spec:
   replicas: 1
@@ -91,10 +92,10 @@ spec:
         - name: my-volume
           emptyDir: {}
 ---
-# Source: fb-pod/templates/deployment.yaml
+# Source: fb-pod-app1/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
 NAME: fb-pod-app1
-LAST DEPLOYED: Sat Jul 30 19:03:56 2022
+LAST DEPLOYED: Wed Aug 17 13:04:39 2022
 NAMESPACE: default
 STATUS: deployed
 REVISION: 1
@@ -102,14 +103,344 @@ TEST SUITE: None
 NOTES:
 --------------------------------------------------------- 
 
-Content of NOTES.txt appears after deploy. 
+Content of NOTES.txt appears after deploy.
+
 Deployed to app1 namespace. 
+nodePort is port= 30080.
+Application name=fb-pod-app1.
+Image tag: 05.07.22.
+ReplicaCount: 1.
 
 ---------------------------------------------------------
-NAME                      READY   STATUS    RESTARTS   AGE
-fb-pod-6464948946-tsp4f   0/2     Pending   0          0s
+```
+* Результат: смотри описание файла NOTES.txt
+
+```sh
+Deployed to app1 namespace. 
+nodePort is port= 30080.
+Application name=fb-pod-app1.
+Image tag: 05.07.22.
+ReplicaCount: 1.
 ```
 
+#### Согласно заданию меняем версию приложения (image) с "05.07.22" на "12.07.22"
+* Порядок смены версии:
+  * В volues.yaml - меняем image.tag:12.07.22, nodePort: 30081
+```sh
+replicaCount: 1
+name: fb-pod-app2
+namespace: app1
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: 12.07.22
+nodePort: 30081
+```  
+  * В Charts.yaml - меняем version: 0.2.0, appVersion: 12.07.22, 
+```sh
+
+apiVersion: v2
+name: fb-pod-app1
+description: A Helm chart for Kubernetes
+type: application
+version: 0.2.0
+appVersion: 12.07.22
+```
+#### Тестируем сборку менифестов из шаблонов
+
+```
+controlplane $ pwd
+/root/My-Project/stage/fb-pod-app2
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ helm template fb-pod-app1 fb-pod-app2
+---
+# Source: fb-pod-app1/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app1
+  namespace: app1
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30081
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app1
+  namespace: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:12.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:12.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app1/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+```
+#### Деплой второй версии приложения завершился с ошибкой
+```
+controlplane $ helm install fb-pod-app1 fb-pod-app2
+Error: INSTALLATION FAILED: cannot re-use a name that is still in use    
+```
+### Снова меняем имя деплоя приложения на fb-pod-app1-v2
+```
+controlplane $ cat fb-pod-app2/Chart.yaml 
+
+apiVersion: v2
+name: fb-pod-app1-v2
+description: A Helm chart for Kubernetes
+type: application
+version: 0.2.0
+appVersion: 12.07.22
+
+controlplane $ 
+controlplane $ cat fb-pod-app2/values.yaml 
+
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+name: fb-pod-app1-v2
+
+namespace: app1
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: 12.07.22
+nodePort: 30081
+
+```
+### Успешный деплой второй версии приложения в первый неймспекйс app1
+```
+controlplane $ helm install fb-pod-app2 fb-pod-app2             
+NAME: fb-pod-app2
+LAST DEPLOYED: Wed Aug 17 13:39:03 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+--------------------------------------------------------- 
+
+Content of NOTES.txt appears after deploy.
+
+Deployed to app1 namespace. 
+nodePort is port= 30081.
+Application name=fb-pod-app1-v2.
+Image tag: 12.07.22.
+ReplicaCount: 1.
+
+---------------------------------------------------------
+controlplane $ 
+```
+### Ответ: установлена вторая версия приложения в первый неймспейс
+
+### Готовим третью версию приложения для деплоя в неймспейс app2
+
+#### Меняем файлы
+* Порядок смены версии:
+ * В Charts.yaml - меняем version: 0.3.0, appVersion: 13.07.22, 
+
+
+```
+controlplane $ cat Chart.yaml 
+
+apiVersion: v2
+name: fb-pod-app1-v3
+description: A Helm chart for Kubernetes
+type: application
+version: 0.3.0
+appVersion: 13.07.22
+
+```
+  * В volues.yaml - меняем image.tag:13.07.22, nodePort: 30082
+```
+controlplane $ cat values.yaml 
+
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+name: fb-pod-app1-v3
+
+namespace: app2
+
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: 13.07.22
+nodePort: 30082
+
+```
+#### Проверяем манифесты
+```
+controlplane $ helm template fb-pod-app1-v3 fb-pod-app3   
+Error: failed to download "fb-pod-app3"
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/stage/fb-pod-app3
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ helm template fb-pod-app1-v3 fb-pod-app3
+---
+# Source: fb-pod-app1-v3/templates/service.yaml
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod-app1-v3
+  namespace: app2
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30082
+  selector:
+    app: fb-pod
+---
+# Source: fb-pod-app1-v3/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod-app1-v3
+  namespace: app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:13.07.22  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: /static
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:13.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: /tmp/cache
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+---
+# Source: fb-pod-app1-v3/templates/deployment.yaml
+# Config Deployment Frontend & Backend with Volume
+```
+### Деплоим
+```
+controlplane $ helm install fb-pod-app1-v3 fb-pod-app3
+NAME: fb-pod-app1-v3
+LAST DEPLOYED: Wed Aug 17 13:53:44 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+--------------------------------------------------------- 
+
+Content of NOTES.txt appears after deploy.
+
+Deployed to app2 namespace. 
+nodePort is port= 30082.
+Application name=fb-pod-app1-v3.
+Image tag: 13.07.22.
+ReplicaCount: 1.
+
+---------------------------------------------------------
+```
+### Результат: установлены в разных неймспецйс разные версии приложения
+```
+controlplane $ 
+controlplane $ kubectl -n app1 get deployments.apps,pod,svc
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fb-pod-app1      1/1     1            1           49m
+deployment.apps/fb-pod-app1-v2   1/1     1            1           15m
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+pod/fb-pod-app1-6464948946-cnlzt      2/2     Running   0          49m
+pod/fb-pod-app1-v2-6f45f8798b-z5kdr   2/2     Running   0          15m
+
+NAME                     TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+service/fb-pod-app1      NodePort   10.99.225.5      <none>        80:30080/TCP   49m
+service/fb-pod-app1-v2   NodePort   10.111.224.177   <none>        80:30081/TCP   15m
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl -n app2 get deployments.apps,pod,svc
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/fb-pod-app1-v3   1/1     1            1           38s
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+pod/fb-pod-app1-v3-69fc56646b-jthng   2/2     Running   0          38s
+
+NAME                     TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+service/fb-pod-app1-v3   NodePort   10.98.66.157   <none>        80:30082/TCP   38s
+```
+
+### Ответ: приложения установены.
+
+
+## Далее текст задания в ответ не давать.
+
+### Отодвигаем предыдущее решение
 * После изменения версии образа приложения с "05.07.22" на "13.07.22" создаем новые объекты для деплоя в окружении "app1"
 ```
 controlplane $ helm template fb-pod
