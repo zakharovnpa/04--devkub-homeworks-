@@ -1,3 +1,4 @@
+```sh
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
 chmod 700 get_helm.sh && ./get_helm.sh && \
 date && \
@@ -180,3 +181,4 @@ nodePort: 30082
 " > fb-pod-app3/values.yaml && \
 kubectl -n app1 get po && \
 echo "kubectl -n app1 get po"
+```
