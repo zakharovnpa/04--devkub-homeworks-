@@ -9,13 +9,13 @@
 
 ## Ход выполнения ДЗ вопрос 1
 
-[Скрипт разворачиввания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script.sh)
+### Описание кластера, в котором выполняется ДЗ.
+1. В кластере две ноды - одна manage-node и одна worker-node
+2. 
 
-* Tab 1
-```
-Tue Aug 16 17:36:29 UTC 2022
-/root/My-Project/stage
-```
+[Скрипт разворачивания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script.sh)
+
+
 * Резульат выполнения команды `helm install fb-pod-app1 fb-pod-app1`
 ```
 Creating fb-pod-app1
