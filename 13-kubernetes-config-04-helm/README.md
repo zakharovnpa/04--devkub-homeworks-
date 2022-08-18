@@ -56,7 +56,7 @@ spec:
         - name: my-volume
           emptyDir: {}
  
-
+```
 * service.yaml
 ```yml
 ---
