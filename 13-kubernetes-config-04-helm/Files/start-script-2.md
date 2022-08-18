@@ -11,6 +11,9 @@ apt install nfs-common -y && \
 helm completion bash > /etc/bash_completion.d/helm && \
 apt install mc -y && \
 apt install tree && \
+apt install jsonnet && \
+apt install python3-pip -y && \
+pip install yaml2jsonnet && \
 kubectl create namespace stage && \
 kubectl create namespace app1 && \
 kubectl create namespace app2 && \
