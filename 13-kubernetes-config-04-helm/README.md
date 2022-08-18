@@ -855,8 +855,43 @@ spec:
    }
 }
 ```
+### Установка с помощью Helm приложения на основе преобразованных форматов манифестов 
+```
+controlplane $ helm install fb-pod-app1 fb-pod-app1
+NAME: fb-pod-app1
+LAST DEPLOYED: Sun Aug 14 17:46:04 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+--------------------------------------------------------- 
 
+Content of NOTES.txt appears after deploy.
 
+Deployed to app1 namespace. 
+nodePort is port= 30080.
+Application name=fb-pod-app1.
+Image tag: 05.07.22.
+ReplicaCount: 1.
+
+---------------------------------------------------------
+```
+* Создался деплоймент
+```
+controlplane $ kubectl -n app1 get deployments.apps 
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+fb-pod-app1   0/1     1            0           15s
+```
+* Приложение запустилось и работает.
+```
+controlplane $ kubectl -n app1 get pod
+NAME                           READY   STATUS    RESTARTS   AGE
+fb-pod-app1-6464948946-f62hx   2/2     Running   0          44s
+controlplane $ 
+controlplane $ 
+```
+### Ответ: выполнено развертывание приложения с помощью jsonnet
 ---
 
 ### Как оформить ДЗ?
