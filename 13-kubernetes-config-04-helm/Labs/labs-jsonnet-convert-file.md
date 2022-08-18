@@ -775,6 +775,104 @@ controlplane $
 controlplane $ ^C
 
 ```
+#### Дальенйшие действия привели к нужному результату.
+```
+controlplane $ jsonnet -y deployment.json
+RUNTIME ERROR: stream mode: top-level object was a object, should be an array whose elements hold the JSON for each document in the stream.
+        During manifestation
+controlplane $ 
+controlplane $ jsonnet -y deployment.jsonnet
+```
+* Создался файл с расширением jsonnet, но формата yaml 
+```
+---
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "replicas": "{{ .Values.replicaCount }}",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": { },
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+...
+controlplane $ 
+controlplane $ 
+```
+* Создался файл с расширением jsonnet, но формата yaml `-rw-r--r-- 1 root root 1.4K Aug 18 17:13 deployment.jsonnet`
+```
+controlplane $ 
+controlplane $ ls -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Aug 18 17:13 .
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ..
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pvc.yaml
+-rw-r--r-- 1 root root 1.7K Aug 18 16:44 deployment-2.txt
+-rw-r--r-- 1 root root 1.5K Aug 18 16:37 deployment.json
+-rw-r--r-- 1 root root 1.4K Aug 18 17:13 deployment.jsonnet
+-rw-r--r-- 1 root root  958 Aug 18 16:39 deployment.txt
+-rw-r--r-- 1 root root  354 Aug 18 16:29 fb-pod.jsonnet
+-rw-r--r-- 1 root root  419 Aug 18 16:36 fb-pod.yaml
+controlplane $ 
+controlplane $ date
+Thu Aug 18 17:16:08 UTC 2022
+```
 
 ### Логи
 * Tab 1
@@ -1834,5 +1932,77 @@ RUNTIME ERROR: stream mode: top-level object was a object, should be an array wh
         During manifestation
 controlplane $ 
 controlplane $ ^C
+controlplane $ jsonnet -y deployment.json
+RUNTIME ERROR: stream mode: top-level object was a object, should be an array whose elements hold the JSON for each document in the stream.
+        During manifestation
+controlplane $ 
+controlplane $ jsonnet -y deployment.jsonnet
+---
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "replicas": "{{ .Values.replicaCount }}",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": { },
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+...
+controlplane $ 
+controlplane $ 
 
 ```
