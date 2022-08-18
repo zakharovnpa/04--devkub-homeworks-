@@ -857,8 +857,8 @@ service/fb-pod-app1-v3   NodePort   10.98.66.157   <none>        80:30082/TCP   
 #### В результате преобразования форматов получили из манифестов в формате yaml файлы в формате yaml, но записанные как json
 
 ##### Файлы из первоначального состава Helm чарта
-* deploymebt.yaml 
-```
+* deployment.yaml 
+```yml
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1180,7 +1180,121 @@ spec:
   }
 }
 ```
+### Конвертирование файлов 
+#### Инструменты для конвертирования:
+- [yaml2jsonnet](https://github.com/waisbrot/yaml2jsonnet)
+* Установка
+```
+apt install jsonnet && \
+apt install python3-pip -y && \
+pip install yaml2jsonnet
+```
+* Команда преобразования. 
+> В файле манифесте для корректного преобразования должен быть описан только один объект Kubernetes, 
+например, Deployment, Pod, Service. Иначе будут ошибки при переобразовании.
 
+```
+yaml2jsonnet deployment.yaml | jsonnetfmt - -o deployment.jsonnet
+```
+* Создаем из этого файла файл для jsonnet
+*  [deployment.jsonnet](13-kubernetes-config-04-helm/Files/fb-pod.jsonnet)
+
+```js
+{
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: {
+    labels: {
+      app: 'fb-app',
+    },
+    name: 'fb-pod',
+    namespace: 'stage',
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: {
+        app: 'fb-app',
+      },
+    },
+    template: {
+      metadata: {
+        labels: {
+          app: 'fb-app',
+        },
+      },
+      spec: {
+        containers: [
+          {
+            image: 'zakharovnpa/k8s-frontend:05.07.22',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'frontend',
+            ports: [
+              {
+                containerPort: 80,
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/static',
+                name: 'my-volume',
+              },
+            ],
+          },
+          {
+            image: 'zakharovnpa/k8s-backend:05.07.22',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'backend',
+            volumeMounts: [
+              {
+                mountPath: '/tmp/cache',
+                name: 'my-volume',
+              },
+            ],
+          },
+        ],
+        volumes: [
+          {
+            name: 'my-volume',
+            emptyDir: {
+            },
+          },
+        ],
+      },
+    },
+  },
+}
+```
+#### Далее из jsonnet создаем yaml
+```
+jsonnet deployment.jsonnet > deployment.yaml
+```
+#### Далее добавляем атрибуты файлов yaml. Открытие файла --- и закрытие файла ... 
+* deployment.yaml
+```yaml
+---
+{
+   "apiVersion": "v1",
+   "kind": "Pod",
+   "metadata": {
+      "labels": {
+         "app": "nginx"
+      },
+      "name": "nginx",
+      "namespace": "default"
+   },
+   "spec": {
+      "containers": [
+         {
+            "image": "nginx:1.20",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "nginx"
+         }
+      ]
+   }
+}
+...
+```
 
 
 
@@ -1222,7 +1336,10 @@ fb-pod-app1-6464948946-f62hx   2/2     Running   0          44s
 controlplane $ 
 controlplane $ 
 ```
-### Ответ: выполнено развертывание приложения с помощью jsonnet
+### Ответ: выполнено развертывание приложения с помощью jsonnet. Из манифеста можно создать шаблон jsonnet с помощью yaml2jsonnet. Из шаблона jsonnet можно сделать файл yaml и задепдлоить его с помощью Helm.
+
+
+
 ---
 
 ### Как оформить ДЗ?
