@@ -1,5 +1,780 @@
 ## Задание 3(*): Работа с Jsonnet. Создание из файла yaml шаблона jsonnet для создания манифестов. Конвертирование файлов
 
+### Ход выполнения
+```
+controlplane $ 
+controlplane $ cd app1
+bash: cd: app1: No such file or directory
+controlplane $ 
+controlplane $ ls -lha
+total 20K
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 .
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ..
+drwxr-xr-x 4 root root 4.0K Aug 18 16:17 fb-pod-app1
+drwxr-xr-x 4 root root 4.0K Aug 18 16:17 fb-pod-app2
+drwxr-xr-x 4 root root 4.0K Aug 18 16:17 fb-pod-app3
+-rw-r--r-- 1 root root    0 Aug 18 16:17 stage-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 stage-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 stage-pvc.yaml
+controlplane $ 
+controlplane $ 
+controlplane $ cd ..
+controlplane $ 
+controlplane $ ls -lha
+total 20K
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 .
+drwx------ 9 root root 4.0K Aug 18 16:19 ..
+drwxr-xr-x 2 root root 4.0K Aug 18 16:17 app1
+drwxr-xr-x 2 root root 4.0K Aug 18 16:17 app2
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 stage
+controlplane $ 
+controlplane $ cd app1
+controlplane $ 
+controlplane $ ls -lha
+total 8.0K
+drwxr-xr-x 2 root root 4.0K Aug 18 16:17 .
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ..
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pvc.yaml
+controlplane $ 
+controlplane $ vi fb-pod.yaml
+controlplane $ 
+controlplane $ yaml2jsonnet fb-pod.yaml | jsonnetfmt - -o fb-pod.jsonnet
+
+Command 'jsonnetfmt' not found, but can be installed with:
+
+apt install jsonnet
+
+yaml2jsonnet: command not found
+controlplane $ 
+controlplane $ apt install jsonnet
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following NEW packages will be installed:
+  jsonnet
+0 upgraded, 1 newly installed, 0 to remove and 166 not upgraded.
+Need to get 378 kB of archives.
+After this operation, 1964 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal/universe amd64 jsonnet amd64 0.15.0+ds-1build1 [378 kB]
+Fetched 378 kB in 1s (512 kB/s)  
+Selecting previously unselected package jsonnet.
+(Reading database ... 73096 files and directories currently installed.)
+Preparing to unpack .../jsonnet_0.15.0+ds-1build1_amd64.deb ...
+Unpacking jsonnet (0.15.0+ds-1build1) ...
+Setting up jsonnet (0.15.0+ds-1build1) ...
+controlplane $ 
+controlplane $ 
+controlplane $ yaml2jsonnet fb-pod.yaml | jsonnetfmt - -o fb-pod.jsonnet
+yaml2jsonnet: command not found
+STATIC ERROR: <stdin>:1:1: unexpected end of file.
+controlplane $ 
+controlplane $ vi fb-pod.yaml
+controlplane $ 
+controlplane $ yaml2jsonnet fb-pod.yaml | jsonnetfmt - -o fb-pod.jsonnet
+yaml2jsonnet: command not found
+STATIC ERROR: <stdin>:1:1: unexpected end of file.
+controlplane $ 
+controlplane $ apt install jsonnet
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+jsonnet is already the newest version (0.15.0+ds-1build1).
+0 upgraded, 0 newly installed, 0 to remove and 166 not upgraded.
+controlplane $ 
+controlplane $ apt install python3-pip -y
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+python3-pip is already the newest version (20.0.2-5ubuntu1.6).
+0 upgraded, 0 newly installed, 0 to remove and 166 not upgraded.
+controlplane $ 
+controlplane $ pip install yaml2jsonnet
+Collecting yaml2jsonnet
+  Downloading yaml2jsonnet-1.0.1-py3-none-any.whl (19 kB)
+Collecting ruamel.yaml<0.17.0,>=0.16.10
+  Downloading ruamel.yaml-0.16.13-py2.py3-none-any.whl (111 kB)
+     |████████████████████████████████| 111 kB 10.4 MB/s 
+Collecting ruamel.yaml.clib>=0.1.2; platform_python_implementation == "CPython" and python_version < "3.10"
+  Downloading ruamel.yaml.clib-0.2.6-cp38-cp38-manylinux1_x86_64.whl (570 kB)
+     |████████████████████████████████| 570 kB 59.3 MB/s 
+Installing collected packages: ruamel.yaml.clib, ruamel.yaml, yaml2jsonnet
+Successfully installed ruamel.yaml-0.16.13 ruamel.yaml.clib-0.2.6 yaml2jsonnet-1.0.1
+```
+```
+controlplane $ yaml2jsonnet fb-pod.yaml | jsonnetfmt - -o fb-pod.jsonnet
+controlplane $ 
+controlplane $ 
+controlplane $ cat fb-pod.jsonnet
+```
+* fb-pod.jsonnet
+```
+{
+  apiVersion: 'v1',
+  kind: 'Service',
+  metadata: {
+    name: '{{ .Values.name }}',
+    namespace: '{{ .Values.namespace }}',
+    labels: {
+      app: 'fb',
+    },
+  },
+  spec: {
+    type: 'NodePort',
+    ports: [
+      {
+        port: 80,
+        nodePort: '{{ .Values.nodePort }}',
+      },
+    ],
+    selector: {
+      app: 'fb-pod',
+    },
+  },
+}
+```
+```
+controlplane $ 
+controlplane $ 
+controlplane $ cat fb-pod.yaml   
+```
+* fb-pod.yaml   
+```
+---
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "name": "{{ .Values.name }}",
+    "namespace": "{{ .Values.namespace }}",
+    "labels": {
+      "app": "fb"
+    }
+  },
+  "spec": {
+    "type": "NodePort",
+    "ports": [
+      {
+        "port": 80,
+        "nodePort": "{{ .Values.nodePort }}"
+      }
+    ],
+    "selector": {
+      "app": "fb-pod"
+    }
+  }
+}
+```
+```
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ rm fb-pod.yaml 
+controlplane $ 
+controlplane $ jsonnet fb-pod.jsonnet > fb-pod.yaml
+controlplane $ 
+controlplane $ cat fb-pod.yaml
+```
+* fb-pod.yaml
+```
+{
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+      "labels": {
+         "app": "fb"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "ports": [
+         {
+            "nodePort": "{{ .Values.nodePort }}",
+            "port": 80
+         }
+      ],
+      "selector": {
+         "app": "fb-pod"
+      },
+      "type": "NodePort"
+   }
+}
+```
+```
+controlplane $ 
+controlplane $ vi deployment.json
+controlplane $ 
+controlplane $ 
+controlplane $ cat deployment.json 
+```
+* deployment.json 
+```
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "labels": {
+      "app": "fb-app"
+    },
+    "name": "{{ .Values.name }}",
+    "namespace": "{{ .Values.namespace }}"
+  },
+  "spec": {
+    "replicas": "{{ .Values.replicaCount }}",
+    "selector": {
+      "matchLabels": {
+        "app": "fb-app"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "fb-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "frontend",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ],
+            "volumeMounts": [
+              {
+                "mountPath": "/static",
+                "name": "my-volume"
+              }
+            ]
+          },
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "backend",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp/cache",
+                "name": "my-volume"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "my-volume",
+            "emptyDir": {
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+```
+controlplane $ 
+controlplane $ 
+controlplane $                                                              
+controlplane $ 
+controlplane $ ls -lha
+total 20K
+drwxr-xr-x 2 root root 4.0K Aug 18 16:37 .
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ..
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pvc.yaml
+-rw-r--r-- 1 root root 1.5K Aug 18 16:37 deployment.json
+-rw-r--r-- 1 root root  354 Aug 18 16:29 fb-pod.jsonnet
+-rw-r--r-- 1 root root  419 Aug 18 16:36 fb-pod.yaml
+controlplane $ 
+controlplane $ vi deployment.yaml
+controlplane $ 
+controlplane $ cat deployment.yaml 
+```
+* deployment.yaml 
+```
+--
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: "{{ .Values.replicaCount }}"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+```
+```
+controlplane $ 
+controlplane $ 
+controlplane $ yaml2jsonnet deployment.yaml | jsonnetfmt - -o deployment.jsonnet
+Traceback (most recent call last):
+  File "/usr/local/bin/yaml2jsonnet", line 8, in <module>
+    sys.exit(main())
+  File "/usr/local/lib/python3.8/dist-packages/yaml2jsonnet/cli.py", line 58, in main
+    run(args)
+  File "/usr/local/lib/python3.8/dist-packages/yaml2jsonnet/cli.py", line 47, in run
+    convert_yaml(yaml_data, args.out, args.document_comments)
+  File "/usr/local/lib/python3.8/dist-packages/yaml2jsonnet/yaml2jsonnet.py", line 14, in convert_yaml
+    JsonnetRenderer(events, output, array, inject_comments).render()
+  File "/usr/local/lib/python3.8/dist-packages/yaml2jsonnet/jsonnet_renderer.py", line 203, in render
+    for event in self.events:
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/main.py", line 676, in parse
+    while parser.check_event():
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/parser.py", line 140, in check_event
+    self.current_event = self.state()
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/parser.py", line 176, in parse_stream_start
+    token.move_comment(self.scanner.peek_token())
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/scanner.py", line 1778, in peek_token
+    self._gather_comments()
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/scanner.py", line 1806, in _gather_comments
+    self.fetch_more_tokens()
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/scanner.py", line 283, in fetch_more_tokens
+    return self.fetch_value()
+  File "/usr/local/lib/python3.8/dist-packages/ruamel/yaml/scanner.py", line 652, in fetch_value
+    raise ScannerError(
+ruamel.yaml.scanner.ScannerError: mapping values are not allowed here
+  in "<unicode string>", line 2, column 11:
+    apiVersion: apps/v1
+              ^ (line: 2)
+STATIC ERROR: <stdin>:1:1: unexpected end of file.
+controlplane $ 
+controlplane $ cat deployment.json 
+```
+* deployment.json 
+```
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "labels": {
+      "app": "fb-app"
+    },
+    "name": "{{ .Values.name }}",
+    "namespace": "{{ .Values.namespace }}"
+  },
+  "spec": {
+    "replicas": "{{ .Values.replicaCount }}",
+    "selector": {
+      "matchLabels": {
+        "app": "fb-app"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "fb-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "frontend",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ],
+            "volumeMounts": [
+              {
+                "mountPath": "/static",
+                "name": "my-volume"
+              }
+            ]
+          },
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "backend",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp/cache",
+                "name": "my-volume"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "my-volume",
+            "emptyDir": {
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+```
+controlplane $ yaml2jsonnet deployment.json | jsonnetfmt - -o deployment.jsonnet
+controlplane $ 
+controlplane $ ls -lha
+total 28K
+drwxr-xr-x 2 root root 4.0K Aug 18 16:41 .
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ..
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pvc.yaml
+-rw-r--r-- 1 root root 1.5K Aug 18 16:37 deployment.json
+-rw-r--r-- 1 root root 1.4K Aug 18 16:41 deployment.jsonnet
+-rw-r--r-- 1 root root  958 Aug 18 16:39 deployment.yaml
+-rw-r--r-- 1 root root  354 Aug 18 16:29 fb-pod.jsonnet
+-rw-r--r-- 1 root root  419 Aug 18 16:36 fb-pod.yaml
+controlplane $ 
+controlplane $ cat deployment.jsonnet 
+```
+* deployment.jsonnet 
+```
+{
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: {
+    labels: {
+      app: 'fb-app',
+    },
+    name: '{{ .Values.name }}',
+    namespace: '{{ .Values.namespace }}',
+  },
+  spec: {
+    replicas: '{{ .Values.replicaCount }}',
+    selector: {
+      matchLabels: {
+        app: 'fb-app',
+      },
+    },
+    template: {
+      metadata: {
+        labels: {
+          app: 'fb-app',
+        },
+      },
+      spec: {
+        containers: [
+          {
+            image: '{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'frontend',
+            ports: [
+              {
+                containerPort: 80,
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/static',
+                name: 'my-volume',
+              },
+            ],
+          },
+          {
+            image: '{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}',
+            imagePullPolicy: 'IfNotPresent',
+            name: 'backend',
+            volumeMounts: [
+              {
+                mountPath: '/tmp/cache',
+                name: 'my-volume',
+              },
+            ],
+          },
+        ],
+        volumes: [
+          {
+            name: 'my-volume',
+            emptyDir: {
+            },
+          },
+        ],
+      },
+    },
+  },
+}
+```
+
+```
+controlplane $ 
+controlplane $ cat deployment.json    
+```
+* deployment.json    
+```
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "labels": {
+      "app": "fb-app"
+    },
+    "name": "{{ .Values.name }}",
+    "namespace": "{{ .Values.namespace }}"
+  },
+  "spec": {
+    "replicas": "{{ .Values.replicaCount }}",
+    "selector": {
+      "matchLabels": {
+        "app": "fb-app"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "fb-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "frontend",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ],
+            "volumeMounts": [
+              {
+                "mountPath": "/static",
+                "name": "my-volume"
+              }
+            ]
+          },
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "backend",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp/cache",
+                "name": "my-volume"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "my-volume",
+            "emptyDir": {
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+```
+controlplane $ 
+controlplane $ 
+controlplane $ 
+controlplane $ mv deployment.yaml deployment.txt
+controlplane $ 
+controlplane $ jsonnet deployment.jsonnet > deployment.yaml
+controlplane $ 
+controlplane $ cat deployment.yaml 
+```
+* deployment.yaml 
+```
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "replicas": "{{ .Values.replicaCount }}",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": { },
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+```
+
+```
+controlplane $ 
+controlplane $ 
+controlplane $ jsonnet --help
+Jsonnet commandline interpreter v0.15.0
+
+jsonnet {<option>} <filename>
+
+Available options:
+  -h / --help             This message
+  -e / --exec             Treat filename as code
+  -J / --jpath <dir>      Specify an additional library search dir (right-most wins)
+  -o / --output-file <file> Write to the output file rather than stdout
+  -m / --multi <dir>      Write multiple files to the directory, list files on stdout
+  -y / --yaml-stream      Write output as a YAML stream of JSON documents
+  -S / --string           Expect a string, manifest as plain text
+  -s / --max-stack <n>    Number of allowed stack frames
+  -t / --max-trace <n>    Max length of stack trace before cropping
+  --gc-min-objects <n>    Do not run garbage collector until this many
+  --gc-growth-trigger <n> Run garbage collector after this amount of object growth
+  --version               Print version
+Available options for specifying values of 'external' variables:
+Provide the value as a string:
+  -V / --ext-str <var>[=<val>]     If <val> is omitted, get from environment var <var>
+       --ext-str-file <var>=<file> Read the string from the file
+Provide a value as Jsonnet code:
+  --ext-code <var>[=<code>]    If <code> is omitted, get from environment var <var>
+  --ext-code-file <var>=<file> Read the code from the file
+Available options for specifying values of 'top-level arguments':
+Provide the value as a string:
+  -A / --tla-str <var>[=<val>]     If <val> is omitted, get from environment var <var>
+       --tla-str-file <var>=<file> Read the string from the file
+Provide a value as Jsonnet code:
+  --tla-code <var>[=<code>]    If <code> is omitted, get from environment var <var>
+  --tla-code-file <var>=<file> Read the code from the file
+Environment variables:
+JSONNET_PATH is a colon (semicolon on Windows) separated list of directories added
+in reverse order before the paths specified by --jpath (i.e. left-most wins)
+E.g. JSONNET_PATH=a:b jsonnet -J c -J d is equivalent to:
+JSONNET_PATH=d:c:a:b jsonnet
+jsonnet -J b -J a -J c -J d
+
+In all cases:
+<filename> can be - (stdin)
+Multichar options are expanded e.g. -abc becomes -a -b -c.
+The -- option suppresses option processing for subsequent arguments.
+Note that since filenames and jsonnet programs can begin with -, it is advised to
+use -- if the argument is unknown, e.g. jsonnet -- "$FILENAME".
+```
+
+```
+controlplane $ mv deployment.yaml deployment-2.txt
+controlplane $ 
+controlplane $ jsonnet deployment.jsonnet -y deployment.yaml
+ERROR: only one filename is allowed
+
+controlplane $ 
+controlplane $                                              
+controlplane $ ll -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Aug 18 16:47 ./
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ../
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pvc.yaml
+-rw-r--r-- 1 root root 1.7K Aug 18 16:44 deployment-2.txt
+-rw-r--r-- 1 root root 1.5K Aug 18 16:37 deployment.json
+-rw-r--r-- 1 root root 1.4K Aug 18 16:41 deployment.jsonnet
+-rw-r--r-- 1 root root  958 Aug 18 16:39 deployment.txt
+-rw-r--r-- 1 root root  354 Aug 18 16:29 fb-pod.jsonnet
+-rw-r--r-- 1 root root  419 Aug 18 16:36 fb-pod.yaml
+controlplane $ 
+controlplane $ 
+controlplane $ ls -lha
+total 32K
+drwxr-xr-x 2 root root 4.0K Aug 18 16:47 .
+drwxr-xr-x 5 root root 4.0K Aug 18 16:17 ..
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-front-back.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pv.yaml
+-rw-r--r-- 1 root root    0 Aug 18 16:17 app1-pvc.yaml
+-rw-r--r-- 1 root root 1.7K Aug 18 16:44 deployment-2.txt
+-rw-r--r-- 1 root root 1.5K Aug 18 16:37 deployment.json
+-rw-r--r-- 1 root root 1.4K Aug 18 16:41 deployment.jsonnet
+-rw-r--r-- 1 root root  958 Aug 18 16:39 deployment.txt
+-rw-r--r-- 1 root root  354 Aug 18 16:29 fb-pod.jsonnet
+-rw-r--r-- 1 root root  419 Aug 18 16:36 fb-pod.yaml
+```
+
+```
+controlplane $ jsonnet -y deployment.jsonnet                   
+RUNTIME ERROR: stream mode: top-level object was a object, should be an array whose elements hold the JSON for each document in the stream.
+        During manifestation
+controlplane $ 
+controlplane $ jsonnet -y deployment.json   
+RUNTIME ERROR: stream mode: top-level object was a object, should be an array whose elements hold the JSON for each document in the stream.
+        During manifestation
+controlplane $ 
+controlplane $ ^C
+
+```
 
 ### Логи
 * Tab 1
