@@ -701,6 +701,118 @@ service/fb-pod-app1-v3   NodePort   10.98.66.157   <none>        80:30082/TCP   
 ## Задание 3 (*): повторить упаковку на jsonnet
 Для изучения другого инструмента стоит попробовать повторить опыт упаковки из задания 1, только теперь с помощью инструмента jsonnet.
 
+### Ход выполнения задания 3
+
+#### В результате преобразования форматов получили из манифестов в формате yaml файлы в формате jsonnet
+* Файл deploymebt.yaml из состава Helm чарта
+```
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: "{{ .Values.replicaCount }}"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+```
+* Преобразованный файл deployment.yaml
+```yml
+{
+   "apiVersion": "apps/v1",
+   "kind": "Deployment",
+   "metadata": {
+      "labels": {
+         "app": "fb-app"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "replicas": "{{ .Values.replicaCount }}",
+      "selector": {
+         "matchLabels": {
+            "app": "fb-app"
+         }
+      },
+      "template": {
+         "metadata": {
+            "labels": {
+               "app": "fb-app"
+            }
+         },
+         "spec": {
+            "containers": [
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "frontend",
+                  "ports": [
+                     {
+                        "containerPort": 80
+                     }
+                  ],
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/static",
+                        "name": "my-volume"
+                     }
+                  ]
+               },
+               {
+                  "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "name": "backend",
+                  "volumeMounts": [
+                     {
+                        "mountPath": "/tmp/cache",
+                        "name": "my-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes": [
+               {
+                  "emptyDir": "{}",
+                  "name": "my-volume"
+               }
+            ]
+         }
+      }
+   }
+}
+
+```
+
+
+
 ---
 
 ### Как оформить ДЗ?
