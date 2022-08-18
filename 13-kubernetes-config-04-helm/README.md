@@ -1049,24 +1049,6 @@ spec:
       volumes:
         - name: my-volume
           emptyDir: {}
-" > deployment.yaml && \
-echo "
----
-# Config Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: "{{ .Values.name }}"
-  namespace: "{{ .Values.namespace }}"
-  labels:
-    app: fb
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: "{{ .Values.nodePort }}"
-  selector:
-    app: fb-pod
 ```
 * service.yaml
 ```yml
