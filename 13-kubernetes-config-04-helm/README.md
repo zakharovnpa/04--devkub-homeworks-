@@ -79,6 +79,18 @@ spec:
 ### Файлы-шаблоны для Helm. 
 
 #### Вместо значений параметров записаны выражения, которые позволяют подставлять необходимые значения в манифесты из файла values.yaml при запуске инсталляции чарта
+
+Пример:
+```
+* В строке `"{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"`
+                  |       |       |                            |                              |
+ Имя файла с переменными  |       |                         Значение образа фронта            |       
+                          |       |                                                           | 
+                  Параметр образа |                                                         Значение тега образа
+                                  |
+                               Значение репозитория с обрзом
+```
+
 * values.yaml
 ```yml
 # Default values for fb-pod.
@@ -97,7 +109,7 @@ nodePort: 30080
 ```
 * deployment.yaml
 ```yml
---
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -133,24 +145,6 @@ spec:
       volumes:
         - name: my-volume
           emptyDir: {}
-" > deployment.yaml && \
-echo "
----
-# Config Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: "{{ .Values.name }}"
-  namespace: "{{ .Values.namespace }}"
-  labels:
-    app: fb
-spec:
-  type: NodePort
-  ports:
-  - port: 80
-    nodePort: "{{ .Values.nodePort }}"
-  selector:
-    app: fb-pod
 ```
 * service.yaml
 ```yml
@@ -173,6 +167,7 @@ spec:
 
 
 #### Результат выполнения команды `helm install fb-pod-app1 fb-pod-app1`
+Helm вывел текст манифестов и сообщение об успешном деплойменте приложения
 ```
 Creating fb-pod-app1
 ---
