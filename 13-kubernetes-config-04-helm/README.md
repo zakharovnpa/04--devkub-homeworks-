@@ -1087,6 +1087,8 @@ spec:
 ```
 #### Преобразование формата файлов на сайте [www.json2yaml.com](https://www.json2yaml.com/convert-yaml-to-json)
 
+![screen-converter-yaml-to-json](/13-kubernetes-config-04-helm/Files/screen-converter-yaml-to-json.png)
+
 * deployment.json
 ```js
 {
