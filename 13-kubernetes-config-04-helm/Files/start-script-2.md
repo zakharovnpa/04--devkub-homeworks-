@@ -24,7 +24,6 @@ touch app1-pv.yaml app1-pvc.yaml app1-front-back.yaml && \
 cd ../app2 && \
 touch app2-pv.yaml app2-pvc.yaml app2-front.yaml app2-back.yaml && \
 cd ../stage && \
-clear && \
 date && \
 pwd && \
 helm create fb-pod-app1 && \
