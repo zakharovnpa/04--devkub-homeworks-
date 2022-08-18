@@ -704,7 +704,8 @@ service/fb-pod-app1-v3   NodePort   10.98.66.157   <none>        80:30082/TCP   
 ### Ход выполнения задания 3
 
 #### В результате преобразования форматов получили из манифестов в формате yaml файлы в формате jsonnet
-* Файл deploymebt.yaml из состава Helm чарта
+##### Файлы из состава Helm чарта
+* deploymebt.yaml 
 ```
 ---
 apiVersion: apps/v1
@@ -743,7 +744,25 @@ spec:
         - name: my-volume
           emptyDir: {}
 ```
-* Преобразованный файл deployment.yaml
+* service.yaml
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: "{{ .Values.nodePort }}"
+  selector:
+    app: fb-pod
+```
+##### Преобразованныйе файл ы
+* deployment.yaml
 ```yml
 {
    "apiVersion": "apps/v1",
@@ -810,7 +829,32 @@ spec:
 }
 
 ```
-
+* Преобразованный файл service.yaml
+```yml
+{
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+      "labels": {
+         "app": "fb"
+      },
+      "name": "{{ .Values.name }}",
+      "namespace": "{{ .Values.namespace }}"
+   },
+   "spec": {
+      "ports": [
+         {
+            "nodePort": "{{ .Values.nodePort }}",
+            "port": 80
+         }
+      ],
+      "selector": {
+         "app": "fb-pod"
+      },
+      "type": "NodePort"
+   }
+}
+```
 
 
 ---
