@@ -14,9 +14,165 @@
 2. 
 
 [Скрипт разворачивания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script.sh)
+### Подготовка файлов-шаблонов для Helm
+
+#### Первоначаьный вид файла
+* deployment.yaml
+```yml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: fb-pod 
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: zakharovnpa/k8s-frontend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: zakharovnpa/k8s-backend:05.07.22
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+ 
+
+* service.yaml
+```yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fb-pod
+  namespace: stage
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 30080
+  selector:
+    app: fb-pod
+```
+
+### Файлы-шаблоны для Helm. 
+
+#### Вместо значений параметров записаны выражения, которые позволяют подставлять необходимые значения в манифесты из файла values.yaml при запуске инсталляции чарта
+* values.yaml
+```yml
+# Default values for fb-pod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: "1"
+name: fb-pod-app1
+namespace: app1
+image:
+  repository: zakharovnpa
+  name_front: k8s-frontend
+  name_back: k8s-backend
+  tag: "05.07.22"
+nodePort: 30080
+```
+* deployment.yaml
+```yml
+--
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: "{{ .Values.replicaCount }}"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+" > deployment.yaml && \
+echo "
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: "{{ .Values.nodePort }}"
+  selector:
+    app: fb-pod
+```
+* service.yaml
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: "{{ .Values.nodePort }}"
+  selector:
+    app: fb-pod
+```
 
 
-* Резульат выполнения команды `helm install fb-pod-app1 fb-pod-app1`
+
+#### Результат выполнения команды `helm install fb-pod-app1 fb-pod-app1`
 ```
 Creating fb-pod-app1
 ---
@@ -96,7 +252,7 @@ ReplicaCount: 1.
 ---------------------------------------------------------
 
 ```
-* В неймспейс app1 запустились деплоймент, под и сервис:
+#### В неймспейс app1 запустились деплоймент, под и сервис:
 ```
 controlplane $ kubectl -n app1 get deployments.apps,pod,svc
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
@@ -108,12 +264,12 @@ pod/fb-pod-app1-6464948946-t7g74   2/2     Running   0          93s
 NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod-app1   NodePort   10.99.80.142   <none>        80:30080/TCP   93s
 ```
-* в неймспейс app2 пока ничего не запущено:
+#### в неймспейс app2 пока ничего не запущено:
 ```
 controlplane $ kubectl -n app2 get deployments.apps,pod,svc
 No resources found in app2 namespace.
 ```
-* Определяем рабочий каталог. Для дальнейших действий надо находиться в каталоге, на уровень выше каталога с чартом Helm,
+#### Определяем рабочий каталог. Для дальнейших действий надо находиться в каталоге, на уровень выше каталога с чартом Helm,
 ```
 controlplane $ pwd
 /root/My-Project/stage
@@ -150,8 +306,8 @@ controlplane $ tree
 
 9 directories, 18 files
 ```
-* Попытка развернуть приложение в том же самом неймспейс app1.
-* Собираем из шаблонов манифесты деплоя с именем fb-pod-app1, неймспейс app1. Замечаний у Kubernetes на этом этапе нет.
+### Попытка развернуть приложение в том же самом неймспейс app1.
+#### Собираем из шаблонов манифесты деплоя с именем fb-pod-app1, неймспейс app1. Замечаний у Kubernetes на этом этапе нет.
 ```
 controlplane $ helm template fb-pod-app1 fb-pod-app1
 ---
@@ -212,13 +368,13 @@ spec:
 # Source: fb-pod-app1/templates/deployment.yaml
 # Config Deployment Frontend & Backend with Volume
 ```
-* Установка того же самого приложения в тот же неймспейс app1 неуспешная. Причина неудачи - имя деплоя уже используется в рамках этого кластера.
+#### Установка того же самого приложения в тот же неймспейс app1 неуспешная. Причина неудачи - имя деплоя fb-pod-app1 уже используется в рамках этого кластера.
 ```
 controlplane $ helm install fb-pod-app1 fb-pod-app1
 Error: INSTALLATION FAILED: cannot re-use a name that is still in use
 ```
 
-* Устанавливаем приложение в неймспейс app2 с помощью деплоя с другим именем и с другим портом nodePort
+#### Устанавливаем приложение в неймспейс app2 с помощью деплоя с другим именем и с другим портом nodePort
 ```
 controlplane $ helm install fb-pod-app1-v2 fb-pod-app1 --set namespace=app2 --set nodePort=30082
 NAME: fb-pod-app1-v2
@@ -240,7 +396,7 @@ ReplicaCount: 1.
 
 ---------------------------------------------------------
 ```
-* Запущенное приложение в namespace app1
+#### Запущенное приложение в namespace app1
 ```
 
 controlplane $ kubectl -n app1 get deployments.apps,pod,svc
@@ -253,7 +409,7 @@ pod/fb-pod-app1-6464948946-t7g74   2/2     Running   0          13m
 NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
 service/fb-pod-app1   NodePort   10.99.80.142   <none>        80:30080/TCP   13m
 ```
-* Запущенное приложение в namespace app2
+#### Запущенное приложение в namespace app2
 ```
 controlplane $ kubectl -n app2 get deployments.apps,pod,svc
 NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
@@ -856,6 +1012,185 @@ spec:
    }
 }
 ```
+### Другой вариант преобразования файлов
+#### Первоначаьный вид файла
+
+#### Файл-шаблон для Helm
+* deployment.yaml
+```yml
+--
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-app
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+spec:
+  replicas: "{{ .Values.replicaCount }}"
+  selector:
+    matchLabels:
+      app: fb-app
+  template:
+    metadata:
+      labels:
+        app: fb-app
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}"  
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - mountPath: "/static"
+              name: my-volume
+        - image: "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          name: backend
+          volumeMounts:
+            - mountPath: "/tmp/cache"
+              name: my-volume
+      volumes:
+        - name: my-volume
+          emptyDir: {}
+" > deployment.yaml && \
+echo "
+---
+# Config Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: "{{ .Values.nodePort }}"
+  selector:
+    app: fb-pod
+```
+* service.yaml
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.name }}"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: fb
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: "{{ .Values.nodePort }}"
+  selector:
+    app: fb-pod
+```
+#### Преобразование формата файлов на сайте [www.json2yaml.com](https://www.json2yaml.com/convert-yaml-to-json)
+
+* deployment.json
+```js
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "labels": {
+      "app": "fb-app"
+    },
+    "name": "{{ .Values.name }}",
+    "namespace": "{{ .Values.namespace }}"
+  },
+  "spec": {
+    "replicas": "{{ .Values.replicaCount }}",
+    "selector": {
+      "matchLabels": {
+        "app": "fb-app"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "fb-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_front }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "frontend",
+            "ports": [
+              {
+                "containerPort": 80
+              }
+            ],
+            "volumeMounts": [
+              {
+                "mountPath": "/static",
+                "name": "my-volume"
+              }
+            ]
+          },
+          {
+            "image": "{{ .Values.image.repository }}/{{ .Values.image.name_back }}:{{ .Values.image.tag }}",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "backend",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp/cache",
+                "name": "my-volume"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "my-volume",
+            "emptyDir": {
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+* service.json
+```js
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "name": "{{ .Values.name }}",
+    "namespace": "{{ .Values.namespace }}",
+    "labels": {
+      "app": "fb"
+    }
+  },
+  "spec": {
+    "type": "NodePort",
+    "ports": [
+      {
+        "port": 80,
+        "nodePort": "{{ .Values.nodePort }}"
+      }
+    ],
+    "selector": {
+      "app": "fb-pod"
+    }
+  }
+}
+```
+
+
+
+
+
+
 ### Установка с помощью Helm приложения на основе преобразованных форматов манифестов 
 ```
 controlplane $ helm install fb-pod-app1 fb-pod-app1
