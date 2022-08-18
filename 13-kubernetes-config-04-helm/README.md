@@ -13,7 +13,7 @@
 1. В кластере две ноды - одна manage-node и одна worker-node
 2. 
 
-[Скрипт разворачивания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script-2.sh)
+[Скрипт разворачивания окружения и запуска приложения в app1](/13-kubernetes-config-04-helm/Files/start-script-2.md)
 ### Подготовка файлов-шаблонов для Helm
 
 #### Первоначаьный вид файла
