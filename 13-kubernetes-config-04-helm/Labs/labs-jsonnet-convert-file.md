@@ -604,6 +604,9 @@ controlplane $
 controlplane $ 
 controlplane $ mv deployment.yaml deployment.txt
 controlplane $ 
+```
+#### Вот этот шаг неверный. Так не получится формат yaml (смотри ниже `#### Дальенйшие действия привели к нужному результату.`)
+```
 controlplane $ jsonnet deployment.jsonnet > deployment.yaml
 controlplane $ 
 controlplane $ cat deployment.yaml 
