@@ -1178,7 +1178,7 @@ pip install yaml2jsonnet
 например, Deployment, Pod, Service. Иначе будут ошибки при переобразовании.
 
 ```
-yaml2jsonnet deployment.yaml | jsonnetfmt - -o deployment.jsonnet
+yaml2jsonnet deployment.json | jsonnetfmt - -o deployment.jsonnet
 ```
 * Создаем из этого файла файл для jsonnet
 *  [deployment.jsonnet](13-kubernetes-config-04-helm/Files/fb-pod.jsonnet)
