@@ -6,7 +6,7 @@
 - [ЛР-3. Чарт Alertmanager. Разбор файлов конфигураций](/13-kubernetes-config-04-helm/Labs/labs-chart-alertmanager-analysis-01.md)
 - [ЛР-4. Создание файлов в формате json из готовых манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-create-file-json-from-manifest.md)
 - [ЛР-5. Инсталляция из конвертрованных манфестов чарта Helm.](/13-kubernetes-config-04-helm/Labs/labs-install-helm-from-convert-manifest.md)
-
+- [ЛР-220819-2048. Создание шаблонов jsonnet для создания манифестов k8s.](/13-kubernetes-config-04-helm/Labs/labs-220819-2048-create-k8s-manifest-from-jsonnet.md)
 
 ### Ход выполнения ДЗ
 - [Задание 1: подготовить helm чарт для приложения. Вариант 1](/13-kubernetes-config-04-helm/Labs/labs-exercise-01-v1.md)
