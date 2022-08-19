@@ -184,6 +184,6 @@ image:
   tag: "13.07.22"
 nodePort: 30082
 " > fb-pod-app3/values.yaml && \
-kubectl -n app1 get po && \
-echo "kubectl -n app1 get po"
+kclear && \
+date && pwd
 ```
