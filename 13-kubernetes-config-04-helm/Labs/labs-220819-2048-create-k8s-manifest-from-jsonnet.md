@@ -184,6 +184,6 @@ image:
   tag: "13.07.22"
 nodePort: 30082
 " > fb-pod-app3/values.yaml && \
-kclear && \
+clear && \
 date && pwd
 ```
