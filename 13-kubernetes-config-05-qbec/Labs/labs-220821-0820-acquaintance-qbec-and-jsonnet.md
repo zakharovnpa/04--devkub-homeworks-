@@ -816,6 +816,7 @@ vendor
 > Дополнительная информация : Это работает, потому что `import` ведет себя как копирование и вставка. Таким образом, содержимое `k8s-libsonnet/1.21` «скопировано» в наш новый файл, благодаря чему они ведут себя точно так же.
 
 * Используй это
+
 Сначала нам нужно импортировать его в main.jsonnet:
 * main.jsonnet
 ```
@@ -863,6 +864,243 @@ local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet"
 }
 
 ```
+* Полный пример
+Теперь, когда создание отдельных объектов занимает не более 5 строк, мы можем объединить все это обратно в один файл ( main.jsonnet) и посмотреть на картину в целом:
+```js
+local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet";
+
+{
+  _config:: {
+    grafana: {
+      port: 3000,
+      name: "grafana",
+    },
+    prometheus: {
+      port: 9090,
+      name: "prometheus"
+    }
+  },
+
+  local deployment = k.apps.v1.deployment,
+  local container = k.core.v1.container,
+  local port = k.core.v1.containerPort,
+  local service = k.core.v1.service,
+
+  prometheus: {
+    deployment: deployment.new(
+      name=$._config.prometheus.name, replicas=1,
+      containers=[
+        container.new($._config.prometheus.name, "prom/prometheus")
+        + container.withPorts([port.new("api", $._config.prometheus.port)]),
+      ],
+    ),
+    service: k.util.serviceFor(self.deployment),
+  },
+  grafana: {
+    deployment: deployment.new(
+      name=$._config.grafana.name, replicas=1,
+      containers=[
+        container.new($._config.grafana.name, "grafana/grafana")
+        + container.withPorts([port.new("ui", $._config.grafana.port)]),
+      ],
+    ),
+    service:
+      k.util.serviceFor(self.deployment)
+      + service.mixin.spec.withType("NodePort"),
+  },
+}
+```
+Это довольно большое улучшение, учитывая, насколько многословным и подверженным ошибкам он был раньше!
+
+#### 6. Окружающая среда
+
+На данный момент наша конфигурация уже является гибкой и лаконичной, но не может использоваться повторно. Давайте также взглянем на третье модное словечко Танки: Окружающая среда .
+
+В наши дни одна и та же часть программного обеспечения обычно развертывается много раз в одной организации. Это могут быть `dev` и среды, а также регионы ( testing, , ) или отдельные клиенты ( , , ).prodeuropeusasiafoo-corpbar-gmbhbaz-inc
+
+Однако большая часть приложения в этих средах совершенно одинакова ... обычно различаются только конфигурация, масштабирование или мелкие детали. YAML (и, следовательно kubectl, ) предоставляет нам здесь только одно решение: дублирование каталога, изменение деталей, сохранение обоих. Но что, если у вас 32 среды? Правильный! Затем вам нужно поддерживать 32 каталога YAML. И мы все можем представить себе кошмар этих файлов, разлетающихся друг от друга.
+
+Но опять же, Jsonnet может быть решением : извлекая фактические объекты в библиотеку, вы можете импортировать их в столько сред, сколько вам нужно!
+
+* Создание библиотеки
+В библиотеке нет ничего особенного, просто папка с .libsonnetфайлами где-то в путях импорта:
+
+Дорожка	|Описание
+|-|-|
+/lib	|Пользовательские, созданные пользователями библиотеки только для этого проекта.
+/vendor	|Внешние библиотеки, установленные с помощью Jsonnet-bundler
+
+Так что для нашей цели /libподходит лучше всего, так как мы создаем его только для нашего текущего проекта. Давайте настроим один:
+
+    /$ mkdir lib/prom-grafana # a folder for our prom-grafana library   # папка для нашей библиотеки prom-grafana
+    /$ cd lib/prom-grafana
+
+    /lib/prom-grafana$ touch prom-grafana.libsonnet # library file that will be imported   # файл библиотеки, который будет импортирован
+    /lib/prom-grafana$ touch config.libsonnet # _config and images   # _config и образы
+    
+Для документации удобно иметь отдельный файл для параметров и используемых изображений:
+* config.libsonnet
+```js
+
+{
+  // +:: is important (we don't want to override the
+  // _config object, just add to it)
+  _config+:: {
+    // define a namespace for this library  # определение пространства имен для этой библиотеки
+    promgrafana: {
+      grafana: {
+        port: 3000,
+        name: "grafana",
+      },
+      prometheus: {
+        port: 9090,
+        name: "prometheus"
+      }
+    }
+  },
+
+  // again, make sure to use +::
+  _images+:: {
+    promgrafana: {
+      grafana: "grafana/grafana",
+      prometheus: "prom/prometheus",
+    }
+  }
+}
+```
+
+* prom-grafana.libsonnet
+
+```js
+local k = import "ksonnet-util/kausal.libsonnet";
+
+(import "./config.libsonnet") +
+{
+  local deployment = k.apps.v1.deployment,
+  local container = k.core.v1.container,
+  local port = k.core.v1.containerPort,
+  local service = k.core.v1.service,
+
+  // alias our params, too long to type every time
+  local c = $._config.promgrafana,
+
+  promgrafana: {
+    prometheus: {
+      deployment: deployment.new(
+        name=c.prometheus.name, replicas=1,
+        containers=[
+          container.new(c.prometheus.name, $._images.promgrafana.prometheus)
+          + container.withPorts([port.new("api", c.prometheus.port)]),
+        ],
+      ),
+      service: k.util.serviceFor(self.deployment),
+    },
+
+    grafana: {
+      deployment: deployment.new(
+        name=c.grafana.name, replicas=1,
+        containers=[
+          container.new(c.grafana.name, $._images.promgrafana.grafana)
+          + container.withPorts([port.new("ui", c.grafana.port)]),
+        ],
+      ),
+      service: 
+        k.util.serviceFor(self.deployment)
+        + service.mixin.spec.withType("NodePort"),
+    },
+  }
+}
+```
+* Дев и Прод
+До сих пор мы использовали только environments/defaultсреду. Давайте создадим несколько реальных:
+
+    /$ tk env add environments/prom-grafana/dev --namespace=prom-grafana-dev # one for dev ...
+    /$ tk env add environments/prom-grafana/prod --namespace=prom-grafana-prod # and one for prod
+
+> Примечание . Не забудьте настроить IP-адрес кластера в соответствующем файле spec.json!
+
+Осталось только импортировать библиотеку и настроить ее. Для dev, значений по умолчанию, определенных в `/lib/prom-grafana/config.libsonnet`должно быть достаточно, поэтому мы ничего не переопределяем:
+```js
+// environments/prom-grafana/dev
+import "prom-grafana/prom-grafana.libsonnet"
+```
+Однако `prod` полагаться на `latest` образ — плохая идея. давайте добавим несколько правильных тегов:
+```js
+// environments/prom-grafana/prod
+(import "prom-grafana/prom-grafana.libsonnet") +
+{
+  // again, we only want to patch, not replace, thus +::
+  _images+:: {
+    // we update this one entirely, so we can replace this one (:)
+    promgrafana: {
+      prometheus: "prom/prometheus:v2.14",
+      grafana: "grafana/grafana:6.5.2"
+    }
+  }
+}
+```
+* Исправление
+Вышеупомянутое хорошо работает для библиотек, которыми мы сами управляем, но что, когда другая команда написала библиотеку, она была установлена ​​с помощью jbGitHub или вы не можете легко ее изменить?
+
+Здесь вступает в игру уже знакомый ` +: (или +::) ` синтаксис. Это позволяет частично переопределять значения объекта. Допустим, мы хотели добавить какие-то метки в Prometheus Deployment, но наши ` _config` параметры не позволяют нам это сделать. Мы все еще можем сделать это в нашем `main.jsonnet`:
+
+* main.jsonnet
+```js
+(import "prom-grafana/prom-grafana.libsonnet") +
+{
+  promgrafana+: {
+    prometheus+: {
+      deployment+: {
+        metadata+: {
+          labels+: {
+            foo: "bar"
+          }
+        }
+      }
+    }
+  }
+}
+```
+Используя ` +: ` оператор все время и ` foo: "bar" ` используя только `« :»`, мы переопределяем только значение "foo", оставляя остальную часть объекта такой, какой она была.
+
+Проверим, сработало:
+```
+$ tk show environments/prom-grafana/patched -t deployment/prometheus
+```
+```js
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    foo: bar # <- There it is!
+  name: prometheus
+  namespace: default
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: prometheus
+  template:
+    metadata:
+      labels:
+        name: prometheus
+    spec:
+      containers:
+      - image: prom/prometheus
+        imagePullPolicy: IfNotPresent
+        name: prometheus
+        ports:
+        - containerPort: 9090
+          name: api
+```
+
+
+
+
+
+
 
 
 
