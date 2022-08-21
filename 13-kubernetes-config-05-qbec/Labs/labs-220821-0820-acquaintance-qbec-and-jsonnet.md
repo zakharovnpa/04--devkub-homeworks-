@@ -767,7 +767,106 @@ YAML выглядит так, как ожидалось? Применим его
 
 > Задача : Теперь попробуйте добавить конструктор для Service объекта `kubernetes.libsonnet` и использовать оба помощника (каких помощников? Это файлы шаблоны, описывающие объекты Kubernetes, созданные с помошью Конструктора развертывания, ) для воссоздания других объектов.
 
-#### 4. Параметризация
+#### 5. Библиотека Kubernetes
+В последнем разделе показано, что использование библиотеки для создания объектов Kubernetes может значительно упростить код, который вам нужно написать. Однако существует огромное количество различных типов объектов, и API Kubernetes развивается (и, следовательно, изменяется) довольно быстро.
+
+Написание и поддержка такой библиотеки может стать самостоятельным занятием на полный рабочий день. К счастью, такую ​​библиотеку можно сгенерировать из спецификации Kubernetes OpenAPI! Более того, это уже было сделано за вас.
+
+* k8s-libsonnet
+Библиотека называется k8s-libsonnet(взамен снятой с производства ksonnet-lib), на данный момент доступна по адресу [https://github.com/jsonnet-libs/k8s-libsonnet](https://github.com/jsonnet-libs/k8s-libsonnet).
+
+> Примечание : ksonnet проект заброшен, библиотека больше не поддерживается. Тем не менее, сообщество, поддерживаемое Grafana Labs, подхватило это с k8s-libsonnet библиотекой.
+
+Поскольку k8s-libsonnet в нескольких местах была нарушена совместимость ksonnet-lib(по уважительной причине), мы оснастили широко используемую ksonnet-util библиотеку слоем совместимости, чтобы улучшить взаимодействие с разработчиком и пользователем: [https://github.com/grafana/jsonnet-libs/tree/мастер/ksonnet-утилита](https://github.com/grafana/jsonnet-libs/tree/master/ksonnet-util) 
+
+Если у вас нет веских причин против этого, просто используйте обертку, это облегчит вашу работу. Многие из первоначальных ksonnet-util улучшений уже вошли в k8s-libsonnet.
+
+Документы для k8s-libsonnetбиблиотеки можно найти здесь: [https://jsonnet-libs.github.io/k8s-libsonnet/](https://jsonnet-libs.github.io/k8s-libsonnet/)
+
+* Монтаж
+Как и любая другая внешняя библиотека, k8s-libsonnetее можно установить с помощью jsonnet-bundler. Впрочем, Танка уже сделала это за вас при создании проекта ( tk init) :
+
+    $ tk init
+      └─ jb install github.com/jsonnet-libs/k8s-libsonnet/1.21@main github.com/grafana/jsonnet-libs/ksonnet-util
+
+Это создало следующую структуру в /vendor:
+```
+vendor
+├── github.com
+│   ├── grafana
+│   │   └── jsonnet-libs
+│   │       └── ksonnet-util
+│   │           ├── ...
+│   │           └── kausal.libsonnet # Grafana's wrapper
+│   └── jsonnet-libs
+│       └── k8s-libsonnet
+│           └── 1.21
+│               ├── ...
+│               └── main.libsonnet   # k8s-libsonnet entrypoint
+├── 1.21 -> github.com/jsonnet-libs/k8s-libsonnet/1.21
+└── ksonnet-util -> github.com/grafana/jsonnet-libs/ksonnet-util
+```
+> Информация : vendor/ это место для внешних библиотек, но lib/ вы можете использовать его для своих собственных. Проверьте пути импорта для получения дополнительной информации.
+
+* Псевдоним
+Из-за того, как jb работает, библиотека может быть импортирована как `github.com/jsonnet-libs/k8s-libsonnet/1.21/main.libsonnet`. Большинство внешних библиотек (включая нашу оболочку) ожидают его как простой k.libsonnet(без префикса пакета).
+
+Чтобы поддерживать и то, и другое, Tanka автоматически создала для вас файл псевдонима: `/lib/k.libsonnet` он просто импортирует фактическую библиотеку, предоставляя ее также под этим альтернативным именем.
+
+> Дополнительная информация : Это работает, потому что `import` ведет себя как копирование и вставка. Таким образом, содержимое `k8s-libsonnet/1.21` «скопировано» в наш новый файл, благодаря чему они ведут себя точно так же.
+
+* Используй это
+Сначала нам нужно импортировать его в main.jsonnet:
+* main.jsonnet
+```
+- local k = import "kubernetes.libsonnet";
++ local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet";
+  local grafana = import "grafana.jsonnet";
+  local prometheus = import "prometheus.jsonnet";
+  { /* ... */ }
+```
+> Примечание : `ksonnet-util` импортирует литерал `k.libsonnet`, поэтому [псевдоним](https://tanka.dev/tutorial/k-lib#aliasing) здесь обязателен. Это работает, потому что `/lib` и `/vendor` автоматически ищутся библиотеки, и `k.libsonnet` их можно найти `/lib` из-за вышеупомянутого псевдонима.
+
+Теперь, когда мы установили правильную версию, давайте используем ее `/environments/default/grafana.jsonnet` вместо нашего собственного помощника:
+```js
+local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet";
+
+{
+  // use locals to extract the parts we need
+  // используем локальные переменные для извлечения нужных нам частей
+  
+  local deploy = k.apps.v1.deployment,
+  local container = k.core.v1.container,
+  local port = k.core.v1.containerPort,
+  local service = k.core.v1.service,
+  // defining the objects:
+  // определение объектов:
+  grafana: {
+    // deployment constructor: name, replicas, containers
+    // конструктор развертывания: имя, реплики, контейнеры
+    deployment: deploy.new(name=$._config.grafana.name, replicas=1, containers=[
+      // container constructor
+      // конструктор контейнера
+      container.new($._config.grafana.name, "grafana/grafana")
+      + container.withPorts( // add ports to the container
+          [port.new("ui", $._config.grafana.port)] // port constructor
+        ),
+    ]),
+
+    // instead of using a service constructor, our wrapper provides
+    // a handy helper to automatically generate a service for a Deployment
+    // вместо использования конструктора сервиса наша оболочка предоставляет
+    // удобный помощник для автоматической генерации сервиса для развертывания
+    service: k.util.serv.util.serviceFor(self.deployment)
+             + service.mixin.spec.withType("NodePort"),
+  }
+}
+
+```
+
+
+
+####  XXX. Параметризация
 Развертывание с помощью Tanka работало хорошо, но не особо улучшало ситуацию с точки зрения ремонтопригодности и читабельности.
 
 Для этого в следующих разделах будут рассмотрены некоторые способы, которые предоставляет нам Jsonnet.
