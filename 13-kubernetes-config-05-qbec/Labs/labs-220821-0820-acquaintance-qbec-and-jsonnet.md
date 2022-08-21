@@ -397,15 +397,98 @@ $ tk init # initiate a new project
 * Файл, пребразованный в [онлайн-конвертере](https://www.json2yaml.com/convert-yaml-to-json)
 
 * grafana.json
+```js
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "grafana"
+  },
+  "spec": {
+    "selector": {
+      "matchLabels": {
+        "name": "grafana"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "name": "grafana"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "grafana/grafana",
+            "name": "grafana",
+            "ports": [
+              {
+                "containerPort": 3000,
+                "name": "ui"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
 ```
+* Для преобразования этого файлв в файл jsonnet необходимо обернуть его 
 
+
+```
+{ 
+  grafana: {
+    deployment: {
+      
+  
+    },
+  },
+}
 ```
 
 На данный момент это еще более многословно, потому что мы успешно преобразовали YAML в JSON, который по дизайну требует больше символов.
 
 Но Jsonnet открывает достаточно возможностей, чтобы значительно улучшить это, что будет рассмотрено в следующих разделах.
 
+* Манифест для создания пространства имен namespace
+```yml
+{
+  my_namespace: {
+    apiVersion: "v1",
+    kind: "Namespace",
+    metadata: {
+      name: "monitoring"
+    }
+  }
+}
+```
 
+
+
+
+* Подключение к кластеру
+YAML выглядит так, как ожидалось? Применим его к кластеру. Для этого Танке нужна дополнительная настройка.
+
+Хотя для хранения текущего выбранного кластера kubectlиспользуется $KUBECONFIGпеременная среды и файл в домашнем каталоге, Tanka использует более явный подход:
+
+В каждой среде есть файл с именем spec.json, содержащий информацию для выбора кластера:
+
+* Среда
+```
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "default"
+  },
+  "spec": {
+    "apiServer": "https://127.0.0.1:6443", // cluster to use
+    "namespace": "monitoring" // default namespace for all created resources
+  }
+}
+```
 
 #### 3. Параметризации
 > Развертывание с помощью Tanka работало хорошо, но не особо улучшало ситуацию с точки зрения ремонтопригодности и читабельности.
@@ -476,14 +559,154 @@ $ tk init # initiate a new project
 
 #### 4. Абстракция
 
+Абстракция
+`_config` Хотя теперь, когда у нас есть объект для наших настраиваемых параметров, нам больше не нужно напрямую касаться определений ресурсов, `main.jsonnet` файл все еще очень длинный и трудный для чтения. Тем более, что из-за всех скобок это даже хуже, чем yaml на данный момент.
 
+Разделение его
 
+* Давайте начнем очищать это, разделив логические части на отдельные файлы:
 
+  * main.jsonnet: по-прежнему наш основной файл, содержащий `_config` объект и импортирующий другие файлы.
+  * grafana.jsonnet: Deploymentи Service для экземпляра Grafana
+  * prometheus.jsonnet: Deploymentи Serviceдля сервера Prometheus
 
+* grafana.jsonnet
+```yml
+{
+  // DO NOT use the root level here.
+  // Include the grafana subkey, otherwise $ won't work.
+  grafana: {
+    deployment: {
+      apiVersion: 'apps/v1',
+      kind: 'Deployment',
+      metadata: {
+        name: $._config.grafana.name,
+      },
+      spec: {
+        selector: {
+          matchLabels: {
+            name: $._config.grafana.name,
+          },
+        },
+        template: {
+          metadata: {
+            labels: {
+              name: $._config.grafana.name,
+            },
+          },
+          spec: {
+            containers: [
+              {
+                image: 'grafana/grafana',
+                name: $._config.grafana.name,
+                ports: [{
+                    containerPort: $._config.grafana.port,
+                    name: 'ui',
+                }],
+              },
+            ],
+          },
+        },
+      },
+    },
+    service: {
+      apiVersion: 'v1',
+      kind: 'Service',
+      metadata: {
+        labels: {
+          name: $._config.grafana.name,
+        },
+        name: $._config.grafana.name,
+      },
+      spec: {
+        ports: [{
+            name: '%s-ui' % $._config.grafana.name,
+            port: $._config.grafana.port,
+            targetPort: $._config.grafana.port,
+        }],
+        selector: {
+          name: $._config.grafana.name,
+        },
+        type: 'NodePort',
+      },
+    },
+  }
+}
+```
+Файл должен содержать ровно то же самое, что grafana раньше находилось под ключом на корневом объекте. Сделайте то же самое для 
+`/environments/default/prometheus.jsonnet` тоже.
 
+* main.jsonnet
+```yml
+// Think of `import` as copy-pasting the contents
+// of ./grafana.jsonnet here
+(import "grafana.jsonnet") +
+(import "prometheus.jsonnet") +
+{
+  _config:: {
+    grafana: {
+      port: 3000,
+      name: "grafana",
+    },
+    prometheus: {
+      port: 9090,
+      name: "prometheus"
+    }
+  }
+}
+```
+> Пояснение :
+на первый взгляд может показаться странным, что этот код работает, потому что он grafana.jsonnetпо-прежнему ссылается на корневой объект с помощью $, даже если он находится за пределами области действия файла.
+Однако Jsonnet оценивается отложенно, что означает, что содержимое grafana.jsonnetсначала «копируется» в main.jsonnet(корневой объект), а затем оценивается . Это означает, что приведенный выше код на самом деле состоит из всех трех объектов, объединенных в один большой объект, который затем преобразуется в JSON.
 
+* Вспомогательные утилиты
+Хотя main.jsonnetтеперь он короткий и очень читабельный, два других файла на самом деле не являются улучшением по сравнению с обычным yaml, в основном потому, что они все еще полны шаблонов.
 
+Давайте воспользуемся функциями, чтобы создать несколько полезных помощников, чтобы уменьшить количество повторений. Для этого мы создаем новый файл с именем kubernetes.libsonnet, в котором будут храниться наши утилиты Kubernetes.
 
+> Примечание . Расширение для библиотек Jsonnet — .libsonnet. Хотя вам не нужно его использовать, он отличает вспомогательный код от фактической конфигурации.
+
+Конструктор развертывания
+Для создания Deployment требуется некоторая обязательная информация и много шаблонов. Функция, которая его создает, может выглядеть так:
+
+* Код с функцией
+
+```yml
+
+{
+  // hidden k namespace for this library
+  k:: {
+    deployment: {
+      new(name, containers): {
+        apiVersion: "apps/v1",
+        kind: "Deployment",
+        metadata: {
+          name: name,
+        },
+        spec: {
+          selector: { matchLabels: {
+            name: name,
+          }},
+          template: {
+            metadata: { labels: {
+              name: name,
+            }},
+            spec: { containers: containers }
+          }
+        }
+      }
+    }
+  }
+}
+```
+Вызов этой функции заменит все переменные соответствующими переданными параметрами функции и вернет собранный объект.
+
+Чтобы использовать его, просто добавьте его к корневому объекту в main.jsonnet:
+
+* main.jsonnet
+```
+
+```
 
 
 
