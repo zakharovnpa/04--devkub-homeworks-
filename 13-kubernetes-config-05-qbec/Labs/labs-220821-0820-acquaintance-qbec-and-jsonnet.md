@@ -1102,8 +1102,380 @@ spec:
 
 На этой странице рассматривается сам язык Jsonnet. Дополнительные сведения о том, как использовать Jsonnet с Kubernetes, см . [в руководстве](https://tanka.dev/tutorial/jsonnet) . Существует также [официальное руководство по Jsonnet](https://jsonnet.org/learning/tutorial.html), в котором представлен более подробный обзор возможностей языка.
 
-Синтаксис
+* Синтаксис
 Будучи надмножеством JSON, синтаксис очень похож:
+
+```js
+// Line comment
+/* Block comment */
+
+// a local variable (not exported)
+local greeting = "hello world!";
+
+// the exported/returned object
+{
+  foo: "bar", // string
+  bar: 5, // int
+  baz: false, // bool
+  list: [1,2,3], // array
+  // object
+  dict: {
+    nested: greeting, // using the local
+  }
+  hidden:: "incognito!" // an unexported field
+}
+```
+* Абстракция
+Jsonnet имеет богатые возможности абстракции, что делает его интересным для настройки Kubernetes, поскольку он позволяет сохранять конфигурации краткими, но читабельными.
+
+  * Импорт
+  * Объединение
+  * Функции
+
+##### Импорт
+Как и другие языки, Jsonnet позволяет импортировать код из других файлов:
+```js
+local secret = import "./secret.libsonnet";
+```
+Экспортируемый объект (единственный нелокальный) ` secret.libsonnet ` теперь доступен как local переменная с именем secret.
+
+При использовании Tanka также можно напрямую импортировать `.json` и `.yaml` файлы, как если бы они были в формате `.libsonnet`.
+
+Не забудьте также ознакомиться с документацией библиотек, чтобы узнать, как использовать import и повторно использовать код. Документация по [путям импорта](https://tanka.dev/libraries/import-paths) и [поставщикам](https://tanka.dev/libraries/install-publish) Tanka полезна для понимания того, как импорт работает в контексте Tanka.
+
+##### Объединение
+Глубокое слияние позволяет изменять части объекта, не затрагивая его целиком. Рассмотрим следующий пример:
+```js
+local secret = {
+  kind: Secret,
+  metadata: {
+    name: "mySecret",
+    namespace: "default", // need to change that
+  },
+  data: {
+    foo: std.base64("foo")
+  }
+};
+```
+
+Чтобы изменить только пространство имен, мы можем использовать специальный ключ слияния ` +: `, например:
+```js
+// define the patch:
+local patch = {
+  metadata+: {
+    namespace: "myApp"
+  }
+}
+```
+Разница между ` : ` и ` +: ` заключается в том, что первый заменяет исходные данные в этом ключе, а второй применяет новый объект в качестве исправления поверх, что означает, что значения будут обновлены, если это возможно, но все остальные останутся такими, какие они есть.
+Чтобы объединить эти два, просто добавьте ( +) патч к оригиналу:
+```js
+secret + patch
+```
+Результатом этого является следующий объект JSON:
+```js
+{
+  "kind": "Secret",
+  "metadata": {
+    "name": "mySecret",
+    "namespace": "myApp"
+  },
+  "data": {
+    "foo": "Zm9vCg=="
+  }
+}
+```
+##### Функции
+Jsonnet поддерживает функции, аналогичные тому, как это делает Python. Они могут быть определены двумя различными способами:
+```js
+local add(x,y) = x + y;
+local mul = (function(x, y) x * y);
+```
+Объекты могут иметь методы:
+
+    {
+      greet(who): "hello " + who,
+    }
+    
+Значения по умолчанию, аргументы ключевых слов и другие примеры можно найти на [jsonnet.org](https://jsonnet.org/learning/tutorial.html#functions) .
+
+* Стандартная библиотека
+Стандартная библиотека Jsonnet включает в себя множество вспомогательных методов, начиная от изменения объектов и массивов и заканчивая строковыми утилитами и помощниками вычислений.
+
+Документация доступна на [jsonnet.org](https://jsonnet.org/learning/tutorial.html#conditionals) .
+
+* использованная литература
+Jsonnet имеет несколько вариантов обращения к частям объекта:
+```js
+{ // this is $
+  junk: "foo",
+  nested: { // this is self
+    app: "Tanka",
+    msg: self.app + " rocks!" // "Tanka rocks!"
+  },
+  children: { // this is also self
+    baz: "bar",
+    junk: $.junk + self.baz, // "foobar"
+  }
+}
+```
+Для получения дополнительной информации взгляните на [jsonnet.org](https://jsonnet.org/learning/tutorial.html#references)
+
+### main.jsonnet
+Самый важный файл называется `main.jsonnet`, потому что именно здесь Танка вызывает компилятор Jsonnet. Затем каждая строка Jsonnet, включая импорт, функции и прочее, оценивается до тех пор, пока не останется один очень большой объект JSON.
+Этот объект возвращается в Tanka и включает в себя все ваши манифесты Kubernetes где-то в нем, скорее всего глубоко вложенные.
+
+Но, как `kubectl` и ожидается поток yaml, а не вложенное дерево, Танке нужно сначала извлечь ваши объекты. Для этого он обходит дерево, пока не найдет что-то похожее на манифест Kubernetes. Объект считается действительным, если он имеет оба значения `kind` и `apiVersion` установлен.
+
+Чтобы Танка мог найти ваши манифесты, выходные данные вашего Jsonnet должны иметь одну из следующих структур:
+
+* Глубоко вложенный объект (рекомендуется)
+Чаще всего используется один большой объект, включающий все манифесты в виде листовых узлов.
+
+Насколько глубоко инкапсулирован реальный объект, не имеет значения, Танка будет двигаться вниз, пока не найдет что-то действительное.
+```js
+
+{
+  "prometheus": {
+    "service": {
+      // Service nested one level
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "promSvc"
+      }
+    },
+    "deployment": {
+      "apiVersion": "apps/v1", // apiVersion ..
+      "kind": "Deployment", // .. and kind are required to identify an object.
+      "metadata": {
+        "name": "prom"
+      }
+    }
+  },
+  "web": {
+    "nginx": {
+      "deployment": {
+        // Deployment nested two levels
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+          "name": "nginx"
+        }
+      }
+    }
+  }
+}
+```
+Использование этого метода имеет большое преимущество в том, что оно является самодокументируемым, поскольку вложение ключей может использоваться для логической группировки связанных манифестов, например, по приложениям.
+
+Также возможен нулевой уровень инкапсуляции, что означает не что иное, как обычный объект, который можно получить из kubectl show -o json:
+
+* Множество
+Использование массива объектов также прекрасно:
+```js
+[
+  {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "name": "promSvc"
+    }
+  },
+  {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "name": "prom"
+    }
+  }
+]
+```
+* Тип списка
+Пользователи kubectlмогли иметь контакт с типом под названием List. Это не часть официального API Kubernetes, а скорее псевдотип, введенный kubectlдля одновременной работы с несколькими объектами. Таким образом, Танка не поддерживает его из коробки.
+
+Чтобы в полной мере воспользоваться возможностями Tankas, вы можете сгладить его вручную:
+```js
+
+local list = {
+  apiVersion: "v1",
+  kind: "List",
+  items: [
+    {
+      apiVersion: "v1",
+      kind: "Service",
+      /* ... */
+    }
+    /* ... */
+  ]
+};
+
+# expose the `items` array on the top level:
+list.items
+```
+### Собственные функции
+Tanka расширяет Jsonnet с помощью нативных функций , предлагая дополнительный функционал, которого пока нет в стандартной библиотеке.
+
+Чтобы использовать их в своем коде, вам необходимо получить к ним доступ `std.native` из стандартной библиотеки:
+```
+{
+  someField:  std.native('<name>')(<arguments>),
+}
+```
+`std.native` принимает имя собственной функции в качестве `string` аргумента и возвращает function, который вызывается с использованием второго набора круглых скобок.
+
+##### parseJson
+* Подпись
+
+    parseJson(string json) Object
+    
+`parseJsonан` ализирует строку json и возвращает соответствующий тип Jsonnet ( Object, Array, и т. д.).
+
+
+* Примеры
+{
+  array: std.native('parseJson')('[0, 1, 2]'),
+  object: std.native('parseJson')('{ "foo": "bar" }'),
+}
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "array": [0, 1, 2],
+  "object": {
+    "foo": "bar"
+  }
+}
+```
+##### parseYaml
+* Подпись
+
+parseYaml(string yaml) []Object
+parseYamlобертки yaml.Unmarshalдля преобразования строки документов yaml в набор dicts. Если yamlсодержит только один документ, будет возвращен один массив значений.
+
+* Примеры
+```
+{
+  yaml: std.native('parseYaml')(|||
+    ---
+    foo: bar
+    ---
+    bar: baz
+  |||),
+}
+```
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "yaml": [
+    {
+      "foo": "bar"
+    },
+    {
+      "bar": "baz"
+    }
+  ]
+}
+```
+
+##### манифестJsonFromJson
+* Подпись
+
+manifestJsonFromJson(string json, int indent) string
+manifestJsonFromJsonповторно сериализует JSON и позволяет изменить отступ.
+
+* Примеры
+```
+{
+  indentWithEightSpaces: std.native('manifestJsonFromJson')('{ "foo": { "bar": "baz" } }', 8),
+}
+```
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "indentWithEightSpaces": "{\n        \"foo\": {\n                \"bar\": \"baz\"\n        }\n}\n"
+}
+```
+
+##### манифестYamlFromJson
+* Подпись
+
+manifestYamlFromJson(string json) string
+manifestYamlFromJsonсериализует строку JSON как документ YAML.
+
+* Примеры
+```
+{
+  yaml: std.native('manifestYamlFromJson')('{ "foo": { "bar": "baz" } }'),
+}
+```
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "yaml": "foo:\n    bar: baz\n"
+}
+```
+
+##### escapeStringRegex
+* Подпись
+
+escapeStringRegex(string s) string
+escapeStringRegexэкранирует все метасимволы регулярного выражения и возвращает регулярное выражение, соответствующее буквальному тексту.
+
+* Примеры
+```
+{
+  escaped: std.native('escapeStringRegex')('"([0-9]+"'),
+}
+```
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "escaped": "\"\\(\\[0-9\\]\\+\""
+}
+```
+
+##### регулярное выражение
+
+* Подпись
+
+regexMatch(string regex, string s) boolean
+regexMatchвозвращает, соответствует ли данная строка заданному регулярному выражению [RE2](https://github.com/google/re2/wiki/Syntax) .
+
+* Примеры
+```
+{
+  matched: std.native('regexMatch')('.', 'a'),
+}
+```
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "matched": true
+}
+```
+##### регулярное выражение Subst
+
+* Подпись
+
+regexSubst(string regex, string src, string repl) string
+regexSubstзаменяет все совпадения регулярного выражения re2 строкой замены.
+
+* Примеры
+```
+{
+  substituted: std.native('regexSubst')('p[^m]*', 'pm', 'poe'),
+}
+```
+
+Оценка с помощью Tanka приводит к JSON:
+```
+{
+  "substituted": "poem"
+}
+```
+
+
+
 
 
 
