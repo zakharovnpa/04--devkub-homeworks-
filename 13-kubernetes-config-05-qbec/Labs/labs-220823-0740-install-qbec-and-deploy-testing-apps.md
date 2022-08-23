@@ -64,7 +64,7 @@ controlplane $ tree
 |-- README.md
 |-- demo
 |   |-- components
-|   |   `-- hello.jsonnet
+|   |   `-- [hello.jsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-0740-install-qbec-and-deploy-testing-apps.md#democomponentshellojsonnet)
 |   |-- environments
 |   |   |-- base.libsonnet
 |   |   `-- default.libsonnet
