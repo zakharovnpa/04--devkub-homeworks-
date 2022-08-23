@@ -181,9 +181,10 @@ spec:
       defaultNamespace: default
       server: https://172.30.1.2:6443
   vars: {}
-controlplane $ 
-controlplane $ 
-controlplane $ cat demo/environments/base.libsonnet 
+```
+
+##### demo/environments/base.libsonnet 
+```
 
 // this file has the baseline default parameters
 {
