@@ -20,11 +20,12 @@ qbec init fb-pod
 ##### Файл params.libsonnet
 
 #### Директория /components
+##### Файл fb-pod.jsonnet. Создать самостоятельно
+
+#### Директория /environments
 ##### Файл base.libsonnet
 ##### Файл default.libsonnet
 
-#### Директория /environments
-##### Файл 
 
 
 
