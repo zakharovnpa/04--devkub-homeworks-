@@ -74,7 +74,7 @@ spec:
  
 ```
 #### Далее мы создаем окружение (environments) под именем `stage`, в namespace `stage` и под именем `prod`, в namespace `prod`. Адрес сервера K8S - 172.30.1.2:6443. Предварительно пространстваимен stage и prod должны существовать в кластере
-* Наш qbec.yaml для fb-pod
+##### Файл qbec.yaml
 ```yml
 apiVersion: qbec.io/v1alpha1
 kind: App
