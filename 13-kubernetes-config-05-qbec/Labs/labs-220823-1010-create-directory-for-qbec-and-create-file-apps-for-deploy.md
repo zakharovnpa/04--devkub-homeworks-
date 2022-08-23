@@ -73,7 +73,7 @@ spec:
   vars: {}
  
 ```
-Далее мы создаем окружение (environments) под именем `stage`, в namespace `stage` и под именем `prod`, в namespace `prod`. Адрес сервера K8S - 172.30.1.2:6443. Предварительно пространстваимен stage и prod должны существовать в кластере
+#### Далее мы создаем окружение (environments) под именем `stage`, в namespace `stage` и под именем `prod`, в namespace `prod`. Адрес сервера K8S - 172.30.1.2:6443. Предварительно пространстваимен stage и prod должны существовать в кластере
 * Наш qbec.yaml для fb-pod
 ```yml
 apiVersion: qbec.io/v1alpha1
@@ -95,3 +95,4 @@ spec:
       server: https://172.30.1.2:6443
   vars: {}
 ```
+[Назад к описанию директории](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D1%8F-fb-pod)
