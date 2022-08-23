@@ -24,7 +24,7 @@ qbec init fb-pod
 
 #### Директория /environments
 ##### Файл [base.libsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-baselibsonnet-1)
-##### Файл [default.libsonnet]()
+##### Файл [default.libsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-defaultlibsonnet-1)
 
 
 
