@@ -20,9 +20,21 @@ qbec init fb-pod
 ##### Файл [params.libsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-paramslibsonnet-1)
 
 #### Директория /components
+В этой директории расположены файлы компоненты приложения
 ##### Файл [fb-pod.jsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-fb-podjsonnet-%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C-%D1%81%D0%B0%D0%BC%D0%BE%D1%81%D1%82%D0%BE%D1%8F%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE-1). Создать самостоятельно
 
+> Согласно ДЗ необходимо создать файлы для нескольких компонентов приложения.
+
+* Будут созданы файлы 
+##### front.jsonnet
+##### backend.jsonnet
+##### serveice.jsonnet
+##### endpoint.jsonnet
+
+
+
 #### Директория /environments
+В этой директории расположены бибилиотеки, участвующие в создани конфигурации приложения
 ##### Файл [base.libsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-baselibsonnet-1)
 ##### Файл [default.libsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-defaultlibsonnet-1)
 
