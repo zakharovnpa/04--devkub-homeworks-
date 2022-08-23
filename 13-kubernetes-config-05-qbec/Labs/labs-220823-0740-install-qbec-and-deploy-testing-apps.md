@@ -209,3 +209,141 @@ base {
   }
 }
 ```
+#### Диагностика вместе с Qbec
+```
+controlplane $ qbec env list
+✘ unable to find source root at or above /root/My-Project
+controlplane $ 
+controlplane $ pwd
+/root/My-Project
+controlplane $ 
+controlplane $ cd demo/
+controlplane $ 
+controlplane $ pwd
+/root/My-Project/demo
+controlplane $ 
+controlplane $ qbec env list
+default
+```
+##### qbec show _
+```
+1 components evaluated in 2ms
+---
+apiVersion: v1
+data:
+  index.html: |
+    hello baseline
+kind: ConfigMap
+metadata:
+  annotations:
+    qbec.io/component: hello
+  labels:
+    qbec.io/application: demo
+    qbec.io/environment: _
+  name: demo-config
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    qbec.io/component: hello
+  labels:
+    app: demo-deploy
+    qbec.io/application: demo
+    qbec.io/environment: _
+  name: demo-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-deploy
+  template:
+    metadata:
+      labels:
+        app: demo-deploy
+    spec:
+      containers:
+      - image: nginx:stable
+        imagePullPolicy: Always
+        name: main
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web
+      volumes:
+      - configMap:
+          name: demo-config
+        name: web
+```
+##### qbec show default
+```
+1 components evaluated in 2ms
+---
+apiVersion: v1
+data:
+  index.html: |
+    hello default
+kind: ConfigMap
+metadata:
+  annotations:
+    qbec.io/component: hello
+  labels:
+    qbec.io/application: demo
+    qbec.io/environment: default
+  name: demo-config
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    qbec.io/component: hello
+  labels:
+    app: demo-deploy
+    qbec.io/application: demo
+    qbec.io/environment: default
+  name: demo-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-deploy
+  template:
+    metadata:
+      labels:
+        app: demo-deploy
+    spec:
+      containers:
+      - image: nginx:stable
+        imagePullPolicy: Always
+        name: main
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web
+      volumes:
+      - configMap:
+          name: demo-config
+        name: web
+ ```
+ ##### qbec param list _
+ ```
+COMPONENT                      NAME                           VALUE
+hello                          indexData                      "hello baseline\n"
+hello                          replicas                       1
+```
+##### qbec param list default
+```
+COMPONENT                      NAME                           VALUE
+hello                          indexData                      "hello default\n"
+hello                          replicas                       2
+```
+##### qbec param diff default
+```
+--- baseline
++++ environment: default
+@@ -2,2 +2,2 @@
+-hello                          indexData                      "hello baseline\n"
+-hello                          replicas                       1
++hello                          indexData                      "hello default\n"
++hello                          replicas                       2
+```
