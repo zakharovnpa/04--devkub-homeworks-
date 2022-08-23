@@ -98,15 +98,98 @@ spec:
 [Назад к описанию директории](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D1%8F-fb-pod)
 
 ##### Файл params.libsonnet
+* Пример файла из проекта `demo`
+```
+// this file returns the params for the current qbec environment
+// этот файл возвращает параметры для текущей среды qbec
 
+local env = std.extVar('qbec.io/env');
+local paramsMap = import 'glob-import:environments/*.libsonnet';
+local baseFile = if env == '_' then 'base' else env;
+local key = 'environments/%s.libsonnet' % baseFile;
+
+if std.objectHas(paramsMap, key)
+then paramsMap[key]
+else error 'no param file %s found for environment %s' % [key, env]
+```
+* Наш файл для проекта `fb-pod`
 ```
 
 ```
+
+
 [Назад к описанию директории](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D0%B4%D0%B8%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B8%D1%8F-fb-pod)
 
 
 ##### Файл fb-pod.jsonnet. Создать самостоятельно
+* Пример файла `hello.jsonnet` из проекта `demo`
+```
 
+local p = import '../params.libsonnet';
+local params = p.components.hello;
+
+[
+  {
+    apiVersion: 'v1',
+    kind: 'ConfigMap',
+    metadata: {
+      name: 'demo-config',
+    },
+    data: {
+      'index.html': params.indexData,
+    },
+  },
+  {
+    apiVersion: 'apps/v1',
+    kind: 'Deployment',
+    metadata: {
+      name: 'demo-deploy',
+      labels: {
+        app: 'demo-deploy',
+      },
+    },
+    spec: {
+      replicas: params.replicas,
+      selector: {
+        matchLabels: {
+          app: 'demo-deploy',
+        },
+      },
+      template: {
+        metadata: {
+          labels: {
+            app: 'demo-deploy',
+          },
+        },
+        spec: {
+          containers: [
+            {
+              name: 'main',
+              image: 'nginx:stable',
+              imagePullPolicy: 'Always',
+              volumeMounts: [
+                {
+                  name: 'web',
+                  mountPath: '/usr/share/nginx/html',
+                },
+              ],
+            },
+          ],
+          volumes: [
+            {
+              name: 'web',
+              configMap: {
+                name: 'demo-config',
+              },
+            },
+          ],
+        },
+      },
+    },
+  },
+]
+```
+* Наш файл для проекта `fb-pod`
 ```
 
 ```
@@ -114,7 +197,24 @@ spec:
 
 
 ##### Файл base.libsonnet
+В этом файле содержатся базовые параметры, которые будут переданы в конфигурацию, созданную безо всяких коррекций
 
+* Пример файла из проекта `demo`
+```
+
+// this file has the baseline default parameters
+// этот файл имеет базовые параметры по умолчанию
+
+{
+  components: {
+    hello: {
+      indexData: 'hello baseline\n',
+      replicas: 1,
+    },
+  },
+}
+```
+* Наш файл для проекта `fb-pod`
 ```
 
 ```
@@ -123,6 +223,24 @@ spec:
 
 ##### Файл default.libsonnet
 
+Файл, содержит параметры, которые будут переопределены в конфигурации
+* Пример файла из проекта `demo`
+```
+// this file has the param overrides for the default environment
+// этот файл имеет переопределение параметров для среды по имени default
+
+local base = import './base.libsonnet';
+
+base {
+  components +: {
+    hello +: {
+      indexData: 'hello default\n',
+      replicas: 2,
+    },
+  }
+}
+```
+* Наш файл для проекта `fb-pod`
 ```
 
 ```
