@@ -23,8 +23,8 @@ qbec init fb-pod
 ##### Файл [fb-pod.jsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-fb-podjsonnet-%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D1%82%D1%8C-%D1%81%D0%B0%D0%BC%D0%BE%D1%81%D1%82%D0%BE%D1%8F%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE-1). Создать самостоятельно
 
 #### Директория /environments
-##### Файл base.libsonnet
-##### Файл default.libsonnet
+##### Файл [base.libsonnet](https://github.com/zakharovnpa/04--devkub-homeworks-/blob/main/13-kubernetes-config-05-qbec/Labs/labs-220823-1010-create-directory-for-qbec-and-create-file-apps-for-deploy.md#%D1%84%D0%B0%D0%B9%D0%BB-baselibsonnet-1)
+##### Файл [default.libsonnet]()
 
 
 
