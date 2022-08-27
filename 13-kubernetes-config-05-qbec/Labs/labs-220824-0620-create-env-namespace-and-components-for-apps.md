@@ -4,6 +4,30 @@
 
 ### Технология проектирования приложения. 
 
+1. Иметь манифесты приложения и его компонентов
+2. Определить пространства имен, в которые будут деплоиться приложения
+3. Определить состав приложений для каждого пространства имен
+4. В qbec.yaml определить сервера и пространства имен
+5. В params.kibsonnet определить базовое окружение (именуется как _ ), а также окружение для других
+
+```yml
+// this file returns the params for the current qbec environment
+// you need to add an entry here every time you add a new environment.
+
+local env = std.extVar('qbec.io/env');
+local paramsMap = {
+  _: import './environments/base.libsonnet',
+  default: import './environments/default.libsonnet',
+  stage: import './environments/base.libsonnet',
+};
+
+if std.objectHas(paramsMap, env) then paramsMap[env] else error 'environment ' + env + ' not defined in ' + std.thisFile
+```
+
+6. Создать каталоги для компонентов
+7. Создать файлы библиотек
+8. Определить переменные и метаданные, которые будут включены в код
+
 ### Разделение на компоненты. 
 
 - Компоненты это код, который представляет Kubernetes объекты. 
